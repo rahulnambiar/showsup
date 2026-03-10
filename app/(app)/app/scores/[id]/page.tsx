@@ -128,6 +128,7 @@ function extractCompetitors(
 // ── Expandable platform section (client) ──────────────────────────────────────
 
 import { PlatformCard } from "./platform-card";
+import { CategoryBreakdown } from "@/components/category-breakdown";
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
@@ -268,6 +269,11 @@ export default async function ScanDetailPage({ params }: { params: { id: string 
           );
         })}
       </div>
+
+      {/* Visibility Breakdown */}
+      {scan.category_scores && (
+        <CategoryBreakdown scores={scan.category_scores as Record<string, number>} />
+      )}
 
       {/* Recommendations */}
       {recommendations.length > 0 && (

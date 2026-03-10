@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { CategoryBreakdown } from "@/components/category-breakdown";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -17,12 +18,20 @@ interface StepState {
   status: "pending" | "running" | "done" | "error";
 }
 
+interface PromptAnalysis {
+  sentiment?: "positive" | "neutral" | "negative" | null;
+  is_recommended?: boolean;
+  key_context?: string;
+  mention_position?: number | null;
+}
+
 interface PromptResult {
   prompt: string;
   response: string;
   mentioned: boolean;
   count: number;
   score: number;
+  analysis?: PromptAnalysis;
 }
 
 interface ModelResult {
@@ -39,6 +48,7 @@ interface ScanResult {
   category: string;
   results: ModelResult[];
   recommendations: Array<{ title: string; description: string; priority: string }>;
+  category_scores?: Record<string, number>;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -150,13 +160,39 @@ function InlineResultsView({ data, onReset }: { data: ScanResult; onReset: () =>
                 <div className="border-t border-white/5 px-6 pt-4 pb-5 space-y-5">
                   {mr.prompts.map((pr, i) => (
                     <div key={i} className="space-y-2">
+                      {/* Badges row */}
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {pr.analysis?.sentiment && (
+                          <span className={cn("text-[10px] font-medium px-2 py-0.5 rounded-full border", {
+                            "bg-[#10B981]/15 text-[#10B981] border-[#10B981]/30": pr.analysis.sentiment === "positive",
+                            "bg-gray-500/10 text-gray-400 border-gray-500/30": pr.analysis.sentiment === "neutral",
+                            "bg-[#EF4444]/15 text-[#EF4444] border-[#EF4444]/30": pr.analysis.sentiment === "negative",
+                          })}>
+                            {pr.analysis.sentiment}
+                          </span>
+                        )}
+                        {pr.analysis?.is_recommended && (
+                          <span className="text-[10px] bg-[#10B981]/15 text-[#10B981] border border-[#10B981]/30 px-2 py-0.5 rounded-full font-medium">
+                            Recommended
+                          </span>
+                        )}
+                        {pr.analysis?.mention_position && (
+                          <span className="text-[10px] text-gray-600">#{pr.analysis.mention_position} mention</span>
+                        )}
+                      </div>
+                      {/* Query */}
                       <p className="text-xs text-gray-500 italic">&ldquo;{pr.prompt}&rdquo;</p>
+                      {/* Key context */}
+                      {pr.analysis?.key_context && (
+                        <p className="text-xs text-gray-500 leading-relaxed">{pr.analysis.key_context}</p>
+                      )}
+                      {/* Response */}
                       <div className={cn("rounded-lg border p-3 text-sm text-gray-300 leading-relaxed", scoreBorderBg(pr.score))}>
                         {pr.response || <span className="text-gray-600">No response</span>}
                       </div>
                       <div className="flex items-center gap-3 text-xs text-gray-500">
                         <span>Score: <span className={scoreColor(pr.score)}>{pr.score}/100</span></span>
-                        {pr.mentioned && <span>· Mentioned {pr.count}×</span>}
+                        {pr.mentioned && pr.count > 0 && <span>· Mentioned {pr.count}×</span>}
                       </div>
                     </div>
                   ))}
@@ -166,6 +202,9 @@ function InlineResultsView({ data, onReset }: { data: ScanResult; onReset: () =>
           );
         })}
       </div>
+
+      {/* Visibility Breakdown */}
+      {data.category_scores && <CategoryBreakdown scores={data.category_scores} />}
 
       {/* Recommendations */}
       {data.recommendations.length > 0 && (
