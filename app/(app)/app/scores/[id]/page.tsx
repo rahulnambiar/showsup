@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import dynamic from "next/dynamic";
@@ -5,14 +6,19 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { buttonVariants } from "@/lib/button-variants";
 import { ShareButton } from "@/components/share-button";
+import { AnimatedScoreRing } from "./animated-score";
+import { PlatformCard } from "./platform-card";
+import { CategoryBreakdown } from "@/components/category-breakdown";
+import { CompetitiveBenchmark, type CompetitorsData } from "@/components/competitive-benchmark";
 
 // Dynamic import for PDF (client only)
 const PDFDownload = dynamic(
   () => import("@/components/pdf-download").then((m) => m.PDFDownload),
   { ssr: false }
 );
+
+export const metadata: Metadata = { title: "Scan Results — ShowsUp" };
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -31,36 +37,11 @@ function scoreColor(score: number) {
   return "text-[#EF4444]";
 }
 
-
 function scoreVerdict(score: number) {
   if (score >= 71) return "Excellent visibility — AI consistently recommends your brand";
   if (score >= 51) return "Good presence — appearing in most AI responses";
   if (score >= 31) return "Partial presence — room to grow";
   return "Low visibility — action needed";
-}
-
-function ScoreRing({ score }: { score: number }) {
-  const r = 52;
-  const circ = 2 * Math.PI * r;
-  const offset = circ - (score / 100) * circ;
-  const color =
-    score >= 71 ? "#10B981" : score >= 51 ? "#14B8A6" : score >= 31 ? "#F59E0B" : "#EF4444";
-  return (
-    <svg width="128" height="128" viewBox="0 0 128 128" className="rotate-[-90deg]">
-      <circle cx="64" cy="64" r={r} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="10" />
-      <circle
-        cx="64" cy="64" r={r} fill="none"
-        stroke={color} strokeWidth="10"
-        strokeDasharray={circ} strokeDashoffset={offset}
-        strokeLinecap="round"
-        style={{ transition: "stroke-dashoffset 0.8s ease" }}
-      />
-      <text x="64" y="72" textAnchor="middle" fill={color} fontSize="24" fontWeight="700"
-        style={{ transform: "rotate(90deg)", transformOrigin: "64px 64px" }}>
-        {score}
-      </text>
-    </svg>
-  );
 }
 
 const MODEL_COLORS: Record<string, string> = {
@@ -76,9 +57,9 @@ const MODEL_LABELS: Record<string, string> = {
 };
 
 const PRIORITY_COLORS: Record<string, string> = {
-  High: "bg-[#EF4444]/10 text-[#EF4444] border-[#EF4444]/30",
+  High:   "bg-[#EF4444]/10 text-[#EF4444] border-[#EF4444]/30",
   Medium: "bg-[#F59E0B]/10 text-[#F59E0B] border-[#F59E0B]/30",
-  Low: "bg-gray-500/10 text-gray-400 border-gray-500/30",
+  Low:    "bg-gray-500/10 text-gray-400 border-gray-500/30",
 };
 
 const COMMON_WORDS = new Set([
@@ -95,7 +76,6 @@ function extractCompetitors(
 ): Array<{ name: string; mentions: number; platforms: string[] }> {
   const brandLower = brand.toLowerCase();
   const counts: Record<string, { count: number; platforms: Set<string> }> = {};
-
   results.forEach((r) => {
     if (!r.response) return;
     const regex = /\b([A-Z][a-zA-Z]{1,}(?:\s+[A-Z][a-zA-Z]+){0,2})\b/g;
@@ -107,13 +87,11 @@ function extractCompetitors(
       if (words.some((w) => COMMON_WORDS.has(w.toLowerCase()))) continue;
       if (name.toLowerCase().includes(brandLower)) continue;
       if (COMMON_WORDS.has(name.toLowerCase())) continue;
-
       if (!counts[name]) counts[name] = { count: 0, platforms: new Set() };
       counts[name].count++;
       counts[name].platforms.add(r.model);
     }
   });
-
   return Object.entries(counts)
     .map(([name, { count, platforms }]) => ({
       name,
@@ -125,12 +103,6 @@ function extractCompetitors(
     .slice(0, 5);
 }
 
-// ── Expandable platform section (client) ──────────────────────────────────────
-
-import { PlatformCard } from "./platform-card";
-import { CategoryBreakdown } from "@/components/category-breakdown";
-import { CompetitiveBenchmark, type CompetitorsData } from "@/components/competitive-benchmark";
-
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default async function ScanDetailPage({ params }: { params: { id: string } }) {
@@ -138,18 +110,13 @@ export default async function ScanDetailPage({ params }: { params: { id: string 
 
   const [{ data: scan }, { data: results }] = await Promise.all([
     supabase.from("scans").select("*").eq("id", params.id).single(),
-    supabase
-      .from("scan_results")
-      .select("*")
-      .eq("scan_id", params.id)
-      .order("model"),
+    supabase.from("scan_results").select("*").eq("scan_id", params.id).order("model"),
   ]);
 
   if (!scan) notFound();
 
   const score = scan.overall_score ?? 0;
 
-  // Group results by model
   type ScanResult = NonNullable<typeof results>[number];
   const byModel = (results ?? []).reduce<Record<string, ScanResult[]>>((acc, r) => {
     if (!acc[r.model]) acc[r.model] = [];
@@ -157,7 +124,6 @@ export default async function ScanDetailPage({ params }: { params: { id: string 
     return acc;
   }, {});
 
-  // Recommendations — from DB or empty array
   let recommendations: Recommendation[] = [];
   try {
     if (scan.recommendations) {
@@ -165,14 +131,10 @@ export default async function ScanDetailPage({ params }: { params: { id: string 
         ? (scan.recommendations as Recommendation[])
         : [];
     }
-  } catch {
-    recommendations = [];
-  }
+  } catch { recommendations = []; }
 
-  // Competitors from responses
   const competitors = extractCompetitors(scan.brand_name, results ?? []);
 
-  // Model results summary for PDF
   const modelResultsSummary = Object.entries(byModel).map(([modelId, modelResults]) => ({
     model: modelId,
     label: MODEL_LABELS[modelId] ?? modelId,
@@ -183,72 +145,92 @@ export default async function ScanDetailPage({ params }: { params: { id: string 
     mentioned: (modelResults ?? []).some((r) => r.brand_mentioned),
   }));
 
+  const siteUrl = scan.url || scan.website;
   const dateStr = new Date(scan.created_at).toLocaleDateString("en-US", {
     year: "numeric", month: "long", day: "numeric",
   });
 
   return (
-    <div className="p-8 max-w-3xl mx-auto space-y-6">
-      {/* Back + actions */}
-      <div className="flex items-center justify-between">
+    <div className="p-6 md:p-8 max-w-3xl mx-auto space-y-6">
+
+      {/* ── Nav bar ── */}
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <Link
           href="/app/scores"
-          className="text-gray-500 hover:text-white text-sm transition-colors flex items-center gap-1"
+          className="text-gray-500 hover:text-white text-sm transition-colors flex items-center gap-1.5"
         >
-          ← All Scans
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+          All Scans
         </Link>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <PDFDownload
             brand={scan.brand_name}
             score={score}
             date={dateStr}
             category={scan.category ?? undefined}
-            url={scan.url ?? scan.website ?? undefined}
+            url={siteUrl ?? undefined}
             modelResults={modelResultsSummary}
             recommendations={recommendations}
             categoryScores={scan.category_scores as Record<string, number> | undefined}
             competitorsData={scan.competitors_data as CompetitorsData | undefined}
           />
           <ShareButton />
+          <Link
+            href="/app/scan"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-400 hover:text-white border border-white/15 hover:border-white/30 rounded-lg px-3 py-2 transition-colors"
+          >
+            New Scan
+          </Link>
         </div>
       </div>
 
-      {/* Header */}
-      <div className="flex items-start justify-between flex-wrap gap-4">
-        <div className="space-y-1.5">
-          <div className="flex items-center gap-2 flex-wrap">
-            <h1 className="text-2xl font-bold text-white">{scan.brand_name}</h1>
-            {scan.category && (
-              <Badge className="border border-white/15 bg-white/5 text-gray-300 text-xs">
-                {scan.category}
-              </Badge>
-            )}
-          </div>
-          {(scan.url || scan.website) && (
-            <p className="text-sm text-gray-500">{scan.url || scan.website}</p>
+      {/* ── Report header ── */}
+      <div className="space-y-1.5">
+        <p className="text-sm text-gray-500 font-medium">AI Visibility Report for</p>
+        <div className="flex items-center gap-3 flex-wrap">
+          <h1 className="text-3xl font-bold text-white">{scan.brand_name}</h1>
+          {scan.category && (
+            <Badge className="border border-white/15 bg-white/5 text-gray-300 text-xs">
+              {scan.category}
+            </Badge>
           )}
-          <p className="text-xs text-gray-600">{dateStr}</p>
         </div>
+        {siteUrl && (
+          <a
+            href={siteUrl.startsWith("http") ? siteUrl : `https://${siteUrl}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-gray-500 hover:text-gray-300 transition-colors inline-flex items-center gap-1"
+          >
+            {siteUrl}
+            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+          </a>
+        )}
+        <p className="text-xs text-gray-600">Scanned on {dateStr}</p>
       </div>
 
-      {/* Overall score */}
+      {/* ── Overall score ── */}
       <Card className="bg-[#111827] border-white/10">
-        <CardContent className="pt-6 flex items-center gap-8 flex-wrap">
-          <ScoreRing score={score} />
+        <CardContent className="pt-6 pb-6 flex items-center gap-8 flex-wrap">
+          <AnimatedScoreRing score={score} />
           <div className="space-y-2">
-            <p className="text-xs text-gray-500 uppercase tracking-wide">Overall AI Visibility</p>
+            <p className="text-xs text-gray-500 uppercase tracking-widest font-medium">Overall AI Visibility</p>
             <p className={`text-5xl font-bold ${scoreColor(score)}`}>
               {score}<span className="text-2xl text-gray-500">/100</span>
             </p>
             <p className="text-sm text-gray-300 font-medium">{scoreVerdict(score)}</p>
             {scan.category && (
-              <p className="text-xs text-gray-500">Category: {scan.category}</p>
+              <p className="text-xs text-gray-600">Category: {scan.category}</p>
             )}
           </div>
         </CardContent>
       </Card>
 
-      {/* Platform breakdown */}
+      {/* ── Platform breakdown ── */}
       <div className="space-y-3">
         <h2 className="text-sm font-medium text-gray-400">Platform breakdown</h2>
         {Object.entries(byModel).map(([modelId, modelResults]) => {
@@ -259,7 +241,6 @@ export default async function ScanDetailPage({ params }: { params: { id: string 
               Math.max(1, (modelResults ?? []).length)
           );
           const mentioned = (modelResults ?? []).some((r) => r.brand_mentioned);
-
           return (
             <PlatformCard
               key={modelId}
@@ -274,21 +255,21 @@ export default async function ScanDetailPage({ params }: { params: { id: string 
         })}
       </div>
 
-      {/* Visibility Breakdown */}
+      {/* ── Visibility Breakdown ── */}
       {scan.category_scores && (
         <CategoryBreakdown scores={scan.category_scores as Record<string, number>} />
       )}
 
-      {/* Competitive Benchmark */}
+      {/* ── Competitive Benchmark ── */}
       {scan.competitors_data && (
         <CompetitiveBenchmark data={scan.competitors_data as unknown as CompetitorsData} />
       )}
 
-      {/* Recommendations */}
+      {/* ── Recommendations ── */}
       {recommendations.length > 0 && (
         <div className="space-y-3">
           <h2 className="text-sm font-medium text-gray-400">Recommendations</h2>
-          <div className="space-y-3">
+          <div className="space-y-2.5">
             {recommendations.map((rec, i) => (
               <Card key={i} className="bg-[#111827] border-white/10">
                 <CardContent className="pt-4 pb-4">
@@ -313,12 +294,12 @@ export default async function ScanDetailPage({ params }: { params: { id: string 
         </div>
       )}
 
-      {/* Competitor mentions */}
-      {competitors.length > 0 && (
+      {/* ── Competitor mentions (fallback for old scans) ── */}
+      {!scan.competitors_data && competitors.length > 0 && (
         <div className="space-y-3">
           <h2 className="text-sm font-medium text-gray-400">Competitor mentions</h2>
           <Card className="bg-[#111827] border-white/10">
-            <CardContent className="pt-4 pb-4">
+            <CardContent className="pt-4 pb-4 overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-white/5">
@@ -342,13 +323,11 @@ export default async function ScanDetailPage({ params }: { params: { id: string 
         </div>
       )}
 
-      <div className="pt-2">
+      {/* ── Footer CTA ── */}
+      <div className="pt-2 pb-4">
         <Link
           href="/app/scan"
-          className={cn(
-            buttonVariants(),
-            "bg-[#10B981] hover:bg-[#059669] text-[#0A0E17] font-semibold"
-          )}
+          className="inline-flex items-center gap-2 bg-[#10B981] hover:bg-[#059669] text-[#0A0E17] font-semibold rounded-lg px-5 py-2.5 text-sm transition-colors"
         >
           Run another scan
         </Link>

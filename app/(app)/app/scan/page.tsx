@@ -19,6 +19,16 @@ interface StepState {
   id: string;
   label: string;
   status: "pending" | "running" | "done" | "error";
+  visible: boolean;
+}
+
+const COMMERCE_CATS = ["Insurance", "Travel", "Finance", "E-commerce"];
+
+function getDomain(rawUrl: string): string {
+  try {
+    const u = rawUrl.includes("://") ? rawUrl : `https://${rawUrl}`;
+    return new URL(u).hostname.replace(/^www\./, "");
+  } catch { return rawUrl; }
 }
 
 interface PromptAnalysis {
@@ -295,24 +305,28 @@ function StepCircle({ status }: { status: StepState["status"] }) {
 // ── Progress view ─────────────────────────────────────────────────────────────
 
 function ProgressView({ steps, brand }: { steps: StepState[]; brand: string }) {
+  const visibleSteps = steps.filter((s) => s.visible);
   return (
-    <div className="p-8 max-w-2xl mx-auto space-y-6">
+    <div className="p-6 md:p-8 max-w-2xl mx-auto space-y-6">
       <div className="space-y-1">
         <h1 className="text-2xl font-bold text-white">Scanning {brand}…</h1>
         <p className="text-gray-400 text-sm">Querying AI models and calculating your ShowsUp Score.</p>
       </div>
       <Card className="bg-[#111827] border-white/10">
-        <CardContent className="pt-6 space-y-4">
-          {steps.map((step) => (
-            <div key={step.id} className="flex items-center gap-3">
+        <CardContent className="pt-6 pb-6 space-y-4 min-h-[120px]">
+          {visibleSteps.map((step) => (
+            <div
+              key={step.id}
+              className="flex items-center gap-3"
+              style={{ animation: "fadeInStep 0.3s ease-out" }}
+            >
               <StepCircle status={step.status} />
               <span
                 className={
-                  step.status === "done"
-                    ? "text-sm text-gray-300"
-                    : step.status === "running"
-                    ? "text-sm text-white font-medium"
-                    : "text-sm text-gray-600"
+                  step.status === "done"    ? "text-sm text-gray-400" :
+                  step.status === "running" ? "text-sm text-white font-medium" :
+                  step.status === "error"   ? "text-sm text-[#EF4444]" :
+                  "text-sm text-gray-600"
                 }
               >
                 {step.label}
@@ -400,7 +414,7 @@ function ScanPageInner() {
 
   function updateStep(id: string, status: StepState["status"]) {
     stepsRef.current = stepsRef.current.map((s) =>
-      s.id === id ? { ...s, status } : s
+      s.id === id ? { ...s, status, visible: true } : s
     );
     setSteps([...stepsRef.current]);
   }
@@ -416,34 +430,50 @@ function ScanPageInner() {
     setError(null);
     setScanning(true);
 
-    const initialSteps: StepState[] = [
-      { id: "fetch", label: "Fetching website data…", status: "pending" },
-      { id: "identify", label: `Identifying ${brand} in ${category}…`, status: "pending" },
-      { id: "queries", label: "Generating targeted queries…", status: "pending" },
-      { id: "chatgpt", label: "Querying ChatGPT…", status: "pending" },
-      { id: "claude", label: "Querying Claude…", status: "pending" },
-      { id: "analyze", label: "Analyzing responses…", status: "pending" },
-      { id: "score", label: "Calculating ShowsUp Score…", status: "pending" },
+    const promptCount = 6 + (COMMERCE_CATS.includes(category) ? 2 : 0);
+    const compText = competitors.length > 0
+      ? competitors.slice(0, 3).join(", ") + (competitors.length > 3 ? ` +${competitors.length - 3} more` : "")
+      : null;
+
+    type S = StepState;
+    const initialSteps: S[] = [
+      { id: "fetch",        label: `Analyzing ${getDomain(url)}…`,                 status: "pending", visible: false },
+      { id: "brand",        label: `Brand detected: ${brand} in ${category}`,       status: "pending", visible: false },
+      ...(compText ? [{ id: "competitors", label: `Competitors: ${compText}`, status: "pending" as const, visible: false }] : []),
+      { id: "queries",      label: `Generating ${promptCount} targeted queries…`,   status: "pending", visible: false },
+      ...(models.chatgpt ? [{ id: "chatgpt", label: "Scanning ChatGPT…", status: "pending" as const, visible: false }] : []),
+      ...(models.claude  ? [{ id: "claude",  label: "Scanning Claude…",  status: "pending" as const, visible: false }] : []),
+      { id: "analyze",      label: "Analyzing responses with AI…",                  status: "pending", visible: false },
+      { id: "score",        label: "Calculating ShowsUp Score…",                    status: "pending", visible: false },
     ];
     stepsRef.current = initialSteps;
     setSteps([...initialSteps]);
 
-    // Simulated early steps
+    // Step 1: fetch
     updateStep("fetch", "running");
-    await delay(800);
+    await delay(700);
     updateStep("fetch", "done");
 
-    updateStep("identify", "running");
-    await delay(600);
-    updateStep("identify", "done");
+    // Step 2: brand
+    updateStep("brand", "running");
+    await delay(400);
+    updateStep("brand", "done");
 
+    // Step 3: competitors
+    if (compText) {
+      updateStep("competitors", "running");
+      await delay(350);
+      updateStep("competitors", "done");
+    }
+
+    // Step 4: queries
     updateStep("queries", "running");
-    await delay(600);
+    await delay(450);
     updateStep("queries", "done");
 
-    // Start AI query steps simultaneously
-    updateStep("chatgpt", "running");
-    updateStep("claude", "running");
+    // Start AI query steps
+    if (models.chatgpt) updateStep("chatgpt", "running");
+    if (models.claude)  updateStep("claude", "running");
 
     try {
       const res = await fetch("/api/scan", {
@@ -468,15 +498,15 @@ function ScanPageInner() {
         return;
       }
 
-      updateStep("chatgpt", "done");
-      updateStep("claude", "done");
+      if (models.chatgpt) updateStep("chatgpt", "done");
+      if (models.claude)  updateStep("claude", "done");
 
       updateStep("analyze", "running");
-      await delay(500);
+      await delay(600);
       updateStep("analyze", "done");
 
       updateStep("score", "running");
-      await delay(500);
+      await delay(450);
       updateStep("score", "done");
 
       toast.success(`Scan complete! ShowsUp Score: ${data.overall_score}/100`);
@@ -489,8 +519,8 @@ function ScanPageInner() {
         setScanning(false);
       }
     } catch {
-      updateStep("chatgpt", "error");
-      updateStep("claude", "error");
+      if (models.chatgpt) updateStep("chatgpt", "error");
+      if (models.claude)  updateStep("claude", "error");
       setError("Network error. Check your connection and try again.");
       setScanning(false);
     }
