@@ -491,27 +491,34 @@ function Page1({
 // ── Page 2: Visibility Breakdown ──────────────────────────────────────────────
 
 function Page2({
-  categoryScores, date,
-}: { categoryScores: Record<string, number>; date: string }) {
-  const cats = CATEGORY_ORDER.filter((c) => (categoryScores[c] ?? 0) > 0 || true); // show all
+  categoryScores, overallScore, date,
+}: { categoryScores?: Record<string, number>; overallScore: number; date: string }) {
+  // Use real scores when available; fall back to overall score as proxy
+  const hasReal = !!(categoryScores && Object.values(categoryScores).some((v) => v > 0));
+  const scores  = hasReal ? categoryScores! : Object.fromEntries(CATEGORY_ORDER.map((c) => [c, overallScore]));
+
   return (
     <Page size="A4" style={S.page}>
       <HeaderStrip />
       <LogoRow subtitle="Visibility Breakdown" />
       <Text style={S.sectionTitle}>Visibility Breakdown</Text>
       <Text style={{ fontSize: 10, color: MIDGRAY, marginBottom: 20, lineHeight: 1.5 }}>
-        How your brand performs across different types of AI queries. Each score reflects the weighted combination of mention rate, position, recommendations, and sentiment.
+        {hasReal
+          ? "How your brand performs across different types of AI queries. Each score reflects the weighted combination of mention rate, position, recommendations, and sentiment."
+          : "Detailed per-category scores are available on new scans. The chart below shows your overall AI visibility score across all query types."}
       </Text>
-      <View style={{ gap: 8 }}>
-        {cats.map((cat) => {
-          const s = categoryScores[cat] ?? 0;
-          return (
-            <View key={cat} style={{ marginBottom: 14 }}>
-              <ScoreBar label={CATEGORY_LABELS[cat] ?? cat} score={s} />
-            </View>
-          );
-        })}
+      <View>
+        {CATEGORY_ORDER.map((cat) => (
+          <View key={cat} style={{ marginBottom: 14 }}>
+            <ScoreBar label={CATEGORY_LABELS[cat] ?? cat} score={scores[cat] ?? 0} />
+          </View>
+        ))}
       </View>
+      {!hasReal && (
+        <Text style={{ fontSize: 9, color: MIDGRAY, marginTop: 8, fontFamily: "Helvetica-Oblique" }}>
+          * Run a new scan to see per-category breakdown scores.
+        </Text>
+      )}
       <Footer date={date} />
     </Page>
   );
@@ -611,12 +618,35 @@ function Page3({
 
 // ── Page 4: Recommendations ───────────────────────────────────────────────────
 
+function scoreBasedFallbacks(score: number): Recommendation[] {
+  const recs: Recommendation[] = [];
+  if (score < 30) {
+    recs.push({ title: "Establish AI-friendly content", description: "Create clear, authoritative content about your brand that AI models can reference. Focus on your unique value proposition and ensure your website clearly explains what you do.", priority: "High" });
+    recs.push({ title: "Build brand mentions across the web", description: "Get cited in industry publications, review sites, and comparison articles to increase your brand's presence in AI training data and retrieval.", priority: "High" });
+  } else if (score < 60) {
+    recs.push({ title: "Strengthen competitive positioning", description: "Publish comparison content between your brand and key competitors to appear in alternative-seeking queries across AI models.", priority: "High" });
+    recs.push({ title: "Improve category discovery", description: "Ensure your brand appears on major review and listing sites for your category — G2, Capterra, Trustpilot, and similar platforms that AI models frequently cite.", priority: "High" });
+  } else {
+    recs.push({ title: "Maintain and expand your AI presence", description: "Your brand has good AI visibility. Continue creating high-quality content and getting cited in authoritative sources to hold and grow your position.", priority: "Medium" });
+  }
+  recs.push({ title: "Optimise for category keywords", description: "Ensure your website prominently features relevant industry terminology so AI models consistently associate your brand with the right category.", priority: "Medium" });
+  recs.push({ title: "Gather and publish customer reviews", description: "AI models frequently cite review content. Actively collect testimonials and ensure they appear on authoritative platforms like G2, Capterra, and Trustpilot.", priority: "Medium" });
+  recs.push({ title: "Monitor your AI visibility regularly", description: "Run weekly scans to track progress, identify which query types are improving, and measure the impact of your content efforts over time.", priority: "Low" });
+  return recs.slice(0, 5);
+}
+
 function buildAutoRecs(
   categoryScores: Record<string, number> | undefined,
   existingRecs: Recommendation[],
+  score: number,
   topCompetitor?: string
 ): Recommendation[] {
   const recs = [...existingRecs];
+
+  // When there's nothing at all, generate from overall score
+  if (recs.length === 0 && !categoryScores) {
+    return scoreBasedFallbacks(score);
+  }
 
   if (!categoryScores) return recs.slice(0, 5);
 
@@ -653,15 +683,16 @@ function buildAutoRecs(
 }
 
 function Page4({
-  recommendations, categoryScores, competitorsData, date,
+  recommendations, categoryScores, competitorsData, date, score,
 }: {
   recommendations: Recommendation[];
   categoryScores?: Record<string, number>;
   competitorsData?: PDFCompetitorsData;
   date: string;
+  score: number;
 }) {
   const topCompetitor = competitorsData?.competitors?.[0]?.name;
-  const finalRecs = buildAutoRecs(categoryScores, recommendations, topCompetitor);
+  const finalRecs = buildAutoRecs(categoryScores, recommendations, score, topCompetitor);
 
   return (
     <Page size="A4" style={S.page}>
@@ -716,7 +747,6 @@ export function ShowsUpPDF(props: ShowsUpPDFProps) {
   } = props;
 
   const hasCompetitors = !!(competitorsData && competitorsData.competitors.length > 0);
-  const hasCategoryScores = !!(categoryScores && Object.values(categoryScores).some((v) => v > 0));
 
   return (
     <Document
@@ -734,9 +764,7 @@ export function ShowsUpPDF(props: ShowsUpPDFProps) {
         modelResults={modelResults}
       />
 
-      {hasCategoryScores && (
-        <Page2 categoryScores={categoryScores!} date={date} />
-      )}
+      <Page2 categoryScores={categoryScores} overallScore={score} date={date} />
 
       {hasCompetitors && (
         <Page3 competitorsData={competitorsData!} brand={brand} date={date} />
@@ -747,6 +775,7 @@ export function ShowsUpPDF(props: ShowsUpPDFProps) {
         categoryScores={categoryScores}
         competitorsData={competitorsData}
         date={date}
+        score={score}
       />
     </Document>
   );
