@@ -47,8 +47,8 @@ export function Sidebar({ user }: SidebarProps) {
   return (
     <aside className="flex flex-col w-60 min-h-screen bg-[#111827] border-r border-white/[0.08] px-3 py-4">
       {/* Logo */}
-      <Link href="/app/dashboard" className="flex items-center gap-2.5 px-2 mb-8">
-        <span className="w-2.5 h-2.5 rounded-full bg-[#10B981] flex-shrink-0" />
+      <Link href="/app/dashboard" className="flex items-center gap-2 px-2 mb-8">
+        <BarChart3 className="w-5 h-5 text-[#10B981] flex-shrink-0" />
         <span className="text-base font-semibold text-white tracking-tight">ShowsUp</span>
       </Link>
 
