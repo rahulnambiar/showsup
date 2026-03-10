@@ -7,11 +7,13 @@ import { cn } from "@/lib/utils";
 type Scan = {
   id: string;
   brand_name: string;
-  website: string | null;
-  url: string | null;
-  category: string | null;
+  website?: string | null;
+  url?: string | null;
+  category?: string | null;
   overall_score: number | null;
   created_at: string;
+  // Allow any extra columns from select("*")
+  [key: string]: unknown;
 };
 
 type SortKey = "recent" | "highest" | "lowest";

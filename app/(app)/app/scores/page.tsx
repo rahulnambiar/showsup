@@ -10,7 +10,7 @@ export default async function ScoresPage() {
 
   const { data: scans } = await supabase
     .from("scans")
-    .select("id, brand_name, website, url, category, overall_score, created_at")
+    .select("*")
     .order("created_at", { ascending: false })
     .limit(20);
 

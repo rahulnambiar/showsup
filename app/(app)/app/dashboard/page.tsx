@@ -48,7 +48,7 @@ export default async function DashboardPage() {
   const [{ data: allScans }, { data: platformData }] = await Promise.all([
     supabase
       .from("scans")
-      .select("id, brand_name, website, url, overall_score, created_at")
+      .select("*")
       .order("created_at", { ascending: false }),
     supabase
       .from("scan_results")
