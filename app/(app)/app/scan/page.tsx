@@ -10,6 +10,8 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { CategoryBreakdown } from "@/components/category-breakdown";
 import { CompetitiveBenchmark, type CompetitorsData } from "@/components/competitive-benchmark";
+import { PDFDownload } from "@/components/pdf-download";
+import { ShareButton } from "@/components/share-button";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -93,17 +95,31 @@ function InlineResultsView({ data, onReset }: { data: ScanResult; onReset: () =>
 
   return (
     <div className="p-8 max-w-3xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-bold text-white">{data.brand}</h1>
-          <p className="text-gray-500 text-xs">{data.category}</p>
-        </div>
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <button
           onClick={onReset}
-          className="text-gray-500 hover:text-white text-sm transition-colors"
+          className="text-gray-500 hover:text-white text-sm transition-colors flex items-center gap-1"
         >
           ← New scan
         </button>
+        <div className="flex items-center gap-2">
+          <PDFDownload
+            brand={data.brand}
+            score={data.overall_score}
+            date={new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
+            category={data.category}
+            modelResults={data.results.map((mr) => ({ model: mr.model, label: mr.label, score: mr.score, mentioned: mr.mentioned }))}
+            recommendations={data.recommendations as Array<{ title: string; description: string; priority: "High" | "Medium" | "Low" }>}
+            categoryScores={data.category_scores}
+            competitorsData={data.competitors_data}
+          />
+          <ShareButton />
+        </div>
+      </div>
+
+      <div className="space-y-1">
+        <h1 className="text-2xl font-bold text-white">{data.brand}</h1>
+        <p className="text-gray-500 text-xs">{data.category}</p>
       </div>
 
       {/* Overall score */}

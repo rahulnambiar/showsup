@@ -203,8 +203,11 @@ export default async function ScanDetailPage({ params }: { params: { id: string 
             score={score}
             date={dateStr}
             category={scan.category ?? undefined}
+            url={scan.url ?? scan.website ?? undefined}
             modelResults={modelResultsSummary}
             recommendations={recommendations}
+            categoryScores={scan.category_scores as Record<string, number> | undefined}
+            competitorsData={scan.competitors_data as CompetitorsData | undefined}
           />
           <ShareButton />
         </div>

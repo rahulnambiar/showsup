@@ -1,5 +1,10 @@
 "use client";
 
+import { useState } from "react";
+import { type PDFCompetitorsData } from "./pdf-document";
+
+// ── Types ──────────────────────────────────────────────────────────────────────
+
 interface Recommendation {
   title: string;
   description: string;
@@ -13,152 +18,64 @@ interface ModelResult {
   mentioned: boolean;
 }
 
-interface PDFDownloadProps {
+export interface PDFDownloadProps {
   brand: string;
   score: number;
   date: string;
   category?: string;
+  url?: string;
   modelResults: ModelResult[];
   recommendations: Recommendation[];
+  categoryScores?: Record<string, number>;
+  competitorsData?: PDFCompetitorsData;
 }
 
-function scoreVerdict(score: number): string {
-  if (score >= 71) return "Excellent visibility — AI consistently recommends your brand";
-  if (score >= 51) return "Good presence — appearing in most AI responses";
-  if (score >= 31) return "Partial presence — room to grow";
-  return "Low visibility — action needed";
-}
+// ── Component ──────────────────────────────────────────────────────────────────
 
-export function PDFDownload({ brand, score, date, category, modelResults, recommendations }: PDFDownloadProps) {
+export function PDFDownload(props: PDFDownloadProps) {
+  const [loading, setLoading] = useState(false);
+
   async function handleDownload() {
-    const jsPDF = (await import("jspdf")).default;
-    const doc = new jsPDF({ unit: "pt", format: "a4" });
+    if (loading) return;
+    setLoading(true);
+    try {
+      const [{ pdf }, { ShowsUpPDF }] = await Promise.all([
+        import("@react-pdf/renderer"),
+        import("./pdf-document"),
+      ]);
 
-    const pageW = doc.internal.pageSize.getWidth();
-    const margin = 48;
-    let y = 60;
-
-    // Header bar
-    doc.setFillColor(16, 185, 129); // #10B981
-    doc.rect(0, 0, pageW, 8, "F");
-
-    // Title
-    doc.setFontSize(22);
-    doc.setTextColor(10, 14, 23);
-    doc.setFont("helvetica", "bold");
-    doc.text("ShowsUp AI Visibility Report", margin, y);
-    y += 32;
-
-    // Meta
-    doc.setFontSize(11);
-    doc.setTextColor(75, 85, 99);
-    doc.setFont("helvetica", "normal");
-    doc.text(`Brand: ${brand}`, margin, y);
-    y += 18;
-    if (category) {
-      doc.text(`Category: ${category}`, margin, y);
-      y += 18;
+      const blob = await pdf(ShowsUpPDF(props)).toBlob();
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement("a");
+      const slug = props.brand.toLowerCase().replace(/\s+/g, "-");
+      const dateSlug = new Date().toISOString().slice(0, 10);
+      a.href     = url;
+      a.download = `ShowsUp-Report-${slug}-${dateSlug}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("PDF generation failed", err);
+    } finally {
+      setLoading(false);
     }
-    doc.text(`Date: ${date}`, margin, y);
-    y += 18;
-    doc.text(`Overall Score: ${score}/100`, margin, y);
-    y += 12;
-
-    // Verdict
-    doc.setFontSize(10);
-    doc.setTextColor(16, 185, 129);
-    doc.text(scoreVerdict(score), margin, y);
-    y += 30;
-
-    // Divider
-    doc.setDrawColor(229, 231, 235);
-    doc.line(margin, y, pageW - margin, y);
-    y += 24;
-
-    // Platform scores
-    doc.setFontSize(14);
-    doc.setTextColor(10, 14, 23);
-    doc.setFont("helvetica", "bold");
-    doc.text("Platform Scores", margin, y);
-    y += 20;
-
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
-
-    modelResults.forEach((mr) => {
-      doc.setTextColor(55, 65, 81);
-      doc.text(`${mr.label}:`, margin, y);
-      doc.setTextColor(mr.score >= 71 ? 16 : mr.score >= 51 ? 20 : mr.score >= 31 ? 245 : 239,
-                       mr.score >= 71 ? 185 : mr.score >= 51 ? 184 : mr.score >= 31 ? 158 : 68,
-                       mr.score >= 71 ? 129 : mr.score >= 51 ? 129 : mr.score >= 31 ? 11 : 68);
-      doc.text(`${mr.score}/100${mr.mentioned ? " (mentioned)" : " (not found)"}`, margin + 80, y);
-      y += 18;
-    });
-
-    y += 16;
-
-    // Recommendations
-    if (recommendations.length > 0) {
-      doc.setDrawColor(229, 231, 235);
-      doc.line(margin, y, pageW - margin, y);
-      y += 24;
-
-      doc.setFontSize(14);
-      doc.setTextColor(10, 14, 23);
-      doc.setFont("helvetica", "bold");
-      doc.text("Top Recommendations", margin, y);
-      y += 20;
-
-      const topRecs = recommendations.slice(0, 3);
-      topRecs.forEach((rec, i) => {
-        // Priority badge colors
-        const priorityColor: Record<string, [number, number, number]> = {
-          High: [239, 68, 68],
-          Medium: [245, 158, 11],
-          Low: [107, 114, 128],
-        };
-        const [r, g, b] = priorityColor[rec.priority] ?? [107, 114, 128];
-
-        doc.setFontSize(10);
-        doc.setTextColor(r, g, b);
-        doc.setFont("helvetica", "bold");
-        doc.text(`[${rec.priority}]`, margin, y);
-
-        doc.setTextColor(10, 14, 23);
-        doc.text(`${i + 1}. ${rec.title}`, margin + 45, y);
-        y += 16;
-
-        doc.setFont("helvetica", "normal");
-        doc.setTextColor(75, 85, 99);
-        doc.setFontSize(9);
-
-        const lines = doc.splitTextToSize(rec.description, pageW - margin * 2 - 45);
-        doc.text(lines, margin + 45, y);
-        y += lines.length * 13 + 10;
-      });
-    }
-
-    // Footer
-    const pageH = doc.internal.pageSize.getHeight();
-    doc.setFillColor(16, 185, 129);
-    doc.rect(0, pageH - 6, pageW, 6, "F");
-    doc.setFontSize(8);
-    doc.setTextColor(156, 163, 175);
-    doc.setFont("helvetica", "normal");
-    doc.text("Generated by ShowsUp — showsup.co", margin, pageH - 16);
-
-    doc.save(`${brand.toLowerCase().replace(/\s+/g, "-")}-showsup-report.pdf`);
   }
 
   return (
     <button
       onClick={handleDownload}
-      className="inline-flex items-center gap-2 text-sm font-medium text-gray-400 hover:text-white border border-white/15 hover:border-white/30 rounded-lg px-3 py-2 transition-colors"
+      disabled={loading}
+      className="inline-flex items-center gap-2 text-sm font-semibold bg-[#10B981] hover:bg-[#059669] disabled:opacity-60 text-[#0A0E17] rounded-lg px-4 py-2 transition-colors"
     >
-      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-      </svg>
-      Download PDF
+      {loading ? (
+        <span className="w-4 h-4 border-2 border-[#0A0E17]/30 border-t-[#0A0E17] rounded-full animate-spin" />
+      ) : (
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+        </svg>
+      )}
+      {loading ? "Generating…" : "Download PDF"}
     </button>
   );
 }
