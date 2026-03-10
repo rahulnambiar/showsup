@@ -1,18 +1,26 @@
-import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import type { Metadata } from "next";
+import { createClient } from "@/lib/supabase/server";
+import { TrendsChart } from "./trends-chart";
 
-export default function TrendsPage() {
+export const metadata: Metadata = { title: "Trends — ShowsUp" };
+
+export default async function TrendsPage() {
+  const supabase = await createClient();
+
+  const { data: scans } = await supabase
+    .from("scans")
+    .select("id, brand_name, overall_score, created_at")
+    .order("created_at", { ascending: true });
+
   return (
-    <div className="p-8 max-w-6xl mx-auto space-y-6">
-      <div className="space-y-1">
+    <div className="p-6 md:p-8 max-w-5xl mx-auto space-y-6">
+      <div>
         <h1 className="text-2xl font-bold text-white">Trends</h1>
-        <p className="text-gray-400 text-sm">Track how your AI visibility changes over time.</p>
+        <p className="text-gray-500 text-sm mt-1">
+          Track how your AI visibility changes over time.
+        </p>
       </div>
-      <Card className="bg-[#111827] border-white/10 border-dashed">
-        <CardContent className="flex flex-col items-center justify-center py-16 text-center space-y-2">
-          <CardTitle className="text-white text-base font-semibold">No trend data yet</CardTitle>
-          <p className="text-gray-500 text-sm">Run multiple scans over time to see trends.</p>
-        </CardContent>
-      </Card>
+      <TrendsChart scans={scans ?? []} />
     </div>
   );
 }

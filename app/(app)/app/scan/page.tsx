@@ -358,10 +358,19 @@ function ScanPageInner() {
   const [steps, setSteps] = useState<StepState[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [scanResult, setScanResult] = useState<ScanResult | null>(null);
+  const [modelConfig, setModelConfig] = useState<{ chatgpt: boolean; claude: boolean } | null>(null);
 
   const stepsRef = useRef<StepState[]>([]);
 
   const CATEGORIES = ["Insurance", "Travel", "Finance", "E-commerce", "SaaS", "Healthcare", "Other"];
+
+  // Fetch model config on mount
+  useEffect(() => {
+    fetch("/api/config")
+      .then((r) => r.json())
+      .then((d) => setModelConfig(d))
+      .catch(() => {/* ignore */});
+  }, []);
 
   // Pre-fill from URL param
   useEffect(() => {
@@ -666,20 +675,29 @@ function ScanPageInner() {
             {/* Models */}
             <div className="space-y-2">
               <Label className="text-gray-300">AI Models</Label>
-              <div className="flex gap-4">
-                {(["chatgpt", "claude"] as const).map((id) => (
-                  <label key={id} className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={models[id]}
-                      onChange={(e) => setModels((prev) => ({ ...prev, [id]: e.target.checked }))}
-                      className="w-4 h-4 rounded accent-[#10B981]"
-                    />
-                    <span className="text-sm text-gray-300">
-                      {id === "chatgpt" ? "ChatGPT" : "Claude"}
-                    </span>
-                  </label>
-                ))}
+              <div className="flex gap-4 flex-wrap">
+                {(["chatgpt", "claude"] as const).map((id) => {
+                  const configured = !modelConfig || modelConfig[id];
+                  return (
+                    <label key={id} className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={models[id]}
+                        onChange={(e) => setModels((prev) => ({ ...prev, [id]: e.target.checked }))}
+                        disabled={!configured}
+                        className="w-4 h-4 rounded accent-[#10B981] disabled:opacity-40"
+                      />
+                      <span className={cn("text-sm", configured ? "text-gray-300" : "text-gray-600")}>
+                        {id === "chatgpt" ? "ChatGPT" : "Claude"}
+                      </span>
+                      {!configured && (
+                        <span className="text-[10px] text-gray-600 border border-white/10 rounded px-1.5 py-0.5">
+                          Not configured
+                        </span>
+                      )}
+                    </label>
+                  );
+                })}
               </div>
             </div>
 
