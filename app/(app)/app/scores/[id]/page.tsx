@@ -129,6 +129,7 @@ function extractCompetitors(
 
 import { PlatformCard } from "./platform-card";
 import { CategoryBreakdown } from "@/components/category-breakdown";
+import { CompetitiveBenchmark, type CompetitorsData } from "@/components/competitive-benchmark";
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
@@ -273,6 +274,11 @@ export default async function ScanDetailPage({ params }: { params: { id: string 
       {/* Visibility Breakdown */}
       {scan.category_scores && (
         <CategoryBreakdown scores={scan.category_scores as Record<string, number>} />
+      )}
+
+      {/* Competitive Benchmark */}
+      {scan.competitors_data && (
+        <CompetitiveBenchmark data={scan.competitors_data as unknown as CompetitorsData} />
       )}
 
       {/* Recommendations */}

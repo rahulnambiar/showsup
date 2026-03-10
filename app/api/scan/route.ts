@@ -155,27 +155,141 @@ function calculateCategorySubScores(
   return scores;
 }
 
-// ── Competitor extraction from analyses ───────────────────────────────────────
+// ── Competitor benchmarking ───────────────────────────────────────────────────
 
-function extractCompetitorsFromAnalyses(
-  modelResults: Array<{ model: string; prompts: Array<{ analysis: AnalysisResult }> }>
-): Array<{ name: string; mentions: number; platforms: number }> {
-  const counts: Record<string, { count: number; platforms: Set<string> }> = {};
-  modelResults.forEach((mr) => {
-    mr.prompts.forEach((pr) => {
-      (pr.analysis.competitors_found ?? []).forEach((comp) => {
-        if (!comp.name || comp.name.length < 2) return;
-        if (!counts[comp.name]) counts[comp.name] = { count: 0, platforms: new Set() };
-        counts[comp.name].count++;
-        counts[comp.name].platforms.add(mr.model);
-      });
-    });
-  });
-  return Object.entries(counts)
-    .map(([name, { count, platforms }]) => ({ name, mentions: count, platforms: platforms.size }))
-    .filter((c) => c.mentions >= 1)
-    .sort((a, b) => b.mentions - a.mentions)
-    .slice(0, 5);
+export interface CompetitorProfile {
+  name: string;
+  mention_count: number;
+  total_queries: number;
+  mention_rate: number;
+  avg_position: number | null;
+  recommend_count: number;
+  sentiment: "positive" | "neutral" | "negative" | null;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface BrandProfile extends CompetitorProfile {}
+
+export interface CompetitorsData {
+  brand_profile: BrandProfile;
+  competitors: CompetitorProfile[];
+  share_of_voice: Array<{ name: string; share: number; mentions: number; isBrand: boolean }>;
+  insights: string[];
+}
+
+function buildBrandProfile(
+  brand: string,
+  allPromptResults: Array<{ analysis: AnalysisResult }>
+): BrandProfile {
+  const totalQueries = allPromptResults.length;
+  const analyses     = allPromptResults.map((p) => p.analysis);
+  const mentioned    = analyses.filter((a) => a.brand_mentioned);
+  const positions    = mentioned
+    .map((a) => a.mention_position)
+    .filter((p): p is number => p !== null && p !== undefined);
+
+  const sentimentCounts: Record<string, number> = {};
+  for (const a of mentioned) {
+    if (a.sentiment) sentimentCounts[a.sentiment] = (sentimentCounts[a.sentiment] ?? 0) + 1;
+  }
+  const topSentiment = (
+    Object.entries(sentimentCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? null
+  ) as BrandProfile["sentiment"];
+
+  return {
+    name: brand,
+    mention_count: mentioned.length,
+    total_queries: totalQueries,
+    mention_rate: Math.round((mentioned.length / Math.max(1, totalQueries)) * 100),
+    avg_position: positions.length > 0
+      ? Math.round((positions.reduce((s, p) => s + p, 0) / positions.length) * 10) / 10
+      : null,
+    recommend_count: analyses.filter((a) => a.is_recommended).length,
+    sentiment: topSentiment,
+  };
+}
+
+function buildCompetitorProfiles(
+  brand: string,
+  allPromptResults: Array<{ analysis: AnalysisResult }>
+): CompetitorProfile[] {
+  const brandLower = brand.toLowerCase();
+  const totalQueries = allPromptResults.length;
+  const profileMap = new Map<string, {
+    displayName: string;
+    positions: number[];
+    recommend_count: number;
+    mention_count: number;
+  }>();
+
+  for (const { analysis } of allPromptResults) {
+    for (const comp of (analysis.competitors_found ?? [])) {
+      if (!comp.name || comp.name.length < 2) continue;
+      const key = comp.name.toLowerCase().trim();
+      if (key.includes(brandLower) || brandLower.includes(key)) continue;
+      if (!profileMap.has(key)) profileMap.set(key, { displayName: comp.name, positions: [], recommend_count: 0, mention_count: 0 });
+      const entry = profileMap.get(key)!;
+      entry.mention_count++;
+      if (comp.position > 0) entry.positions.push(comp.position);
+      if (comp.is_recommended) entry.recommend_count++;
+    }
+  }
+
+  return Array.from(profileMap.values())
+    .map((d) => ({
+      name: d.displayName,
+      mention_count: d.mention_count,
+      total_queries: totalQueries,
+      mention_rate: Math.round((d.mention_count / Math.max(1, totalQueries)) * 100),
+      avg_position: d.positions.length > 0
+        ? Math.round((d.positions.reduce((s, p) => s + p, 0) / d.positions.length) * 10) / 10
+        : null,
+      recommend_count: d.recommend_count,
+      sentiment: null as null,
+    }))
+    .filter((c) => c.mention_count >= 1)
+    .sort((a, b) => b.mention_count - a.mention_count)
+    .slice(0, 4);
+}
+
+function calculateShareOfVoice(
+  brandProfile: BrandProfile,
+  competitors: CompetitorProfile[]
+): CompetitorsData["share_of_voice"] {
+  const all = [brandProfile, ...competitors.slice(0, 4)];
+  const total = all.reduce((s, e) => s + e.mention_count, 0);
+  if (total === 0) return [];
+  return all.map((e, i) => ({
+    name: e.name,
+    share: Math.round((e.mention_count / total) * 100),
+    mentions: e.mention_count,
+    isBrand: i === 0,
+  }));
+}
+
+async function generateCompetitiveInsights(
+  brand: string,
+  brandProfile: BrandProfile,
+  competitors: CompetitorProfile[]
+): Promise<string[]> {
+  if (competitors.length === 0) return [];
+  const lines = [
+    `Brand: ${brand} — mentioned ${brandProfile.mention_rate}% of queries, avg position ${brandProfile.avg_position ?? "N/A"}, recommended ${brandProfile.recommend_count} times`,
+    ...competitors.slice(0, 4).map(
+      (c) => `Competitor ${c.name}: mentioned ${c.mention_rate}% of queries, avg position ${c.avg_position ?? "N/A"}, recommended ${c.recommend_count} times`
+    ),
+  ].join("\n");
+
+  const prompt = `Based on this AI visibility comparison data:\n${lines}\nGenerate exactly 3 brief competitive insights (1 sentence each) about how the brand compares to competitors in AI visibility. Be specific with numbers. Return as JSON array of strings.`;
+  try {
+    const text  = await callAnthropic(prompt, 400);
+    const match = text.match(/\[[\s\S]*\]/);
+    if (!match) return [];
+    const parsed = JSON.parse(match[0]) as string[];
+    return Array.isArray(parsed) ? parsed.filter((s) => typeof s === "string").slice(0, 3) : [];
+  } catch {
+    return [];
+  }
 }
 
 // ── Recommendations ───────────────────────────────────────────────────────────
@@ -283,9 +397,23 @@ export async function POST(request: Request) {
     );
     const categoryScores = calculateCategorySubScores(allPromptResults);
 
-    // Competitors + recommendations in parallel
-    const competitors = extractCompetitorsFromAnalyses(modelResults);
-    const recommendations = await generateRecommendations(brand, category, finalScore, modelResults);
+    // Competitor profiles (pure JS — zero extra API calls)
+    const brandProfile  = buildBrandProfile(brand, allPromptResults);
+    const competitors   = buildCompetitorProfiles(brand, allPromptResults);
+    const shareOfVoice  = calculateShareOfVoice(brandProfile, competitors);
+
+    // Recommendations + competitive insights in parallel
+    const [recommendations, competitiveInsights] = await Promise.all([
+      generateRecommendations(brand, category, finalScore, modelResults),
+      generateCompetitiveInsights(brand, brandProfile, competitors),
+    ]);
+
+    const competitorsData: CompetitorsData = {
+      brand_profile: brandProfile,
+      competitors,
+      share_of_voice: shareOfVoice,
+      insights: competitiveInsights,
+    };
 
     // Persist to Supabase
     let scanId: string | null = null;
@@ -294,7 +422,7 @@ export async function POST(request: Request) {
 
       const { data: fullScan, error: fullError } = await supabase
         .from("scans")
-        .insert({ user_id: user.id, brand_name: brand, website: url || null, url: url || null, category, status: "completed", overall_score: finalScore, recommendations, category_scores: categoryScores })
+        .insert({ user_id: user.id, brand_name: brand, website: url || null, url: url || null, category, status: "completed", overall_score: finalScore, recommendations, category_scores: categoryScores, competitors_data: competitorsData })
         .select("id").single();
 
       if (!fullError && fullScan?.id) {
@@ -334,7 +462,7 @@ export async function POST(request: Request) {
       // DB not set up — results still returned to client
     }
 
-    return NextResponse.json({ scan_id: scanId, brand, category, url, overall_score: finalScore, category_scores: categoryScores, results: modelResults, recommendations, competitors });
+    return NextResponse.json({ scan_id: scanId, brand, category, url, overall_score: finalScore, category_scores: categoryScores, results: modelResults, recommendations, competitors_data: competitorsData });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Scan failed";
     return NextResponse.json({ error: message }, { status: 500 });

@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { CategoryBreakdown } from "@/components/category-breakdown";
+import { CompetitiveBenchmark, type CompetitorsData } from "@/components/competitive-benchmark";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -49,6 +50,7 @@ interface ScanResult {
   results: ModelResult[];
   recommendations: Array<{ title: string; description: string; priority: string }>;
   category_scores?: Record<string, number>;
+  competitors_data?: CompetitorsData;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -205,6 +207,9 @@ function InlineResultsView({ data, onReset }: { data: ScanResult; onReset: () =>
 
       {/* Visibility Breakdown */}
       {data.category_scores && <CategoryBreakdown scores={data.category_scores} />}
+
+      {/* Competitive Benchmark */}
+      {data.competitors_data && <CompetitiveBenchmark data={data.competitors_data} />}
 
       {/* Recommendations */}
       {data.recommendations.length > 0 && (
