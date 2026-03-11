@@ -1,8 +1,17 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createAdmin } from "@supabase/supabase-js";
 import { getBalance, deductTokens } from "@/lib/tokens";
 import { TOKEN_COSTS } from "@/lib/token-costs";
 import { generateQueries, type QueryConfig } from "@/lib/query-generator";
+
+function getAdmin() {
+  return createAdmin(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { persistSession: false, autoRefreshToken: false } }
+  );
+}
 
 // ── Model callers ─────────────────────────────────────────────────────────────
 
@@ -490,38 +499,46 @@ export async function POST(request: Request) {
           );
         }
 
-        // ── Normalised audit tables ───────────────────────────────────────────
+        // ── Normalised audit tables (service role bypasses RLS) ──────────────
+        const admin = getAdmin();
         try {
           // 1. audit_queries — one row per unique query
+          // Schema: id, audit_id (=scan), query_text, query_type, is_commerce, created_at
           const auditQueryRows = queries.map((q) => ({
             id:          q.auditId,
-            scan_id:     scanId,
+            audit_id:    scanId,
             query_text:  q.text,
             query_type:  q.scoreCategory,
             is_commerce: q.isCommerce,
           }));
-          await supabase.from("audit_queries").insert(auditQueryRows);
+          const { error: aqErr } = await admin.from("audit_queries").insert(auditQueryRows);
+          if (aqErr) console.error("[audit_queries] insert error:", aqErr.message, aqErr.details);
 
           // 2. audit_results — one row per model × query
-          const auditResultRows = modelResults.flatMap((mr) =>
-            mr.prompts.map((pr) => ({
-              scan_id:          scanId,
-              query_id:         pr.auditQueryId,
-              provider:         mr.model === "chatgpt" ? "openai" : "anthropic",
-              model:            mr.model,
-              response_text:    pr.response,
-              brand_mentioned:  pr.analysis.brand_mentioned,
-              mention_position: pr.analysis.mention_position,
-              is_recommended:   pr.analysis.is_recommended,
-              sentiment:        pr.analysis.sentiment,
-              sentiment_reason: pr.analysis.sentiment_reason ?? null,
-              key_context:      pr.analysis.key_context ?? null,
-              score:            pr.score,
-            }))
-          );
-          await supabase.from("audit_results").insert(auditResultRows);
-        } catch {
-          // Audit tables may not exist or have different schema — non-fatal
+          // Schema: id, audit_id (=scan), audit_query_id, provider, model, model_tier,
+          //         response_text, brand_mentioned, mention_position, sentiment,
+          //         is_recommended, competitors_mentioned, created_at
+          const auditResultRows = modelResults.flatMap((mr) => {
+            const provider   = mr.model === "chatgpt" ? "openai" : "anthropic";
+            const model_tier = mr.model === "chatgpt" ? "gpt-4o-mini" : "claude-haiku-4-5";
+            return mr.prompts.map((pr) => ({
+              audit_id:             scanId,
+              audit_query_id:       pr.auditQueryId,
+              provider,
+              model:                mr.model,
+              model_tier,
+              response_text:        pr.response,
+              brand_mentioned:      pr.analysis.brand_mentioned,
+              mention_position:     pr.analysis.mention_position ?? null,
+              sentiment:            pr.analysis.sentiment ?? null,
+              is_recommended:       pr.analysis.is_recommended,
+              competitors_mentioned: pr.analysis.competitors_found?.map((c) => c.name) ?? [],
+            }));
+          });
+          const { error: arErr } = await admin.from("audit_results").insert(auditResultRows);
+          if (arErr) console.error("[audit_results] insert error:", arErr.message, arErr.details);
+        } catch (e) {
+          console.error("[audit tables] unexpected error:", e);
         }
       }
     } catch {
