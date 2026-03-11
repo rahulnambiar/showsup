@@ -327,7 +327,7 @@ export default function ReportBuilderPage() {
       window.dispatchEvent(new Event("tokenBalanceChanged"));
 
       await delay(300);
-      router.push(data.scan_id ? `/app/scores/${data.scan_id}` : "/app/scores");
+      router.push(data.scan_id ? `/app/report/${data.scan_id}` : "/app/scores");
     } catch {
       updateStep("chatgpt", "error");
       updateStep("claude", "error");
