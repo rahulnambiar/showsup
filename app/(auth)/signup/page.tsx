@@ -15,35 +15,65 @@ export default function SignupPage() {
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
   const [oauthLoading, setOauthLoading] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [resendMessage, setResendMessage] = useState<string | null>(null);
 
   async function handleEmailSignup(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setLoading(true);
 
-    const supabase = createClient();
     const pendingUrl = localStorage.getItem("pendingUrl");
     const nextPath = pendingUrl
       ? `/app/scan?url=${encodeURIComponent(pendingUrl)}`
       : "/app/dashboard";
 
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?next=${encodeURIComponent(nextPath)}`,
-      },
+    const res = await fetch("/api/auth/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password, next: nextPath }),
     });
 
-    if (error) {
-      setError(error.message);
+    const data = await res.json();
+
+    if (!res.ok) {
+      if (data.alreadyConfirmed) {
+        setError("This account is already confirmed — please sign in.");
+      } else {
+        setError(data.error ?? "Signup failed. Please try again.");
+      }
       setLoading(false);
       return;
     }
 
-    // Keep pendingUrl in localStorage — user will need to log in after confirming email
     setSuccess(true);
     setLoading(false);
+  }
+
+  async function handleResend() {
+    setResending(true);
+    setResendMessage(null);
+    setError(null);
+
+    const pendingUrl = localStorage.getItem("pendingUrl");
+    const nextPath = pendingUrl
+      ? `/app/scan?url=${encodeURIComponent(pendingUrl)}`
+      : "/app/dashboard";
+
+    const res = await fetch("/api/auth/resend-confirmation", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, next: nextPath }),
+    });
+
+    const data = await res.json();
+    setResending(false);
+
+    if (!res.ok) {
+      setResendMessage(data.error ?? "Failed to resend. Please try again.");
+    } else {
+      setResendMessage("New confirmation email sent!");
+    }
   }
 
   async function handleGoogleSignup() {
@@ -75,19 +105,50 @@ export default function SignupPage() {
       <Card className="w-full max-w-md bg-[#111827] border-white/10 text-center">
         <CardContent className="pt-10 pb-8 space-y-4">
           <div className="w-12 h-12 rounded-full bg-[#10B981]/20 flex items-center justify-center mx-auto">
-            <span className="text-[#10B981] text-2xl">✓</span>
+            <svg className="w-6 h-6 text-[#10B981]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
           </div>
           <h2 className="text-xl font-bold text-white">Check your email</h2>
           <p className="text-gray-400 text-sm">
             We sent a confirmation link to <span className="text-white font-medium">{email}</span>.
             Click it to activate your account.
           </p>
-          <p className="text-xs text-[#10B981] bg-[#10B981]/10 border border-[#10B981]/20 rounded-lg px-3 py-2 mt-1">
-            🎉 You&apos;ll receive <strong>50 free tokens</strong> — enough for your first scan!
+          <p className="text-xs text-[#10B981] bg-[#10B981]/10 border border-[#10B981]/20 rounded-lg px-3 py-2">
+            🎉 You&apos;ll get <strong>50 free tokens</strong> — enough for your first scan!
           </p>
-          <Link href="/login" className="block text-sm text-[#10B981] hover:underline mt-4">
-            Back to sign in
-          </Link>
+
+          {resendMessage && (
+            <p className={`text-xs px-3 py-2 rounded-lg border ${
+              resendMessage.includes("sent")
+                ? "text-[#10B981] bg-[#10B981]/10 border-[#10B981]/20"
+                : "text-[#EF4444] bg-[#EF4444]/10 border-[#EF4444]/20"
+            }`}>
+              {resendMessage}
+            </p>
+          )}
+
+          <div className="pt-2 space-y-2">
+            <button
+              onClick={handleResend}
+              disabled={resending}
+              className="text-sm text-gray-400 hover:text-white transition-colors disabled:opacity-50"
+            >
+              {resending ? (
+                <span className="flex items-center justify-center gap-2">
+                  <span className="w-3 h-3 border-2 border-gray-400 border-t-white rounded-full animate-spin" />
+                  Sending…
+                </span>
+              ) : (
+                "Didn't get it? Resend email"
+              )}
+            </button>
+            <div>
+              <Link href="/login" className="block text-sm text-[#10B981] hover:underline">
+                Back to sign in
+              </Link>
+            </div>
+          </div>
         </CardContent>
       </Card>
     );
