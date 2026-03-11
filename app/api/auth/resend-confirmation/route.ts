@@ -2,6 +2,14 @@ import { NextResponse } from "next/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
 
+function getAnon() {
+  return createAdminClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { auth: { persistSession: false, autoRefreshToken: false } }
+  );
+}
+
 function getAdmin() {
   return createAdminClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -85,12 +93,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Email is required" }, { status: 400 });
     }
 
+    const anon  = getAnon();
     const admin = getAdmin();
     const resend = new Resend(process.env.RESEND_API_KEY);
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://showsup.co";
     const redirectTo = `${appUrl}/auth/callback?next=${encodeURIComponent(next ?? "/app/dashboard")}`;
 
-    // Use magiclink so we don't need the user's password
+    // Try admin magic link first (for branded Resend email)
     const { data: linkData, error: linkError } = await admin.auth.admin.generateLink({
       type: "magiclink",
       email,
@@ -98,7 +107,18 @@ export async function POST(request: Request) {
     });
 
     if (linkError || !linkData?.properties?.action_link) {
-      return NextResponse.json({ error: "Could not generate link. The account may not exist." }, { status: 400 });
+      console.error("[resend-confirmation] generateLink failed:", linkError?.message);
+      // Fall back to Supabase's own resend — triggers their default email
+      const { error: resendErr } = await anon.auth.resend({
+        type: "signup",
+        email,
+        options: { emailRedirectTo: redirectTo },
+      });
+      if (resendErr) {
+        console.error("[resend-confirmation] auth.resend fallback failed:", resendErr.message);
+        return NextResponse.json({ error: "Could not resend — please try signing up again." }, { status: 400 });
+      }
+      return NextResponse.json({ success: true, fallback: true });
     }
 
     const from = process.env.RESEND_FROM_EMAIL ?? "ShowsUp <noreply@showsup.co>";

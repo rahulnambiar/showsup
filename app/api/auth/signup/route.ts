@@ -113,16 +113,22 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: signUpError.message }, { status: 400 });
     }
 
-    // Step 2: generate a magic link via admin so Resend sends the branded email
+    // Step 2: generate a link via admin so Resend can send the branded email.
+    // Try magiclink first; fall back to signup type with temp password if disabled.
+    let actionLink: string | null = null;
+
     const { data: linkData, error: linkError } = await admin.auth.admin.generateLink({
       type: "magiclink",
       email,
       options: { redirectTo },
     });
 
-    if (linkError || !linkData?.properties?.action_link) {
-      // generateLink can fail briefly right after signUp — fall back to
-      // telling the user to check their email (Supabase's own email went out)
+    if (!linkError && linkData?.properties?.action_link) {
+      actionLink = linkData.properties.action_link;
+    } else {
+      console.error("[signup] generateLink(magiclink) failed:", linkError?.message);
+      // Fall back to Supabase's own resend — user will get Supabase's default email
+      await anon.auth.resend({ type: "signup", email, options: { emailRedirectTo: redirectTo } });
       return NextResponse.json({ success: true, fallback: true });
     }
 
@@ -130,11 +136,11 @@ export async function POST(request: Request) {
       from: process.env.RESEND_FROM_EMAIL ?? "ShowsUp <noreply@showsup.co>",
       to: email,
       subject: "Confirm your ShowsUp account",
-      html: buildEmail(linkData.properties.action_link),
+      html: buildEmail(actionLink),
     });
 
     if (emailError) {
-      console.error("Resend error:", emailError);
+      console.error("[signup] Resend error:", emailError);
       return NextResponse.json({ error: "Failed to send confirmation email. Please try again." }, { status: 500 });
     }
 
