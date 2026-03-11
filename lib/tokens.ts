@@ -129,13 +129,13 @@ export async function ensureSignupBonus(userId: string): Promise<void> {
   let finalBalance: number;
 
   if (!profile) {
-    // No profile row yet — insert one with 50 tokens
-    await supabase.from("profiles").insert({ id: userId, token_balance: 50 });
-    finalBalance = 50;
+    // No profile row yet — insert one with 1000 tokens
+    await supabase.from("profiles").insert({ id: userId, token_balance: 1000 });
+    finalBalance = 1000;
   } else if ((profile.token_balance ?? 0) === 0) {
     // Row exists but balance is 0 (DB default didn't apply) — set it
-    await supabase.from("profiles").update({ token_balance: 50 }).eq("id", userId);
-    finalBalance = 50;
+    await supabase.from("profiles").update({ token_balance: 1000 }).eq("id", userId);
+    finalBalance = 1000;
   } else {
     // Profile already has tokens (DB default of 50 applied correctly)
     finalBalance = profile.token_balance;
@@ -143,9 +143,9 @@ export async function ensureSignupBonus(userId: string): Promise<void> {
 
   await supabase.from("token_transactions").insert({
     user_id: userId,
-    amount: 50,
+    amount: 1000,
     balance_after: finalBalance,
     type: "signup_bonus",
-    description: "Welcome! 50 free tokens to get started",
+    description: "Welcome! 1,000 free tokens to get started",
   });
 }

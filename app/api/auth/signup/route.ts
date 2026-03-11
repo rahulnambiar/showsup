@@ -52,7 +52,7 @@ function buildEmail(confirmUrl: string): string {
                 <tr>
                   <td style="padding-bottom:28px;font-size:15px;color:#9CA3AF;line-height:1.6;">
                     Click below to activate your ShowsUp account.
-                    You'll get <strong style="color:#10B981;">50 free tokens</strong> to run your first brand scan.
+                    You'll get <strong style="color:#10B981;">1,000 free tokens</strong> to explore the platform.
                   </td>
                 </tr>
                 <tr>

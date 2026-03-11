@@ -115,7 +115,7 @@ export default function SignupPage() {
             Click it to activate your account.
           </p>
           <p className="text-xs text-[#10B981] bg-[#10B981]/10 border border-[#10B981]/20 rounded-lg px-3 py-2">
-            🎉 You&apos;ll get <strong>50 free tokens</strong> — enough for your first scan!
+            🎉 You&apos;ll get <strong>1,000 free tokens</strong> — enough to explore the platform!
           </p>
 
           {resendMessage && (

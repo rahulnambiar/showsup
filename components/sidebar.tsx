@@ -92,7 +92,7 @@ function TokenWidget() {
           {balance === 0 && (
             <p className="text-xs text-[#EF4444]">No tokens left — buy more to run scans.</p>
           )}
-          {balance > 0 && balance < 50 && (
+          {balance > 0 && balance < 150 && (
             <p className="text-xs text-[#F59E0B]">Running low — a scan costs 150 tokens.</p>
           )}
           <div className="space-y-1.5">
