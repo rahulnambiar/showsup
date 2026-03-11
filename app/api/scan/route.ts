@@ -502,41 +502,95 @@ export async function POST(request: Request) {
         // ── Normalised audit tables (service role bypasses RLS) ──────────────
         const admin = getAdmin();
         try {
-          // 1. audit_queries — one row per unique query
-          // Schema: id, audit_id (=scan), query_text, query_type, is_commerce, created_at
-          const auditQueryRows = queries.map((q) => ({
-            id:          q.auditId,
-            audit_id:    scanId,
-            query_text:  q.text,
-            query_type:  q.scoreCategory,
-            is_commerce: q.isCommerce,
-          }));
-          const { error: aqErr } = await admin.from("audit_queries").insert(auditQueryRows);
-          if (aqErr) console.error("[audit_queries] insert error:", aqErr.message, aqErr.details);
+          // Map our score categories to the DB check-constraint values
+          const queryTypeMap: Record<string, string> = {
+            competitive:     "comparison",
+            alternatives:    "comparison",
+            reputation:      "review",
+            awareness:       "recommendation",
+            discovery:       "recommendation",
+            purchase_intent: "recommendation",
+          };
 
-          // 2. audit_results — one row per model × query
-          // Schema: id, audit_id (=scan), audit_query_id, provider, model, model_tier,
-          //         response_text, brand_mentioned, mention_position, sentiment,
-          //         is_recommended, competitors_mentioned, created_at
-          const auditResultRows = modelResults.flatMap((mr) => {
-            const provider   = mr.model === "chatgpt" ? "openai" : "anthropic";
-            const model_tier = mr.model === "chatgpt" ? "gpt-4o-mini" : "claude-haiku-4-5";
-            return mr.prompts.map((pr) => ({
-              audit_id:             scanId,
-              audit_query_id:       pr.auditQueryId,
-              provider,
-              model:                mr.model,
-              model_tier,
-              response_text:        pr.response,
-              brand_mentioned:      pr.analysis.brand_mentioned,
-              mention_position:     pr.analysis.mention_position ?? null,
-              sentiment:            pr.analysis.sentiment ?? null,
-              is_recommended:       pr.analysis.is_recommended,
-              competitors_mentioned: pr.analysis.competitors_found?.map((c) => c.name) ?? [],
-            }));
-          });
-          const { error: arErr } = await admin.from("audit_results").insert(auditResultRows);
-          if (arErr) console.error("[audit_results] insert error:", arErr.message, arErr.details);
+          // 1. brands — upsert by user + name, return id
+          let brandId: string | null = null;
+          const { data: existingBrand } = await admin
+            .from("brands")
+            .select("id")
+            .eq("user_id", user.id)
+            .ilike("name", brand)
+            .maybeSingle();
+
+          if (existingBrand?.id) {
+            brandId = existingBrand.id;
+          } else {
+            const { data: newBrand, error: brandErr } = await admin
+              .from("brands")
+              .insert({ user_id: user.id, name: brand, domain: url || `${brand.toLowerCase().replace(/\s+/g, "")}.com`, category })
+              .select("id").single();
+            if (brandErr) console.error("[brands] insert error:", brandErr.message);
+            else brandId = newBrand?.id ?? null;
+          }
+
+          if (!brandId) {
+            console.error("[audit] skipping audit tables — no brand_id");
+          } else {
+            // 2. audits — one row per scan, linked to brand
+            let auditId: string | null = null;
+            const { data: auditRow, error: auditErr } = await admin
+              .from("audits")
+              .insert({ brand_id: brandId, user_id: user.id })
+              .select("id").single();
+            if (auditErr) {
+              // Retry without user_id in case it's not a column
+              const { data: auditRow2, error: auditErr2 } = await admin
+                .from("audits")
+                .insert({ brand_id: brandId })
+                .select("id").single();
+              if (auditErr2) console.error("[audits] insert error:", auditErr2.message);
+              else auditId = auditRow2?.id ?? null;
+            } else {
+              auditId = auditRow?.id ?? null;
+            }
+
+            if (!auditId) {
+              console.error("[audit] no audit id returned");
+            } else {
+              // 3. audit_queries — one row per unique query
+              const auditQueryRows = queries.map((q) => ({
+                id:          q.auditId,
+                audit_id:    auditId,
+                query_text:  q.text,
+                query_type:  queryTypeMap[q.scoreCategory] ?? "recommendation",
+                is_commerce: q.isCommerce,
+              }));
+              const { error: aqErr } = await admin.from("audit_queries").insert(auditQueryRows);
+              if (aqErr) {
+                console.error("[audit_queries] insert error:", aqErr.message, aqErr.details);
+              } else {
+                // 4. audit_results — one row per model × query (requires audit_queries to exist first)
+                const auditResultRows = modelResults.flatMap((mr) => {
+                  const provider   = mr.model === "chatgpt" ? "openai" : "anthropic";
+                  const model_tier = "free"; // DB allows: "free" | "paid"
+                  return mr.prompts.map((pr) => ({
+                    audit_id:              auditId,
+                    audit_query_id:        pr.auditQueryId,
+                    provider,
+                    model:                 mr.model,
+                    model_tier,
+                    response_text:         pr.response,
+                    brand_mentioned:       pr.analysis.brand_mentioned,
+                    mention_position:      pr.analysis.mention_position ?? null,
+                    sentiment:             pr.analysis.sentiment ?? null,
+                    is_recommended:        pr.analysis.is_recommended,
+                    competitors_mentioned: pr.analysis.competitors_found?.map((c) => c.name) ?? [],
+                  }));
+                });
+                const { error: arErr } = await admin.from("audit_results").insert(auditResultRows);
+                if (arErr) console.error("[audit_results] insert error:", arErr.message, arErr.details);
+              }
+            }
+          }
         } catch (e) {
           console.error("[audit tables] unexpected error:", e);
         }
