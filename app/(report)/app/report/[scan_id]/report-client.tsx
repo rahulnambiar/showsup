@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { cn } from "@/lib/utils";
@@ -166,34 +166,33 @@ function ScoreGauge({ score }: { score: number }) {
 // ── Floating TOC ──────────────────────────────────────────────────────────────
 
 function FloatingTOC({ sections, activeId }: { sections: TocSection[]; activeId: string }) {
-  const [hovered, setHovered] = useState<string | null>(null);
-
   function scrollTo(id: string) {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   return (
-    <nav className="fixed right-5 top-1/2 -translate-y-1/2 z-40 flex flex-col gap-2.5 hidden lg:flex">
+    <nav className="fixed right-6 top-1/2 -translate-y-1/2 z-40 flex-col gap-1 hidden xl:flex">
       {sections.map((s) => {
         const isActive = activeId === s.id;
         return (
-          <div key={s.id} className="relative flex items-center justify-end gap-2">
-            {hovered === s.id && (
-              <span className="absolute right-7 bg-[#1F2937] text-gray-300 text-xs rounded-md px-2.5 py-1 whitespace-nowrap border border-white/10 shadow-xl pointer-events-none">
-                {s.label}
-              </span>
+          <button
+            key={s.id}
+            onClick={() => scrollTo(s.id)}
+            className={cn(
+              "flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-left transition-all duration-200 group",
+              isActive
+                ? "bg-white/6 text-white"
+                : "text-gray-600 hover:text-gray-400 hover:bg-white/3"
             )}
-            <button
-              onClick={() => scrollTo(s.id)}
-              onMouseEnter={() => setHovered(s.id)}
-              onMouseLeave={() => setHovered(null)}
-              className={cn(
-                "w-2.5 h-2.5 rounded-full transition-all duration-200",
-                isActive ? "scale-125" : "opacity-40 hover:opacity-80"
-              )}
-              style={{ background: isActive ? "#10B981" : "rgba(255,255,255,0.4)" }}
+          >
+            <span
+              className={cn("w-1.5 h-1.5 rounded-full flex-shrink-0 transition-all duration-200", isActive ? "scale-125" : "opacity-50")}
+              style={{ background: isActive ? "#10B981" : "currentColor" }}
             />
-          </div>
+            <span className={cn("text-xs font-medium whitespace-nowrap transition-colors duration-200", isActive ? "text-gray-200" : "text-gray-600 group-hover:text-gray-400")}>
+              {s.label}
+            </span>
+          </button>
         );
       })}
     </nav>
@@ -500,21 +499,19 @@ function LockedModuleCard({
   }
 
   return (
-    <div className="relative rounded-2xl border border-white/8 bg-[#111827] overflow-hidden">
+    <div className="relative rounded-2xl border border-white/8 bg-[#111827] overflow-hidden min-h-[220px]">
       {/* Blurred content preview */}
-      <div className="p-6 blur-sm select-none pointer-events-none opacity-40">
-        <div className="space-y-3">
-          {[70, 45, 85, 55, 30].map((w, i) => (
-            <div key={i} className="flex gap-3">
-              <div className="h-3 rounded bg-white/10" style={{ width: `${w}%` }} />
-              <div className="h-3 rounded bg-white/5 flex-1" />
-            </div>
-          ))}
-        </div>
+      <div className="p-6 blur-sm select-none pointer-events-none opacity-30 space-y-3">
+        {[75, 50, 90, 60, 40, 70].map((w, i) => (
+          <div key={i} className="flex gap-3 items-center">
+            <div className="h-3 rounded-full bg-white/15" style={{ width: `${w}%` }} />
+            <div className="h-3 rounded-full bg-white/6 flex-1" />
+          </div>
+        ))}
       </div>
 
       {/* Lock overlay */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#0A0E17]/70 backdrop-blur-sm p-6 text-center space-y-4">
+      <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#0A0E17]/80 backdrop-blur-[2px] p-6 text-center space-y-4">
         <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
           <Lock className="w-5 h-5 text-gray-400" />
         </div>
@@ -528,29 +525,34 @@ function LockedModuleCard({
         )}
 
         {confirming ? (
-          <div className="flex gap-2">
-            <button
-              onClick={() => setConfirming(false)}
-              className="px-4 py-2 text-sm text-gray-400 hover:text-white border border-white/15 rounded-lg transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleUnlock}
-              disabled={loading}
-              className="px-5 py-2 text-sm font-semibold bg-[#10B981] hover:bg-[#059669] text-[#0A0E17] rounded-lg transition-colors flex items-center gap-2"
-            >
-              {loading ? <span className="w-4 h-4 border-2 border-[#0A0E17]/30 border-t-[#0A0E17] rounded-full animate-spin" /> : null}
-              Confirm — {cost} 🪙
-            </button>
+          <div className="space-y-3 w-full max-w-xs">
+            <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-gray-300">
+              This will deduct <span className="font-bold text-white">{cost} tokens</span> from your balance.
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setConfirming(false)}
+                className="flex-1 px-4 py-2 text-sm text-gray-400 hover:text-white border border-white/15 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleUnlock}
+                disabled={loading}
+                className="flex-1 px-5 py-2 text-sm font-semibold bg-[#10B981] hover:bg-[#059669] text-[#0A0E17] rounded-lg transition-colors flex items-center justify-center gap-2"
+              >
+                {loading ? <span className="w-4 h-4 border-2 border-[#0A0E17]/30 border-t-[#0A0E17] rounded-full animate-spin" /> : null}
+                {loading ? "Unlocking…" : "Confirm unlock"}
+              </button>
+            </div>
           </div>
         ) : (
           <button
             onClick={() => setConfirming(true)}
-            className="px-5 py-2 text-sm font-semibold bg-white/8 hover:bg-white/12 text-white border border-white/15 rounded-lg transition-colors flex items-center gap-2"
+            className="px-6 py-2.5 text-sm font-semibold bg-white/8 hover:bg-white/12 text-white border border-white/15 rounded-xl transition-all hover:border-white/25 flex items-center gap-2.5"
           >
-            <Zap className="w-3.5 h-3.5 text-[#10B981]" />
-            Unlock — {cost} 🪙
+            <Lock className="w-3.5 h-3.5 text-gray-400" />
+            Unlock for {cost} tokens
           </button>
         )}
       </div>
@@ -704,7 +706,7 @@ function Section({ id, title, children, className }: { id: string; title: string
 
 export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: ScanResultRow[] }) {
   const [tokenBalance, setTokenBalance] = useState<number | null>(null);
-  const [activeSection, setActiveSection] = useState("score");
+  const [activeSection, setActiveSection] = useState<string>("score");
 
   // Module state (can be unlocked)
   const [improvementPlan, setImprovementPlan] = useState<Json>(scan.improvement_plan ?? null);
@@ -780,20 +782,25 @@ export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: 
   }, [categoryScores, competitorsData, recommendations]);
 
   // ── Scroll tracking ─────────────────────────────────────────────────────────
-  const observerCallback = useCallback((entries: IntersectionObserverEntry[]) => {
-    for (const entry of entries) {
-      if (entry.isIntersecting) setActiveSection(entry.target.id);
-    }
-  }, []);
-
+  // Use a scroll listener — find the topmost section whose top is within the
+  // upper 40% of the viewport. More reliable than IntersectionObserver for
+  // sections of wildly varying heights.
   useEffect(() => {
-    const obs = new IntersectionObserver(observerCallback, { threshold: 0.3, rootMargin: "-10% 0px -60% 0px" });
-    tocSections.forEach(({ id }) => {
-      const el = document.getElementById(id);
-      if (el) obs.observe(el);
-    });
-    return () => obs.disconnect();
-  }, [tocSections, observerCallback]);
+    function onScroll() {
+      const threshold = window.innerHeight * 0.4;
+      let best: string | null = null;
+      for (const { id } of tocSections) {
+        const el = document.getElementById(id);
+        if (!el) continue;
+        const top = el.getBoundingClientRect().top;
+        if (top <= threshold) best = id;
+      }
+      if (best) setActiveSection(best);
+    }
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll(); // run once on mount
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [tocSections]);
 
   return (
     <div className="min-h-screen bg-[#0A0E17]">
