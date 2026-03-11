@@ -378,9 +378,15 @@ export async function POST(request: Request) {
       : { type: "standard", addons: [] };
 
     // Generate queries — may call Claude for deep/addon queries
-    const queries = await generateQueries(
+    const rawQueries = await generateQueries(
       brand, category, niche, passedCompetitors, queryConfig, callAnthropic
     );
+    // Assign a stable UUID to each query so audit tables can be linked
+    const queries = rawQueries.map((q) => ({
+      ...q,
+      auditId: crypto.randomUUID() as string,
+      isCommerce: q.id.startsWith("c_") || q.id.startsWith("cc_"),
+    }));
 
     const enabledModels = body.models ?? { chatgpt: true, claude: true };
     const allModels = [
@@ -397,11 +403,11 @@ export async function POST(request: Request) {
               const response = await model.call(q.text);
               const analysis = await analyzeResponse(brand, category, q.text, response);
               const score = scoreFromAnalyses([analysis]);
-              return { promptId: q.id, scoreCategory: q.scoreCategory, prompt: q.text, response, analysis, mentioned: analysis.brand_mentioned, count: analysis.mention_position ?? 0, score };
+              return { promptId: q.id, auditQueryId: q.auditId, scoreCategory: q.scoreCategory, prompt: q.text, response, analysis, mentioned: analysis.brand_mentioned, count: analysis.mention_position ?? 0, score };
             } catch (err) {
               const msg = err instanceof Error ? err.message : "Unknown error";
               const analysis = fallbackAnalysis(brand, "");
-              return { promptId: q.id, scoreCategory: q.scoreCategory, prompt: q.text, response: "", analysis, mentioned: false, count: 0, score: 0, error: msg };
+              return { promptId: q.id, auditQueryId: q.auditId, scoreCategory: q.scoreCategory, prompt: q.text, response: "", analysis, mentioned: false, count: 0, score: 0, error: msg };
             }
           })
         );
@@ -462,6 +468,8 @@ export async function POST(request: Request) {
 
       if (scan?.id) {
         scanId = scan.id;
+
+        // ── Existing scan_results table (keep for results display) ────────────
         const rows = modelResults.flatMap((mr) =>
           mr.prompts.map((pr) => ({
             scan_id: scanId, model: mr.model, prompt: pr.prompt, response: pr.response,
@@ -472,7 +480,6 @@ export async function POST(request: Request) {
         );
         const { error: rowsError } = await supabase.from("scan_results").insert(rows);
         if (rowsError) {
-          // Fallback: basic columns only
           await supabase.from("scan_results").insert(
             modelResults.flatMap((mr) =>
               mr.prompts.map((pr) => ({
@@ -481,6 +488,40 @@ export async function POST(request: Request) {
               }))
             )
           );
+        }
+
+        // ── Normalised audit tables ───────────────────────────────────────────
+        try {
+          // 1. audit_queries — one row per unique query
+          const auditQueryRows = queries.map((q) => ({
+            id:          q.auditId,
+            scan_id:     scanId,
+            query_text:  q.text,
+            query_type:  q.scoreCategory,
+            is_commerce: q.isCommerce,
+          }));
+          await supabase.from("audit_queries").insert(auditQueryRows);
+
+          // 2. audit_results — one row per model × query
+          const auditResultRows = modelResults.flatMap((mr) =>
+            mr.prompts.map((pr) => ({
+              scan_id:          scanId,
+              query_id:         pr.auditQueryId,
+              provider:         mr.model === "chatgpt" ? "openai" : "anthropic",
+              model:            mr.model,
+              response_text:    pr.response,
+              brand_mentioned:  pr.analysis.brand_mentioned,
+              mention_position: pr.analysis.mention_position,
+              is_recommended:   pr.analysis.is_recommended,
+              sentiment:        pr.analysis.sentiment,
+              sentiment_reason: pr.analysis.sentiment_reason ?? null,
+              key_context:      pr.analysis.key_context ?? null,
+              score:            pr.score,
+            }))
+          );
+          await supabase.from("audit_results").insert(auditResultRows);
+        } catch {
+          // Audit tables may not exist or have different schema — non-fatal
         }
       }
     } catch {
