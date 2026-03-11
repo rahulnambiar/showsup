@@ -7,19 +7,22 @@ import { TOKEN_COSTS } from "@/lib/token-costs";
 
 const COMMERCE_CATEGORIES = ["Insurance", "Travel", "Finance", "E-commerce"];
 
-function buildPrompts(brand: string, category: string) {
+function buildPrompts(brand: string, category: string, niche?: string) {
+  // Use specific niche description for contextual prompts, fall back to category
+  const space = niche || category;
+
   const prompts = [
     { id: "direct",      text: `What is ${brand}? Describe what they do in 2-3 sentences.` },
-    { id: "category",    text: `What are the top ${category} companies/tools? List 5-8.` },
-    { id: "competitive", text: `Compare ${brand} with its main competitors in ${category}.` },
-    { id: "reputation",  text: `${brand} reviews — is it worth using? What are pros and cons?` },
-    { id: "alternatives",text: `What are the best alternatives to ${brand}?` },
-    { id: "usecase",     text: `Best ${category} solutions for small businesses or startups.` },
+    { id: "category",    text: `What are the best ${space} tools or companies? List 5-8.` },
+    { id: "competitive", text: `Compare ${brand} with its main competitors. What are the key differences?` },
+    { id: "reputation",  text: `${brand} reviews — is it worth using? What are the pros and cons?` },
+    { id: "alternatives",text: `What are the best alternatives to ${brand} for ${space}?` },
+    { id: "usecase",     text: `Best ${space} options for small businesses or startups.` },
   ];
 
   if (COMMERCE_CATEGORIES.includes(category)) {
-    prompts.push({ id: "value",       text: `Which ${category} company should I choose for the best value?` });
-    prompts.push({ id: "reliability", text: `Recommend a good ${category} option for someone looking for reliability.` });
+    prompts.push({ id: "value",       text: `Which ${space} should I choose for the best value?` });
+    prompts.push({ id: "reliability", text: `Recommend a reliable ${space} for someone who needs dependability.` });
   }
 
   return prompts;
@@ -353,6 +356,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     const brand: string    = (body.brand    ?? "").trim();
     const category: string = (body.category ?? "Other").trim();
+    const niche: string    = (body.niche    ?? "").trim();
     const url: string      = (body.url ?? body.website ?? "").trim();
 
     if (!brand) return NextResponse.json({ error: "Brand name is required" }, { status: 400 });
@@ -367,7 +371,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const prompts = buildPrompts(brand, category);
+    const prompts = buildPrompts(brand, category, niche || undefined);
     const enabledModels = body.models ?? { chatgpt: true, claude: true };
     const allModels = [
       { id: "chatgpt", label: "ChatGPT", call: callOpenAI },

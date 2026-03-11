@@ -350,6 +350,7 @@ function ScanPageInner() {
   const [category, setCategory] = useState("Other");
   const [detecting, setDetecting] = useState(false);
   const [detectedFrom, setDetectedFrom] = useState<string | null>(null);
+  const [niche, setNiche] = useState("");
   const [competitors, setCompetitors] = useState<string[]>([]);
   const [competitorInput, setCompetitorInput] = useState("");
   const [models, setModels] = useState({ chatgpt: true, claude: true });
@@ -403,6 +404,7 @@ function ScanPageInner() {
         if (data.category && data.category !== "Other") {
           setCategory(data.category);
         }
+        if (data.niche) setNiche(data.niche);
         if (Array.isArray(data.competitors) && data.competitors.length > 0) {
           setCompetitors(data.competitors.map((c: { name: string }) => c.name).filter(Boolean));
         }
@@ -496,6 +498,7 @@ function ScanPageInner() {
         body: JSON.stringify({
           brand: brand.trim(),
           category,
+          niche: niche || undefined,
           url: url.trim(),
           website: url.trim(),
           models,
@@ -533,6 +536,7 @@ function ScanPageInner() {
       updateStep("score", "done");
 
       toast.success(`Scan complete! ShowsUp Score: ${data.overall_score}/100`);
+      window.dispatchEvent(new Event("tokenBalanceChanged"));
 
       if (data.scan_id) {
         router.push(`/app/scores/${data.scan_id}`);
@@ -550,7 +554,7 @@ function ScanPageInner() {
   }
 
   if (scanResult) {
-    return <InlineResultsView data={scanResult} onReset={() => { setScanResult(null); setUrl(""); setBrand(""); setCategory("Other"); setCompetitors([]); setDetectedFrom(null); }} />;
+    return <InlineResultsView data={scanResult} onReset={() => { setScanResult(null); setUrl(""); setBrand(""); setCategory("Other"); setNiche(""); setCompetitors([]); setDetectedFrom(null); }} />;
   }
 
   if (scanning) {

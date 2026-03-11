@@ -58,6 +58,7 @@ Return JSON only (no markdown, no explanation):
 {
   "brand_name": "the company or product name",
   "category": "one of: Insurance, Travel, Finance, E-commerce, SaaS, Healthcare, Other",
+  "niche": "specific product/service type in 3-5 words, e.g. 'project management software', 'online car insurance', 'email marketing platform', 'HR payroll software'",
   "description": "one sentence describing what the brand does",
   "competitors": [{"name": "competitor1"}, {"name": "competitor2"}, {"name": "competitor3"}]
 }`;
@@ -76,6 +77,7 @@ Return JSON only (no markdown, no explanation):
     return NextResponse.json({
       brand_name: parsed.brand_name ?? "",
       category: parsed.category ?? "Other",
+      niche: parsed.niche ?? "",
       description: parsed.description ?? "",
       competitors: Array.isArray(parsed.competitors) ? parsed.competitors : [],
     });

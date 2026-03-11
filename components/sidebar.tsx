@@ -37,11 +37,17 @@ function TokenWidget() {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  function refreshBalance() {
     fetch("/api/tokens/balance")
       .then((r) => r.json())
       .then((d) => setBalance(d.balance ?? null))
       .catch(() => {});
+  }
+
+  useEffect(() => {
+    refreshBalance();
+    window.addEventListener("tokenBalanceChanged", refreshBalance);
+    return () => window.removeEventListener("tokenBalanceChanged", refreshBalance);
   }, []);
 
   // Close on outside click

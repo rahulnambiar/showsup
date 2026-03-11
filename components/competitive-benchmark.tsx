@@ -48,7 +48,7 @@ interface CompetitiveBenchmarkProps {
 }
 
 export function CompetitiveBenchmark({ data }: CompetitiveBenchmarkProps) {
-  const { brand_profile, competitors, share_of_voice, insights } = data;
+  const { brand_profile, competitors = [], share_of_voice = [], insights = [] } = data;
 
   const hasCompetitors = competitors.length > 0;
   const hasSov = share_of_voice.length > 0;
