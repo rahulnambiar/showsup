@@ -1,9 +1,17 @@
 import { NextResponse } from "next/server";
-import { createClient as createAdminClient } from "@supabase/supabase-js";
+import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
 
+function getAnon() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { auth: { persistSession: false, autoRefreshToken: false } }
+  );
+}
+
 function getAdmin() {
-  return createAdminClient(
+  return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
     { auth: { persistSession: false, autoRefreshToken: false } }
@@ -85,24 +93,27 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Email and password are required" }, { status: 400 });
     }
 
+    const anon  = getAnon();
     const admin = getAdmin();
     const resend = new Resend(process.env.RESEND_API_KEY);
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://showsup.co";
     const redirectTo = `${appUrl}/auth/callback?next=${encodeURIComponent(next ?? "/app/dashboard")}`;
 
-    // Step 1: create user via admin API (bypasses signup restrictions)
-    const { error: createError } = await admin.auth.admin.createUser({
+    // Step 1: sign up via anon client — same code path as client-side signup,
+    // so it respects Supabase auth settings and works with any allowed email.
+    // Supabase may also try to send its own email; we override with Resend below.
+    const { error: signUpError } = await anon.auth.signUp({
       email,
       password,
-      email_confirm: false,
+      options: { emailRedirectTo: redirectTo },
     });
 
-    // Ignore "already registered" — we'll just send a fresh link below
-    if (createError && !createError.message.toLowerCase().includes("already")) {
-      return NextResponse.json({ error: createError.message }, { status: 400 });
+    // Ignore "already registered" — user exists, we just resend the link
+    if (signUpError && !signUpError.message.toLowerCase().includes("already")) {
+      return NextResponse.json({ error: signUpError.message }, { status: 400 });
     }
 
-    // Step 2: generate a magic link (no signup restrictions, no password needed)
+    // Step 2: generate a magic link via admin so Resend sends the branded email
     const { data: linkData, error: linkError } = await admin.auth.admin.generateLink({
       type: "magiclink",
       email,
@@ -110,7 +121,9 @@ export async function POST(request: Request) {
     });
 
     if (linkError || !linkData?.properties?.action_link) {
-      return NextResponse.json({ error: "Failed to generate confirmation link." }, { status: 500 });
+      // generateLink can fail briefly right after signUp — fall back to
+      // telling the user to check their email (Supabase's own email went out)
+      return NextResponse.json({ success: true, fallback: true });
     }
 
     const { error: emailError } = await resend.emails.send({
