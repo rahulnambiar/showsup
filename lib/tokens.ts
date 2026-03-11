@@ -2,6 +2,8 @@ import { createClient } from "@supabase/supabase-js";
 
 type TxType = "signup_bonus" | "purchase" | "report_spend" | "refund" | "subscription_credit" | "bonus";
 
+const SIGNUP_BONUS = 1000;
+
 function getAdmin() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -10,14 +12,33 @@ function getAdmin() {
   );
 }
 
+// Ensure a user_tokens row exists, returns current balance
+async function getOrCreateTokenRow(userId: string): Promise<number> {
+  const supabase = getAdmin();
+
+  const { data, error } = await supabase
+    .from("user_tokens")
+    .select("balance")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+
+  if (data) return data.balance;
+
+  // Row doesn't exist — insert with 0 (bonus granted separately)
+  await supabase.from("user_tokens").insert({ user_id: userId, balance: 0 });
+  return 0;
+}
+
 export async function getBalance(userId: string): Promise<number> {
   const supabase = getAdmin();
   const { data } = await supabase
-    .from("profiles")
-    .select("token_balance")
-    .eq("id", userId)
-    .single();
-  return data?.token_balance ?? 0;
+    .from("user_tokens")
+    .select("balance")
+    .eq("user_id", userId)
+    .maybeSingle();
+  return data?.balance ?? 0;
 }
 
 export async function deductTokens(
@@ -28,27 +49,20 @@ export async function deductTokens(
 ): Promise<{ success: boolean; balance: number; error?: string }> {
   const supabase = getAdmin();
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("token_balance")
-    .eq("id", userId)
-    .single();
+  const current = await getOrCreateTokenRow(userId);
 
-  const current = profile?.token_balance ?? 0;
   if (current < amount) {
     return { success: false, balance: current, error: `Insufficient tokens. Need ${amount}, have ${current}.` };
   }
 
   const newBalance = current - amount;
 
-  const { error: updateError } = await supabase
-    .from("profiles")
-    .update({ token_balance: newBalance })
-    .eq("id", userId);
+  const { error } = await supabase
+    .from("user_tokens")
+    .update({ balance: newBalance, updated_at: new Date().toISOString() })
+    .eq("user_id", userId);
 
-  if (updateError) {
-    return { success: false, balance: current, error: "Balance update failed." };
-  }
+  if (error) return { success: false, balance: current, error: "Balance update failed." };
 
   await supabase.from("token_transactions").insert({
     user_id: userId,
@@ -70,19 +84,13 @@ export async function addTokens(
 ): Promise<{ success: boolean; balance: number }> {
   const supabase = getAdmin();
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("token_balance")
-    .eq("id", userId)
-    .single();
-
-  const current = profile?.token_balance ?? 0;
+  const current = await getOrCreateTokenRow(userId);
   const newBalance = current + amount;
 
   await supabase
-    .from("profiles")
-    .update({ token_balance: newBalance })
-    .eq("id", userId);
+    .from("user_tokens")
+    .update({ balance: newBalance, updated_at: new Date().toISOString() })
+    .eq("user_id", userId);
 
   await supabase.from("token_transactions").insert({
     user_id: userId,
@@ -119,32 +127,26 @@ export async function ensureSignupBonus(userId: string): Promise<void> {
 
   if (existing) return;
 
-  // Get or create profile row
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("token_balance")
-    .eq("id", userId)
+  // Upsert token row — insert with bonus if new, leave existing balance alone
+  const { data: existing_row } = await supabase
+    .from("user_tokens")
+    .select("balance")
+    .eq("user_id", userId)
     .maybeSingle();
 
-  let finalBalance: number;
+  const newBalance = (existing_row?.balance ?? 0) + SIGNUP_BONUS;
 
-  if (!profile) {
-    // No profile row yet — insert one with 1000 tokens
-    await supabase.from("profiles").insert({ id: userId, token_balance: 1000 });
-    finalBalance = 1000;
-  } else if ((profile.token_balance ?? 0) === 0) {
-    // Row exists but balance is 0 (DB default didn't apply) — set it
-    await supabase.from("profiles").update({ token_balance: 1000 }).eq("id", userId);
-    finalBalance = 1000;
-  } else {
-    // Profile already has tokens (DB default of 50 applied correctly)
-    finalBalance = profile.token_balance;
-  }
+  await supabase
+    .from("user_tokens")
+    .upsert(
+      { user_id: userId, balance: newBalance, updated_at: new Date().toISOString() },
+      { onConflict: "user_id" }
+    );
 
   await supabase.from("token_transactions").insert({
     user_id: userId,
-    amount: 1000,
-    balance_after: finalBalance,
+    amount: SIGNUP_BONUS,
+    balance_after: newBalance,
     type: "signup_bonus",
     description: "Welcome! 1,000 free tokens to get started",
   });
