@@ -359,16 +359,21 @@ function ScanPageInner() {
   const [error, setError] = useState<string | null>(null);
   const [scanResult, setScanResult] = useState<ScanResult | null>(null);
   const [modelConfig, setModelConfig] = useState<{ chatgpt: boolean; claude: boolean } | null>(null);
+  const [tokenBalance, setTokenBalance] = useState<number | null>(null);
 
   const stepsRef = useRef<StepState[]>([]);
 
   const CATEGORIES = ["Insurance", "Travel", "Finance", "E-commerce", "SaaS", "Healthcare", "Other"];
 
-  // Fetch model config on mount
+  // Fetch model config + token balance on mount
   useEffect(() => {
     fetch("/api/config")
       .then((r) => r.json())
       .then((d) => setModelConfig(d))
+      .catch(() => {/* ignore */});
+    fetch("/api/tokens/balance")
+      .then((r) => r.json())
+      .then((d) => typeof d.balance === "number" && setTokenBalance(d.balance))
       .catch(() => {/* ignore */});
   }, []);
 
@@ -498,6 +503,15 @@ function ScanPageInner() {
       });
 
       const data = await res.json();
+
+      if (res.status === 402) {
+        updateStep("chatgpt", "error");
+        updateStep("claude", "error");
+        const needed = (data.required ?? 150) - (data.balance ?? 0);
+        setError(`Insufficient tokens. You need ${needed} more tokens to run this scan.`);
+        setScanning(false);
+        return;
+      }
 
       if (!res.ok) {
         updateStep("chatgpt", "error");
@@ -701,6 +715,28 @@ function ScanPageInner() {
               </div>
             </div>
 
+            {/* Token cost preview */}
+            {tokenBalance !== null && (
+              <div className={cn(
+                "flex items-center justify-between rounded-lg border px-3 py-2.5 text-sm",
+                tokenBalance >= 150
+                  ? "border-white/8 bg-white/[0.02]"
+                  : "border-[#EF4444]/20 bg-[#EF4444]/5"
+              )}>
+                <span className="text-gray-400">
+                  Scan cost: <span className="text-white font-medium">150 tokens</span>
+                </span>
+                <span className={cn(
+                  "text-xs font-medium",
+                  tokenBalance >= 150 ? "text-gray-500" : "text-[#EF4444]"
+                )}>
+                  {tokenBalance >= 150
+                    ? `${tokenBalance} remaining`
+                    : `Need ${150 - tokenBalance} more`}
+                </span>
+              </div>
+            )}
+
             {error && (
               <p className="text-sm text-[#EF4444] bg-[#EF4444]/10 border border-[#EF4444]/20 rounded-md px-3 py-2">
                 {error}
@@ -710,9 +746,16 @@ function ScanPageInner() {
             <Button
               type="submit"
               className="w-full bg-[#10B981] hover:bg-[#059669] text-[#0A0E17] font-semibold"
-              disabled={!url.trim() || !brand.trim() || (!models.chatgpt && !models.claude)}
+              disabled={
+                !url.trim() ||
+                !brand.trim() ||
+                (!models.chatgpt && !models.claude) ||
+                (tokenBalance !== null && tokenBalance < 150)
+              }
             >
-              Run Scan →
+              {tokenBalance !== null && tokenBalance < 150
+                ? "Insufficient tokens"
+                : "Run Scan →"}
             </Button>
           </form>
         </CardContent>

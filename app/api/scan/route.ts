@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { getBalance, deductTokens } from "@/lib/tokens";
+import { TOKEN_COSTS } from "@/lib/token-costs";
 
 // ── Prompts ───────────────────────────────────────────────────────────────────
 
@@ -355,6 +357,16 @@ export async function POST(request: Request) {
 
     if (!brand) return NextResponse.json({ error: "Brand name is required" }, { status: 400 });
 
+    // Token check
+    const tokenCost = TOKEN_COSTS.STANDARD_REPORT; // 150
+    const balance = await getBalance(user.id);
+    if (balance < tokenCost) {
+      return NextResponse.json(
+        { error: "Insufficient tokens", required: tokenCost, balance },
+        { status: 402 }
+      );
+    }
+
     const prompts = buildPrompts(brand, category);
     const enabledModels = body.models ?? { chatgpt: true, claude: true };
     const allModels = [
@@ -461,6 +473,9 @@ export async function POST(request: Request) {
     } catch {
       // DB not set up — results still returned to client
     }
+
+    // Deduct tokens
+    await deductTokens(user.id, tokenCost, `Standard scan: ${brand}`, scanId ?? undefined);
 
     return NextResponse.json({ scan_id: scanId, brand, category, url, overall_score: finalScore, category_scores: categoryScores, results: modelResults, recommendations, competitors_data: competitorsData });
   } catch (err) {

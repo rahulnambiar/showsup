@@ -82,6 +82,9 @@ export default function SignupPage() {
             We sent a confirmation link to <span className="text-white font-medium">{email}</span>.
             Click it to activate your account.
           </p>
+          <p className="text-xs text-[#10B981] bg-[#10B981]/10 border border-[#10B981]/20 rounded-lg px-3 py-2 mt-1">
+            🎉 You&apos;ll receive <strong>50 free tokens</strong> — enough for your first scan!
+          </p>
           <Link href="/login" className="block text-sm text-[#10B981] hover:underline mt-4">
             Back to sign in
           </Link>
