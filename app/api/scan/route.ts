@@ -2,39 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getBalance, deductTokens } from "@/lib/tokens";
 import { TOKEN_COSTS } from "@/lib/token-costs";
-
-// ── Prompts ───────────────────────────────────────────────────────────────────
-
-const COMMERCE_CATEGORIES = ["Insurance", "Travel", "Finance", "E-commerce"];
-
-function buildPrompts(brand: string, category: string, niche?: string, competitors?: string[]) {
-  // Use specific niche description for contextual prompts, fall back to category
-  const space = niche || category;
-  const compList = competitors && competitors.length > 0
-    ? competitors.slice(0, 5).join(", ")
-    : null;
-
-  const prompts = [
-    { id: "direct",      text: `What is ${brand}? Describe what they do in 2-3 sentences.` },
-    { id: "category",    text: `What are the best ${space} tools or companies? List 5-8.` },
-    {
-      id: "competitive",
-      text: compList
-        ? `Compare ${brand} with ${compList}. What are the key differences?`
-        : `Compare ${brand} with its main competitors. What are the key differences?`,
-    },
-    { id: "reputation",  text: `${brand} reviews — is it worth using? What are the pros and cons?` },
-    { id: "alternatives",text: `What are the best alternatives to ${brand} for ${space}?` },
-    { id: "usecase",     text: `Best ${space} options for small businesses or startups.` },
-  ];
-
-  if (COMMERCE_CATEGORIES.includes(category)) {
-    prompts.push({ id: "value",       text: `Which ${space} should I choose for the best value?` });
-    prompts.push({ id: "reliability", text: `Recommend a reliable ${space} for someone who needs dependability.` });
-  }
-
-  return prompts;
-}
+import { generateQueries, type QueryConfig } from "@/lib/query-generator";
 
 // ── Model callers ─────────────────────────────────────────────────────────────
 
@@ -139,27 +107,15 @@ function scoreFromAnalyses(analyses: AnalysisResult[]): number {
 
 // ── Category sub-scores ───────────────────────────────────────────────────────
 
-const PROMPT_CATEGORY_MAP: Record<string, string> = {
-  direct:      "awareness",
-  category:    "discovery",
-  competitive: "competitive",
-  reputation:  "reputation",
-  alternatives:"alternatives",
-  usecase:     "purchase_intent",
-  value:       "purchase_intent",
-  reliability: "purchase_intent",
-};
-
 function calculateCategorySubScores(
-  allPromptResults: Array<{ promptId: string; analysis: AnalysisResult }>
+  allPromptResults: Array<{ scoreCategory: string; analysis: AnalysisResult }>
 ): Record<string, number> {
   const groups: Record<string, AnalysisResult[]> = {
     awareness: [], discovery: [], competitive: [],
     reputation: [], alternatives: [], purchase_intent: [],
   };
-  for (const { promptId, analysis } of allPromptResults) {
-    const cat = PROMPT_CATEGORY_MAP[promptId];
-    if (cat && groups[cat]) groups[cat].push(analysis);
+  for (const { scoreCategory, analysis } of allPromptResults) {
+    if (scoreCategory && groups[scoreCategory]) groups[scoreCategory].push(analysis);
   }
   const scores: Record<string, number> = {};
   for (const [cat, analyses] of Object.entries(groups)) {
@@ -415,7 +371,17 @@ export async function POST(request: Request) {
     const passedCompetitors: string[] = Array.isArray(body.competitors)
       ? body.competitors.filter((c: unknown) => typeof c === "string" && c.trim()).slice(0, 8)
       : [];
-    const prompts = buildPrompts(brand, category, niche || undefined, passedCompetitors);
+
+    // Build query config — fall back to standard if none provided
+    const queryConfig: QueryConfig = reportConfig
+      ? { type: reportConfig.type, addons: reportConfig.addons ?? [] }
+      : { type: "standard", addons: [] };
+
+    // Generate queries — may call Claude for deep/addon queries
+    const queries = await generateQueries(
+      brand, category, niche, passedCompetitors, queryConfig, callAnthropic
+    );
+
     const enabledModels = body.models ?? { chatgpt: true, claude: true };
     const allModels = [
       { id: "chatgpt", label: "ChatGPT", call: callOpenAI },
@@ -426,17 +392,16 @@ export async function POST(request: Request) {
     const modelResults = await Promise.all(
       models.map(async (model) => {
         const promptResults = await Promise.all(
-          prompts.map(async (p) => {
+          queries.map(async (q) => {
             try {
-              const response = await model.call(p.text);
-              // Analyze with Claude Haiku in parallel (already running after model call)
-              const analysis = await analyzeResponse(brand, category, p.text, response);
+              const response = await model.call(q.text);
+              const analysis = await analyzeResponse(brand, category, q.text, response);
               const score = scoreFromAnalyses([analysis]);
-              return { promptId: p.id, prompt: p.text, response, analysis, mentioned: analysis.brand_mentioned, count: analysis.mention_position ?? 0, score };
+              return { promptId: q.id, scoreCategory: q.scoreCategory, prompt: q.text, response, analysis, mentioned: analysis.brand_mentioned, count: analysis.mention_position ?? 0, score };
             } catch (err) {
               const msg = err instanceof Error ? err.message : "Unknown error";
               const analysis = fallbackAnalysis(brand, "");
-              return { promptId: p.id, prompt: p.text, response: "", analysis, mentioned: false, count: 0, score: 0, error: msg };
+              return { promptId: q.id, scoreCategory: q.scoreCategory, prompt: q.text, response: "", analysis, mentioned: false, count: 0, score: 0, error: msg };
             }
           })
         );
@@ -453,7 +418,7 @@ export async function POST(request: Request) {
 
     // Category sub-scores (across all platforms combined)
     const allPromptResults = modelResults.flatMap((mr) =>
-      mr.prompts.map((p) => ({ promptId: p.promptId, analysis: p.analysis }))
+      mr.prompts.map((p) => ({ scoreCategory: p.scoreCategory, analysis: p.analysis }))
     );
     const categoryScores = calculateCategorySubScores(allPromptResults);
 
