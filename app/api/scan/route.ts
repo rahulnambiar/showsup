@@ -678,7 +678,7 @@ export async function POST(request: Request) {
           mr.prompts.map((pr) => ({
             scan_id: scanId, model: mr.model, prompt: pr.prompt, response: pr.response,
             brand_mentioned: pr.analysis.brand_mentioned, mention_count: pr.count, score: pr.score,
-            mention_position: pr.analysis.mention_position, is_recommended: pr.analysis.is_recommended,
+            mention_position: pr.analysis.mention_position ?? null, is_recommended: pr.analysis.is_recommended ?? false,
             sentiment: pr.analysis.sentiment, key_context: pr.analysis.key_context,
           }))
         );
@@ -777,7 +777,7 @@ export async function POST(request: Request) {
                     brand_mentioned:       pr.analysis.brand_mentioned,
                     mention_position:      pr.analysis.mention_position ?? null,
                     sentiment:             pr.analysis.sentiment ?? null,
-                    is_recommended:        pr.analysis.is_recommended,
+                    is_recommended:        pr.analysis.is_recommended ?? false,
                     competitors_mentioned: pr.analysis.competitors_found?.map((c) => c.name) ?? [],
                   }));
                 });
