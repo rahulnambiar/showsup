@@ -3,114 +3,90 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Coins, Zap, ChevronDown, Info } from "lucide-react";
+import { Coins, Zap, Info } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import {
+  calculateReportCost,
+  getAvailableModels,
+  getModuleDelta,
+  type ReportConfig,
+} from "@/lib/pricing/cost-calculator";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const COMMERCE_CATS = ["Insurance", "Travel", "Finance", "E-commerce"];
 const CATEGORIES = ["Insurance", "Travel", "Finance", "E-commerce", "SaaS", "Healthcare", "Other"];
 
-const BASE_COSTS = { quick_check: 50, standard: 150, deep: 400 } as const;
-type ReportType = keyof typeof BASE_COSTS;
+type ScanDepth = "quick_check" | "standard" | "deep";
 
-const ADDON_COSTS = {
-  persona_analysis:    50,
-  commerce_deep_dive:  50,
-  sentiment_deep_dive: 30,
-  citation_tracking:   25,
-  improvement_plan:    40,
-  category_benchmark:  35,
-} as const;
-type AddonKey = keyof typeof ADDON_COSTS;
+type ModuleKey = keyof ReportConfig["modules"];
 
-const EXTRA_COMPETITOR_COST = 30;
+const MODULE_META: Record<ModuleKey, { label: string; desc: string; autoFor?: string[] }> = {
+  persona:          { label: "Persona-Based Analysis",  desc: "Test from 5 different buyer perspectives" },
+  commerce:         { label: "Commerce Deep Dive",       desc: "15 purchase-intent queries", autoFor: COMMERCE_CATS },
+  sentiment:        { label: "Detailed Sentiment",       desc: "How AI describes your brand in depth" },
+  citations:        { label: "Citation Page Tracking",   desc: "Which of your pages AI cites" },
+  improvementPlan:  { label: "AI Improvement Plan",      desc: "Prioritized 3-tier action roadmap" },
+  categoryBenchmark:{ label: "Category Benchmarking",    desc: "Compare to your industry average" },
+};
+
+// Model key → platform ID mapping for the scan API
+const MODEL_TO_PLATFORM: Record<string, string> = {
+  "gpt-4o-mini":      "chatgpt",
+  "gpt-4o":           "chatgpt",
+  "claude-3-haiku":   "claude",
+  "claude-sonnet":    "claude",
+  "gemini-1.5-flash": "gemini",
+  "gemini-1.5-pro":   "gemini",
+};
+
+// Models available for actual scanning (scan API supports these)
+const SCAN_CAPABLE = new Set(["gpt-4o-mini", "claude-3-haiku"]);
+// Google provider is not yet integrated
+const COMING_SOON_PROVIDERS = new Set(["google"]);
 
 // ── Templates ─────────────────────────────────────────────────────────────────
 
 interface Template {
   id: string;
   label: string;
-  value: string;
   description: string;
-  reportType: ReportType;
-  addons: AddonKey[];
+  scanDepth: ScanDepth;
+  modules: Partial<ReportConfig["modules"]>;
   extraCompetitors: number;
 }
 
 const TEMPLATES: Template[] = [
-  {
-    id: "quick",
-    label: "Quick Check",
-    value: "~50 🪙",
-    description: "Basic score, 2 platforms",
-    reportType: "quick_check",
-    addons: [],
-    extraCompetitors: 0,
-  },
-  {
-    id: "standard",
-    label: "Standard Report",
-    value: "~190 🪙",
-    description: "Full scan + improvement plan",
-    reportType: "standard",
-    addons: ["improvement_plan"],
-    extraCompetitors: 0,
-  },
-  {
-    id: "competitive",
-    label: "Competitive Intel",
-    value: "~290 🪙",
-    description: "Competitors, sentiment, personas",
-    reportType: "standard",
-    addons: ["persona_analysis", "sentiment_deep_dive"],
-    extraCompetitors: 2,
-  },
-  {
-    id: "full",
-    label: "Full Analysis",
-    value: "~630 🪙",
-    description: "Everything, all modules",
-    reportType: "deep",
-    addons: ["persona_analysis", "commerce_deep_dive", "sentiment_deep_dive", "citation_tracking", "improvement_plan", "category_benchmark"],
-    extraCompetitors: 4,
-  },
+  { id: "quick",       label: "Quick Check",       description: "Basic score, 2 platforms",          scanDepth: "quick_check", modules: {},                                                                          extraCompetitors: 0 },
+  { id: "standard",    label: "Standard Report",   description: "Full scan + improvement plan",      scanDepth: "standard",    modules: { improvementPlan: true },                                                   extraCompetitors: 0 },
+  { id: "competitive", label: "Competitive Intel", description: "Competitors, sentiment, personas",  scanDepth: "standard",    modules: { persona: true, sentiment: true },                                          extraCompetitors: 2 },
+  { id: "full",        label: "Full Analysis",     description: "Everything, all modules",           scanDepth: "deep",        modules: { persona: true, commerce: true, sentiment: true, citations: true, improvementPlan: true, categoryBenchmark: true }, extraCompetitors: 4 },
 ];
 
-// ── Step indicator for progress view ──────────────────────────────────────────
+// ── Step indicator ─────────────────────────────────────────────────────────────
 
-interface StepState {
-  id: string;
-  label: string;
-  status: "pending" | "running" | "done" | "error";
-}
+interface StepState { id: string; label: string; status: "pending" | "running" | "done" | "error" }
 
 function StepCircle({ status }: { status: StepState["status"] }) {
-  if (status === "done") {
-    return (
-      <span className="w-6 h-6 rounded-full bg-[#10B981] flex items-center justify-center flex-shrink-0">
-        <svg className="w-3.5 h-3.5 text-[#0A0E17]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-        </svg>
-      </span>
-    );
-  }
-  if (status === "running") {
-    return <span className="w-6 h-6 rounded-full border-2 border-[#10B981] border-t-transparent animate-spin flex-shrink-0" />;
-  }
-  if (status === "error") {
-    return (
-      <span className="w-6 h-6 rounded-full bg-[#EF4444] flex items-center justify-center flex-shrink-0">
-        <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      </span>
-    );
-  }
+  if (status === "done") return (
+    <span className="w-6 h-6 rounded-full bg-[#10B981] flex items-center justify-center flex-shrink-0">
+      <svg className="w-3.5 h-3.5 text-[#0A0E17]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+      </svg>
+    </span>
+  );
+  if (status === "running") return <span className="w-6 h-6 rounded-full border-2 border-[#10B981] border-t-transparent animate-spin flex-shrink-0" />;
+  if (status === "error") return (
+    <span className="w-6 h-6 rounded-full bg-[#EF4444] flex items-center justify-center flex-shrink-0">
+      <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </span>
+  );
   return <span className="w-6 h-6 rounded-full border-2 border-gray-700 flex-shrink-0" />;
 }
 
@@ -131,32 +107,27 @@ export default function ReportBuilderPage() {
   const [competitorInput, setCompetitorInput] = useState("");
 
   // Report config
-  const [reportType, setReportType] = useState<ReportType>("standard");
-  const [addons, setAddons] = useState<Record<AddonKey, boolean>>({
-    persona_analysis:    false,
-    commerce_deep_dive:  false,
-    sentiment_deep_dive: false,
-    citation_tracking:   false,
-    improvement_plan:    true,
-    category_benchmark:  false,
+  const [scanDepth, setScanDepth] = useState<ScanDepth>("standard");
+  const [selectedModels, setSelectedModels] = useState<string[]>(["gpt-4o-mini", "claude-3-haiku"]);
+  const [modules, setModules] = useState<ReportConfig["modules"]>({
+    persona: false, commerce: false, sentiment: false,
+    citations: false, improvementPlan: true, categoryBenchmark: false,
   });
 
-  // Token balance
+  // UI state
   const [tokenBalance, setTokenBalance] = useState<number | null>(null);
-
-  // Active template
   const [activeTemplate, setActiveTemplate] = useState<string | null>("standard");
-
-  // Progress / scanning
   const [scanning, setScanning] = useState(false);
   const [steps, setSteps] = useState<StepState[]>([]);
   const [scanError, setScanError] = useState<string | null>(null);
   const stepsRef = useRef<StepState[]>([]);
 
+  const allModels = useMemo(() => getAvailableModels(), []);
+
   // Auto-check Commerce Deep Dive for commerce categories
   useEffect(() => {
     if (COMMERCE_CATS.includes(category)) {
-      setAddons((prev) => ({ ...prev, commerce_deep_dive: true }));
+      setModules((prev) => ({ ...prev, commerce: true }));
     }
   }, [category]);
 
@@ -169,17 +140,39 @@ export default function ReportBuilderPage() {
 
   // ── Cost calculation ──────────────────────────────────────────────────────
 
-  const totalCost = useMemo(() => {
-    const base = BASE_COSTS[reportType];
-    const addonCost = (Object.keys(addons) as AddonKey[]).reduce(
-      (sum, k) => sum + (addons[k] ? ADDON_COSTS[k] : 0),
-      0
-    );
-    const competitorCost = extraCompetitorNames.length * EXTRA_COMPETITOR_COST;
-    return base + addonCost + competitorCost;
-  }, [reportType, addons, extraCompetitorNames]);
-
   const allCompetitors = [...baseCompetitors, ...extraCompetitorNames];
+
+  const reportConfig: ReportConfig = useMemo(() => ({
+    scanDepth,
+    models: selectedModels,
+    competitorCount: allCompetitors.length,
+    modules,
+  }), [scanDepth, selectedModels, allCompetitors.length, modules]);
+
+  const cost = useMemo(() => calculateReportCost(reportConfig), [reportConfig]);
+  const totalCost = cost.totalTokens;
+
+  // Delta cost per module (computed once per render since it's pure)
+  const moduleDeltaMap = useMemo<Record<ModuleKey, number>>(() => {
+    const base = (k: ModuleKey) => getModuleDelta(reportConfig, k);
+    return {
+      persona: base("persona"), commerce: base("commerce"), sentiment: base("sentiment"),
+      citations: base("citations"), improvementPlan: base("improvementPlan"), categoryBenchmark: base("categoryBenchmark"),
+    };
+  }, [reportConfig]);
+
+  // Template costs (default 2 models, 0 competitors)
+  const templateCosts = useMemo(() => {
+    return TEMPLATES.map((t) => ({
+      id: t.id,
+      tokens: calculateReportCost({
+        scanDepth: t.scanDepth,
+        models: ["gpt-4o-mini", "claude-3-haiku"],
+        competitorCount: 0,
+        modules: { persona: false, commerce: false, sentiment: false, citations: false, improvementPlan: false, categoryBenchmark: false, ...t.modules },
+      }).totalTokens,
+    }));
+  }, []);
 
   // ── Brand detection ───────────────────────────────────────────────────────
 
@@ -202,11 +195,8 @@ export default function ReportBuilderPage() {
         }
         setDetectedFrom(targetUrl.trim());
       }
-    } catch {
-      // ignore
-    } finally {
-      setDetecting(false);
-    }
+    } catch { /* ignore */ }
+    finally { setDetecting(false); }
   }
 
   function addExtraCompetitor() {
@@ -218,32 +208,32 @@ export default function ReportBuilderPage() {
   }
 
   function removeCompetitor(name: string) {
-    if (baseCompetitors.includes(name)) {
-      setBaseCompetitors((prev) => prev.filter((c) => c !== name));
-    } else {
-      setExtraCompetitorNames((prev) => prev.filter((c) => c !== name));
-    }
+    if (baseCompetitors.includes(name)) setBaseCompetitors((prev) => prev.filter((c) => c !== name));
+    else setExtraCompetitorNames((prev) => prev.filter((c) => c !== name));
     setActiveTemplate(null);
   }
 
   function applyTemplate(t: Template) {
     setActiveTemplate(t.id);
-    setReportType(t.reportType);
-    const newAddons = { ...addons };
-    (Object.keys(newAddons) as AddonKey[]).forEach((k) => { newAddons[k] = false; });
-    t.addons.forEach((a) => { newAddons[a] = true; });
-    // Auto-preserve commerce deep dive if applicable
-    if (COMMERCE_CATS.includes(category)) newAddons.commerce_deep_dive = true;
-    setAddons(newAddons);
-    // Handle extra competitors from template
-    if (t.extraCompetitors > 0 && extraCompetitorNames.length < t.extraCompetitors) {
-      // Just note how many extras the template expects — user adds names manually
-    }
+    setScanDepth(t.scanDepth);
+    const newModules = { persona: false, commerce: false, sentiment: false, citations: false, improvementPlan: false, categoryBenchmark: false, ...t.modules };
+    if (COMMERCE_CATS.includes(category)) newModules.commerce = true;
+    setModules(newModules);
     setExtraCompetitorNames([]);
   }
 
-  function toggleAddon(key: AddonKey) {
-    setAddons((prev) => ({ ...prev, [key]: !prev[key] }));
+  function toggleModule(key: ModuleKey) {
+    setModules((prev) => ({ ...prev, [key]: !prev[key] }));
+    setActiveTemplate(null);
+  }
+
+  function toggleModel(key: string) {
+    if (!SCAN_CAPABLE.has(key)) return; // premium/coming-soon models not yet scannable
+    setSelectedModels((prev) =>
+      prev.includes(key)
+        ? prev.filter((m) => m !== key)
+        : [...prev, key]
+    );
     setActiveTemplate(null);
   }
 
@@ -264,11 +254,11 @@ export default function ReportBuilderPage() {
     setScanning(true);
 
     const initialSteps: StepState[] = [
-      { id: "setup",     label: `Configuring report for ${brand}…`,    status: "running" },
-      { id: "chatgpt",   label: "Querying ChatGPT…",                    status: "pending" },
-      { id: "claude",    label: "Querying Claude…",                     status: "pending" },
-      { id: "analyze",   label: "Analyzing responses with AI…",         status: "pending" },
-      { id: "score",     label: "Calculating ShowsUp Score…",           status: "pending" },
+      { id: "setup",   label: `Configuring report for ${brand}…`, status: "running" },
+      { id: "chatgpt", label: "Querying ChatGPT…",                status: "pending" },
+      { id: "claude",  label: "Querying Claude…",                 status: "pending" },
+      { id: "analyze", label: "Analyzing responses with AI…",     status: "pending" },
+      { id: "score",   label: "Calculating ShowsUp Score…",       status: "pending" },
     ];
     stepsRef.current = initialSteps;
     setSteps([...initialSteps]);
@@ -279,10 +269,11 @@ export default function ReportBuilderPage() {
     updateStep("claude", "running");
 
     try {
-      const reportConfig = {
-        type: reportType,
-        addons: (Object.keys(addons) as AddonKey[]).filter((k) => addons[k]),
-        extra_competitors: extraCompetitorNames.length,
+      const addonKeys = (Object.keys(modules) as ModuleKey[]).filter((k) => modules[k]);
+      // Map module keys back to the scan API's addon string format
+      const addonMap: Record<ModuleKey, string> = {
+        persona: "persona_analysis", commerce: "commerce_deep_dive", sentiment: "sentiment_deep_dive",
+        citations: "citation_tracking", improvementPlan: "improvement_plan", categoryBenchmark: "category_benchmark",
       };
 
       const res = await fetch("/api/scan", {
@@ -293,9 +284,16 @@ export default function ReportBuilderPage() {
           category,
           niche: niche || undefined,
           url: url.trim(),
-          models: { chatgpt: true, claude: true },
+          models: {
+            chatgpt: selectedModels.some((m) => MODEL_TO_PLATFORM[m] === "chatgpt"),
+            claude:  selectedModels.some((m) => MODEL_TO_PLATFORM[m] === "claude"),
+          },
           competitors: allCompetitors,
-          report_config: reportConfig,
+          report_config: {
+            type: scanDepth,
+            addons: addonKeys.map((k) => addonMap[k]),
+            extra_competitors: extraCompetitorNames.length,
+          },
         }),
       });
 
@@ -329,11 +327,7 @@ export default function ReportBuilderPage() {
       window.dispatchEvent(new Event("tokenBalanceChanged"));
 
       await delay(300);
-      if (data.scan_id) {
-        router.push(`/app/scores/${data.scan_id}`);
-      } else {
-        router.push("/app/scores");
-      }
+      router.push(data.scan_id ? `/app/scores/${data.scan_id}` : "/app/scores");
     } catch {
       updateStep("chatgpt", "error");
       updateStep("claude", "error");
@@ -342,29 +336,9 @@ export default function ReportBuilderPage() {
     }
   }
 
-  // ── Estimate time ─────────────────────────────────────────────────────────
-
-  const estimatedMinutes = reportType === "deep" ? 4 : reportType === "standard" ? 2 : 1;
-
-  // ── Addon line items for summary ──────────────────────────────────────────
-
-  const activeAddonLines = (Object.keys(addons) as AddonKey[]).filter((k) => addons[k]);
-  const ADDON_LABELS: Record<AddonKey, string> = {
-    persona_analysis:    "Persona Analysis",
-    commerce_deep_dive:  "Commerce Deep Dive",
-    sentiment_deep_dive: "Sentiment Analysis",
-    citation_tracking:   "Citation Tracking",
-    improvement_plan:    "AI Improvement Plan",
-    category_benchmark:  "Category Benchmark",
-  };
-
-  const canGenerate = !!brand.trim() && !!url.trim() && (tokenBalance === null || tokenBalance >= totalCost);
+  const estimatedMinutes = scanDepth === "deep" ? 4 : scanDepth === "standard" ? 2 : 1;
+  const canGenerate = !!brand.trim() && !!url.trim() && selectedModels.length > 0 && (tokenBalance === null || tokenBalance >= totalCost);
   const needsMoreTokens = tokenBalance !== null && tokenBalance < totalCost;
-  const cheapestPackage = needsMoreTokens
-    ? (totalCost - tokenBalance <= 200 - 50 ? "Starter (200 🪙) for S$19"
-      : totalCost - tokenBalance <= 500 - 150 ? "Explorer (500 🪙) for S$39"
-      : "Growth (1,200 🪙) for S$79")
-    : null;
 
   // ── Progress view ─────────────────────────────────────────────────────────
 
@@ -384,8 +358,7 @@ export default function ReportBuilderPage() {
                   "text-sm",
                   step.status === "done"    ? "text-gray-400" :
                   step.status === "running" ? "text-white font-medium" :
-                  step.status === "error"   ? "text-[#EF4444]" :
-                  "text-gray-600"
+                  step.status === "error"   ? "text-[#EF4444]" : "text-gray-600"
                 )}>
                   {step.label}
                 </span>
@@ -396,10 +369,7 @@ export default function ReportBuilderPage() {
         {scanError && (
           <div className="rounded-lg border border-[#EF4444]/20 bg-[#EF4444]/10 px-4 py-3">
             <p className="text-sm text-[#EF4444]">{scanError}</p>
-            <button
-              onClick={() => setScanning(false)}
-              className="mt-2 text-xs text-gray-400 hover:text-white transition-colors underline"
-            >
+            <button onClick={() => setScanning(false)} className="mt-2 text-xs text-gray-400 hover:text-white transition-colors underline">
               Go back to builder
             </button>
           </div>
@@ -422,24 +392,27 @@ export default function ReportBuilderPage() {
       <div className="space-y-3">
         <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Start with a template</p>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          {TEMPLATES.map((t) => (
-            <button
-              key={t.id}
-              onClick={() => applyTemplate(t)}
-              className={cn(
-                "text-left rounded-xl border px-4 py-3 transition-all duration-150 space-y-1",
-                activeTemplate === t.id
-                  ? "border-[#10B981]/50 bg-[#10B981]/10 ring-1 ring-[#10B981]/20"
-                  : "border-white/10 bg-[#111827] hover:border-white/20 hover:bg-white/[0.03]"
-              )}
-            >
-              <p className="text-sm font-semibold text-white">{t.label}</p>
-              <p className="text-[11px] text-gray-500">{t.description}</p>
-              <p className={cn("text-xs font-semibold", activeTemplate === t.id ? "text-[#10B981]" : "text-gray-400")}>
-                {t.value}
-              </p>
-            </button>
-          ))}
+          {TEMPLATES.map((t) => {
+            const tCost = templateCosts.find((tc) => tc.id === t.id)?.tokens ?? 0;
+            return (
+              <button
+                key={t.id}
+                onClick={() => applyTemplate(t)}
+                className={cn(
+                  "text-left rounded-xl border px-4 py-3 transition-all duration-150 space-y-1",
+                  activeTemplate === t.id
+                    ? "border-[#10B981]/50 bg-[#10B981]/10 ring-1 ring-[#10B981]/20"
+                    : "border-white/10 bg-[#111827] hover:border-white/20 hover:bg-white/[0.03]"
+                )}
+              >
+                <p className="text-sm font-semibold text-white">{t.label}</p>
+                <p className="text-[11px] text-gray-500">{t.description}</p>
+                <p className={cn("text-xs font-semibold", activeTemplate === t.id ? "text-[#10B981]" : "text-gray-400")}>
+                  ~{tCost} 🪙
+                </p>
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -469,9 +442,7 @@ export default function ReportBuilderPage() {
                   onClick={() => { setDetectedFrom(null); detectFromUrl(url); }}
                   disabled={detecting || !url.trim()}
                 >
-                  {detecting ? (
-                    <span className="w-4 h-4 border-2 border-gray-400 border-t-white rounded-full animate-spin" />
-                  ) : "Detect"}
+                  {detecting ? <span className="w-4 h-4 border-2 border-gray-400 border-t-white rounded-full animate-spin" /> : "Detect"}
                 </Button>
               </div>
 
@@ -523,7 +494,7 @@ export default function ReportBuilderPage() {
                     ))}
                     {extraCompetitorNames.map((name) => (
                       <span key={name} className="inline-flex items-center gap-1 text-xs bg-[#10B981]/10 border border-[#10B981]/20 text-[#10B981] rounded-full px-2.5 py-1">
-                        {name} <span className="text-[#10B981]/60 text-[10px]">+{EXTRA_COMPETITOR_COST}🪙</span>
+                        {name}
                         <button type="button" onClick={() => removeCompetitor(name)} className="text-[#10B981]/60 hover:text-[#10B981]">×</button>
                       </span>
                     ))}
@@ -531,7 +502,7 @@ export default function ReportBuilderPage() {
                 )}
                 <div className="flex gap-2">
                   <Input
-                    placeholder="Add competitor (+30 🪙 each)"
+                    placeholder="Add competitor (updates cost)"
                     value={competitorInput}
                     onChange={(e) => setCompetitorInput(e.target.value)}
                     onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addExtraCompetitor(); } }}
@@ -557,121 +528,130 @@ export default function ReportBuilderPage() {
               <p className="text-sm font-semibold text-white">Report Depth</p>
               {(
                 [
-                  { id: "quick_check", label: "Quick Check",       cost: 50,  desc: "Basic score across 2 platforms, 8 queries" },
-                  { id: "standard",    label: "Standard Report",   cost: 150, desc: "20 queries, competitor benchmark, recommendations" },
-                  { id: "deep",        label: "Deep Analysis",     cost: 400, desc: "50 queries, all platforms, comprehensive analysis" },
-                ] as { id: ReportType; label: string; cost: number; desc: string }[]
-              ).map((opt) => (
-                <label
-                  key={opt.id}
-                  className={cn(
-                    "flex items-start gap-3 rounded-xl border p-3.5 cursor-pointer transition-all",
-                    reportType === opt.id
-                      ? "border-[#10B981]/40 bg-[#10B981]/8"
-                      : "border-white/10 hover:border-white/20"
-                  )}
-                >
-                  <input
-                    type="radio"
-                    name="reportType"
-                    value={opt.id}
-                    checked={reportType === opt.id}
-                    onChange={() => { setReportType(opt.id); setActiveTemplate(null); }}
-                    className="mt-0.5 accent-[#10B981]"
-                  />
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-white">{opt.label}</span>
-                      <span className="text-xs font-semibold text-[#10B981]">{opt.cost} 🪙</span>
+                  { id: "quick_check" as ScanDepth, label: "Quick Check",     desc: "Basic score across 2 platforms, 8 queries"              },
+                  { id: "standard"    as ScanDepth, label: "Standard Report", desc: "20 queries, competitor benchmark, recommendations"       },
+                  { id: "deep"        as ScanDepth, label: "Deep Analysis",   desc: "50 queries, all platforms, comprehensive analysis"       },
+                ]
+              ).map((opt) => {
+                const optCost = calculateReportCost({ ...reportConfig, scanDepth: opt.id, modules: { persona: false, commerce: false, sentiment: false, citations: false, improvementPlan: false, categoryBenchmark: false } }).totalTokens;
+                return (
+                  <label
+                    key={opt.id}
+                    className={cn(
+                      "flex items-start gap-3 rounded-xl border p-3.5 cursor-pointer transition-all",
+                      scanDepth === opt.id ? "border-[#10B981]/40 bg-[#10B981]/8" : "border-white/10 hover:border-white/20"
+                    )}
+                  >
+                    <input
+                      type="radio"
+                      name="scanDepth"
+                      value={opt.id}
+                      checked={scanDepth === opt.id}
+                      onChange={() => { setScanDepth(opt.id); setActiveTemplate(null); }}
+                      className="mt-0.5 accent-[#10B981]"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-white">{opt.label}</span>
+                        <span className="text-xs font-semibold text-[#10B981]">{optCost} 🪙</span>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-0.5">{opt.desc}</p>
                     </div>
-                    <p className="text-xs text-gray-500 mt-0.5">{opt.desc}</p>
-                  </div>
-                </label>
-              ))}
+                  </label>
+                );
+              })}
             </CardContent>
           </Card>
 
-          {/* Section 3: AI Platforms */}
+          {/* Section 3: AI Models */}
           <Card className="bg-[#111827] border-white/10">
             <CardContent className="pt-5 pb-5 space-y-3">
-              <p className="text-sm font-semibold text-white">AI Platforms</p>
+              <p className="text-sm font-semibold text-white">AI Models</p>
               <div className="space-y-2">
-                {[
-                  { id: "chatgpt", label: "ChatGPT",  included: true,  available: true  },
-                  { id: "claude",  label: "Claude",   included: true,  available: true  },
-                  { id: "gemini",  label: "Gemini",   included: false, available: false, cost: 40 },
-                ].map((platform) => (
-                  <div
-                    key={platform.id}
-                    className={cn(
-                      "flex items-center justify-between rounded-xl border px-3.5 py-3",
-                      platform.available ? "border-white/10" : "border-white/5 opacity-50"
-                    )}
-                  >
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="checkbox"
-                        checked={platform.included}
-                        disabled={!platform.available || platform.included}
-                        readOnly
-                        className="w-4 h-4 rounded accent-[#10B981] disabled:opacity-60"
-                      />
-                      <span className="text-sm text-white">{platform.label}</span>
+                {allModels.map((model) => {
+                  const isSelected   = selectedModels.includes(model.key);
+                  const isCapable    = SCAN_CAPABLE.has(model.key);
+                  const isComingSoon = COMING_SOON_PROVIDERS.has(model.provider);
+                  const costWith    = calculateReportCost({ ...reportConfig, models: [...selectedModels.filter((m) => m !== model.key), model.key] }).totalTokens;
+                  const costWithout = calculateReportCost({ ...reportConfig, models: selectedModels.filter((m) => m !== model.key) }).totalTokens;
+                  const delta       = costWith - costWithout;
+
+                  return (
+                    <div
+                      key={model.key}
+                      className={cn(
+                        "flex items-center justify-between rounded-xl border px-3.5 py-3 transition-all",
+                        isComingSoon  ? "border-white/5 opacity-40" :
+                        isCapable     ? (isSelected ? "border-[#10B981]/30 bg-[#10B981]/5" : "border-white/10 hover:border-white/20 cursor-pointer") :
+                        "border-white/5 opacity-50"
+                      )}
+                      onClick={() => isCapable && !isComingSoon && toggleModel(model.key)}
+                    >
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          readOnly
+                          disabled={!isCapable || isComingSoon}
+                          className="w-4 h-4 rounded accent-[#10B981] disabled:opacity-60 pointer-events-none"
+                        />
+                        <div>
+                          <span className="text-sm text-white">{model.label}</span>
+                          <span className={cn(
+                            "ml-2 text-[10px] rounded-full px-1.5 py-0.5 font-medium",
+                            model.tier === 'free' ? "bg-[#10B981]/20 text-[#10B981]" : "bg-[#F59E0B]/20 text-[#F59E0B]"
+                          )}>
+                            {model.tier}
+                          </span>
+                        </div>
+                      </div>
+                      <span className="text-xs text-gray-500 tabular-nums">
+                        {isComingSoon ? "Coming soon" :
+                         !isCapable   ? `+${delta} 🪙 (coming soon)` :
+                         isSelected   ? `${delta} 🪙` :
+                         `+${delta} 🪙`}
+                      </span>
                     </div>
-                    <span className="text-xs text-gray-500">
-                      {platform.included ? "Included" : platform.available ? `+${platform.cost} 🪙` : "Coming soon"}
-                    </span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
 
-          {/* Section 5: Add-on Modules */}
+          {/* Section 4: Analysis Modules */}
           <Card className="bg-[#111827] border-white/10">
             <CardContent className="pt-5 pb-5 space-y-3">
               <p className="text-sm font-semibold text-white">Analysis Modules</p>
               <div className="space-y-2">
-                {(
-                  [
-                    { key: "persona_analysis",    label: "Persona-Based Analysis",   cost: 50, desc: "Test from 5 different buyer perspectives" },
-                    { key: "commerce_deep_dive",  label: "Commerce Deep Dive",        cost: 50, desc: "15 purchase-intent queries", autoFor: COMMERCE_CATS },
-                    { key: "sentiment_deep_dive", label: "Detailed Sentiment",        cost: 30, desc: "How AI describes your brand in depth" },
-                    { key: "citation_tracking",   label: "Citation Page Tracking",    cost: 25, desc: "Which of your pages AI cites" },
-                    { key: "improvement_plan",    label: "AI Improvement Plan",       cost: 40, desc: "Prioritized 3-tier action roadmap" },
-                    { key: "category_benchmark",  label: "Category Benchmarking",     cost: 35, desc: "Compare to your industry average" },
-                  ] as { key: AddonKey; label: string; cost: number; desc: string; autoFor?: string[] }[]
-                ).map(({ key, label, cost, desc, autoFor }) => {
-                  const isAuto = autoFor?.includes(category) && key === "commerce_deep_dive";
+                {(Object.keys(MODULE_META) as ModuleKey[]).map((key) => {
+                  const meta   = MODULE_META[key];
+                  const isAuto = meta.autoFor?.includes(category) && key === "commerce";
+                  const delta  = moduleDeltaMap[key];
                   return (
                     <label
                       key={key}
                       className={cn(
                         "flex items-start gap-3 rounded-xl border px-3.5 py-3 cursor-pointer transition-all",
-                        addons[key]
-                          ? "border-[#10B981]/30 bg-[#10B981]/5"
-                          : "border-white/10 hover:border-white/20"
+                        modules[key] ? "border-[#10B981]/30 bg-[#10B981]/5" : "border-white/10 hover:border-white/20"
                       )}
                     >
                       <input
                         type="checkbox"
-                        checked={addons[key]}
-                        onChange={() => toggleAddon(key)}
+                        checked={modules[key]}
+                        onChange={() => toggleModule(key)}
                         className="mt-0.5 w-4 h-4 rounded accent-[#10B981]"
                       />
                       <div className="flex-1">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-1.5">
-                            <span className="text-sm font-medium text-white">{label}</span>
+                            <span className="text-sm font-medium text-white">{meta.label}</span>
                             {isAuto && (
-                              <span className="text-[10px] bg-[#10B981]/20 text-[#10B981] border border-[#10B981]/30 px-1.5 py-0.5 rounded-full">
-                                Auto
-                              </span>
+                              <span className="text-[10px] bg-[#10B981]/20 text-[#10B981] border border-[#10B981]/30 px-1.5 py-0.5 rounded-full">Auto</span>
                             )}
                           </div>
-                          <span className="text-xs font-semibold text-gray-400">+{cost} 🪙</span>
+                          <span className="text-xs font-semibold text-gray-400">+{delta} 🪙</span>
                         </div>
-                        <p className="text-xs text-gray-500 mt-0.5">{desc}</p>
+                        <p className="text-xs text-gray-500 mt-0.5">{meta.desc}</p>
                       </div>
                     </label>
                   );
@@ -685,34 +665,18 @@ export default function ReportBuilderPage() {
         <div className="lg:sticky lg:top-6 space-y-3">
           <Card className="bg-[#111827] border-white/10">
             <CardContent className="pt-5 pb-5 space-y-4">
-              <p className="text-sm font-semibold text-white">Report Summary</p>
+              <p className="text-sm font-semibold text-white">Report Cost Breakdown</p>
 
+              {/* Breakdown line items */}
               <div className="space-y-1.5">
-                {/* Base cost */}
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-400">
-                    {reportType === "quick_check" ? "Quick Check" : reportType === "standard" ? "Standard Report" : "Deep Analysis"}
-                  </span>
-                  <span className="text-gray-300 tabular-nums font-medium">{BASE_COSTS[reportType]} 🪙</span>
-                </div>
-
-                {/* Active addons */}
-                {activeAddonLines.map((k) => (
-                  <div key={k} className="flex items-center justify-between text-sm">
-                    <span className="text-gray-400">{ADDON_LABELS[k]}</span>
-                    <span className="text-gray-300 tabular-nums font-medium">+{ADDON_COSTS[k]} 🪙</span>
+                {cost.breakdown.map((item, i) => (
+                  <div key={i} className="flex items-center justify-between text-xs gap-2">
+                    <span className="text-gray-400 truncate">{item.description}</span>
+                    <span className="text-gray-300 tabular-nums font-medium whitespace-nowrap flex-shrink-0">{item.tokens} 🪙</span>
                   </div>
                 ))}
 
-                {/* Extra competitors */}
-                {extraCompetitorNames.map((name) => (
-                  <div key={name} className="flex items-center justify-between text-sm">
-                    <span className="text-gray-400 truncate max-w-[140px]">+ {name}</span>
-                    <span className="text-gray-300 tabular-nums font-medium">+{EXTRA_COMPETITOR_COST} 🪙</span>
-                  </div>
-                ))}
-
-                {/* Divider */}
+                {/* Divider + Total */}
                 <div className="border-t border-white/10 pt-2 mt-1 flex items-center justify-between">
                   <span className="text-sm font-semibold text-white">Total</span>
                   <span className="text-xl font-bold text-white tabular-nums">{totalCost} 🪙</span>
@@ -733,8 +697,7 @@ export default function ReportBuilderPage() {
                     <span className={cn("font-semibold tabular-nums", tokenBalance - totalCost >= 0 ? "text-gray-300" : "text-[#EF4444]")}>
                       {tokenBalance >= totalCost
                         ? `${(tokenBalance - totalCost).toLocaleString()} 🪙 remaining`
-                        : `Need ${(totalCost - tokenBalance).toLocaleString()} more`
-                      }
+                        : `Need ${(totalCost - tokenBalance).toLocaleString()} more`}
                     </span>
                   </div>
                 </div>
@@ -750,20 +713,15 @@ export default function ReportBuilderPage() {
               {/* Generate button */}
               {needsMoreTokens ? (
                 <div className="space-y-2">
-                  <Button
-                    disabled
-                    className="w-full bg-white/5 text-gray-500 font-semibold cursor-not-allowed border border-white/10"
-                  >
+                  <Button disabled className="w-full bg-white/5 text-gray-500 font-semibold cursor-not-allowed border border-white/10">
                     Need {(totalCost - (tokenBalance ?? 0)).toLocaleString()} more 🪙
                   </Button>
-                  {cheapestPackage && (
-                    <Link
-                      href="/app/tokens"
-                      className="block text-center text-xs text-[#10B981] hover:underline py-0.5"
-                    >
-                      💡 Buy {cheapestPackage} →
-                    </Link>
-                  )}
+                  <Link
+                    href="/app/tokens"
+                    className="block text-center text-xs text-[#10B981] hover:underline py-0.5"
+                  >
+                    💡 Buy more tokens →
+                  </Link>
                 </div>
               ) : (
                 <Button
@@ -780,15 +738,24 @@ export default function ReportBuilderPage() {
                 <p className="text-center text-xs text-gray-600">Enter a website URL to get started</p>
               )}
 
-              {/* Estimate */}
               <div className="flex items-center gap-1.5 justify-center">
                 <Info className="w-3 h-3 text-gray-600" />
-                <p className="text-xs text-gray-600">Estimated delivery: ~{estimatedMinutes} minute{estimatedMinutes !== 1 ? "s" : ""}</p>
+                <p className="text-xs text-gray-600">~{estimatedMinutes} minute{estimatedMinutes !== 1 ? "s" : ""} estimated</p>
               </div>
+
+              {/* Cost explanation */}
+              <details className="group">
+                <summary className="text-[11px] text-gray-600 cursor-pointer hover:text-gray-400 transition-colors list-none flex items-center gap-1">
+                  <span className="group-open:hidden">ℹ How is cost calculated?</span>
+                  <span className="hidden group-open:inline">ℹ Hide explanation</span>
+                </summary>
+                <p className="text-[11px] text-gray-600 mt-2 leading-relaxed">
+                  Token costs reflect the actual AI compute needed for your report. Premium models cost more because they provide deeper analysis. We add a 20% margin for reliability and overhead.
+                </p>
+              </details>
             </CardContent>
           </Card>
 
-          {/* Token balance link */}
           <div className="flex items-center justify-center gap-1.5">
             <Coins className="w-3.5 h-3.5 text-gray-600" />
             <Link href="/app/tokens" className="text-xs text-gray-600 hover:text-gray-400 transition-colors">

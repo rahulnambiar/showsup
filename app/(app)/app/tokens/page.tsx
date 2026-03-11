@@ -6,63 +6,72 @@ import { Coins, Check, X, Zap, ArrowRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { calculateReportCost, getActionCost } from "@/lib/pricing/cost-calculator";
 
 const PACKAGES = [
   {
     id: "starter",
     label: "Starter",
-    tokens: 200,
+    tokens: 2500,
     price_sgd: 19,
     popular: false,
-    per_token: "~$0.10",
+    per_token: "S$0.008/token",
     savings: null,
-    scans: 1,
   },
   {
     id: "explorer",
     label: "Explorer",
-    tokens: 500,
+    tokens: 5000,
     price_sgd: 39,
     popular: true,
-    per_token: "~$0.08",
-    savings: "Save 18% vs Starter",
-    scans: 3,
+    per_token: "S$0.008/token",
+    savings: null,
   },
   {
     id: "growth",
     label: "Growth",
-    tokens: 1200,
+    tokens: 12000,
     price_sgd: 79,
     popular: false,
-    per_token: "~$0.07",
-    savings: "Save 31% vs Starter",
-    scans: 8,
+    per_token: "S$0.007/token",
+    savings: "Save 14% vs Explorer",
   },
   {
     id: "pro",
     label: "Pro",
-    tokens: 3000,
+    tokens: 30000,
     price_sgd: 149,
     popular: false,
-    per_token: "~$0.05",
-    savings: "Save 48% vs Starter",
-    scans: 20,
+    per_token: "S$0.005/token",
+    savings: "Best value — Save 36%",
   },
 ] as const;
 
 type PackageId = (typeof PACKAGES)[number]["id"];
 
+// Dynamic cost table using the pricing engine
+const STANDARD_CONFIG = {
+  scanDepth: "standard" as const,
+  models: ["gpt-4o-mini", "claude-3-haiku"],
+  competitorCount: 0,
+  modules: { persona: false, commerce: false, sentiment: false, citations: false, improvementPlan: false, categoryBenchmark: false },
+};
+
 const COST_TABLE = [
-  { label: "Quick Check",         cost: 50  },
-  { label: "Standard Report",     cost: 150 },
-  { label: "Deep Analysis",       cost: 400 },
-  { label: "Persona Analysis",    cost: 50  },
-  { label: "Commerce Deep Dive",  cost: 50  },
-  { label: "AI Improvement Plan", cost: 40  },
-  { label: "Category Benchmark",  cost: 35  },
-  { label: "Sentiment Analysis",  cost: 30  },
-  { label: "Citation Tracking",   cost: 25  },
+  { label: "Quick Check",         cost: calculateReportCost({ ...STANDARD_CONFIG, scanDepth: "quick_check" }).totalTokens },
+  { label: "Standard Report",     cost: calculateReportCost(STANDARD_CONFIG).totalTokens },
+  { label: "Deep Analysis",       cost: calculateReportCost({ ...STANDARD_CONFIG, scanDepth: "deep" }).totalTokens },
+  { label: "Persona Analysis",    cost: calculateReportCost({ ...STANDARD_CONFIG, modules: { ...STANDARD_CONFIG.modules, persona: true } }).totalTokens - calculateReportCost(STANDARD_CONFIG).totalTokens },
+  { label: "Commerce Deep Dive",  cost: calculateReportCost({ ...STANDARD_CONFIG, modules: { ...STANDARD_CONFIG.modules, commerce: true } }).totalTokens - calculateReportCost(STANDARD_CONFIG).totalTokens },
+  { label: "AI Improvement Plan", cost: calculateReportCost({ ...STANDARD_CONFIG, modules: { ...STANDARD_CONFIG.modules, improvementPlan: true } }).totalTokens - calculateReportCost(STANDARD_CONFIG).totalTokens },
+  { label: "Category Benchmark",  cost: calculateReportCost({ ...STANDARD_CONFIG, modules: { ...STANDARD_CONFIG.modules, categoryBenchmark: true } }).totalTokens - calculateReportCost(STANDARD_CONFIG).totalTokens },
+  { label: "Sentiment Analysis",  cost: calculateReportCost({ ...STANDARD_CONFIG, modules: { ...STANDARD_CONFIG.modules, sentiment: true } }).totalTokens - calculateReportCost(STANDARD_CONFIG).totalTokens },
+  { label: "Citation Tracking",   cost: calculateReportCost({ ...STANDARD_CONFIG, modules: { ...STANDARD_CONFIG.modules, citations: true } }).totalTokens - calculateReportCost(STANDARD_CONFIG).totalTokens },
+  { label: "Custom Query",        cost: getActionCost("custom_query") },
+  { label: "Full PDF Export",     cost: getActionCost("pdf_full") },
 ];
+
+const STANDARD_COST = calculateReportCost(STANDARD_CONFIG).totalTokens;
 
 export default function TokensPage() {
   const [balance, setBalance] = useState<number | null>(null);
@@ -110,7 +119,7 @@ export default function TokensPage() {
         <div className="space-y-1">
           <h1 className="text-2xl font-bold text-white">Buy Tokens</h1>
           <p className="text-gray-400 text-sm">
-            Tokens power every scan and report on ShowsUp.
+            Tokens power every scan and report. 1,000 free tokens on signup — enough for ~{Math.floor(1000 / STANDARD_COST)} full reports.
           </p>
         </div>
         {balance !== null && (
@@ -139,61 +148,64 @@ export default function TokensPage() {
 
       {/* Package cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {PACKAGES.map((pkg) => (
-          <Card
-            key={pkg.id}
-            className={cn(
-              "relative bg-[#111827] transition-all duration-200",
-              pkg.popular
-                ? "border-[#10B981]/50 ring-1 ring-[#10B981]/20"
-                : "border-white/10 hover:border-white/20"
-            )}
-          >
-            {pkg.popular && (
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
-                <span className="text-[10px] font-bold bg-[#10B981] text-[#0A0E17] px-3 py-1 rounded-full uppercase tracking-wider whitespace-nowrap">
-                  Most Popular
-                </span>
-              </div>
-            )}
-            <CardContent className="pt-7 pb-5 space-y-4">
-              <div className="space-y-0.5">
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{pkg.label}</p>
-                <div className="flex items-baseline gap-1 mt-1">
-                  <span className="text-3xl font-bold text-white tabular-nums">{pkg.tokens.toLocaleString()}</span>
-                  <span className="text-gray-500 text-sm">tokens</span>
-                </div>
-                <p className="text-xl font-bold text-white">S${pkg.price_sgd}</p>
-                <p className="text-xs text-gray-600">{pkg.per_token}/token</p>
-              </div>
-
-              {pkg.savings ? (
-                <p className="text-[11px] text-[#10B981] bg-[#10B981]/10 border border-[#10B981]/20 rounded-lg px-2.5 py-1.5 font-medium">
-                  {pkg.savings}
-                </p>
-              ) : (
-                <div className="h-[30px]" />
+        {PACKAGES.map((pkg) => {
+          const scans = Math.floor(pkg.tokens / STANDARD_COST);
+          return (
+            <Card
+              key={pkg.id}
+              className={cn(
+                "relative bg-[#111827] transition-all duration-200",
+                pkg.popular
+                  ? "border-[#10B981]/50 ring-1 ring-[#10B981]/20"
+                  : "border-white/10 hover:border-white/20"
               )}
+            >
+              {pkg.popular && (
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
+                  <span className="text-[10px] font-bold bg-[#10B981] text-[#0A0E17] px-3 py-1 rounded-full uppercase tracking-wider whitespace-nowrap">
+                    Most Popular
+                  </span>
+                </div>
+              )}
+              <CardContent className="pt-7 pb-5 space-y-4">
+                <div className="space-y-0.5">
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{pkg.label}</p>
+                  <div className="flex items-baseline gap-1 mt-1">
+                    <span className="text-3xl font-bold text-white tabular-nums">{pkg.tokens.toLocaleString()}</span>
+                    <span className="text-gray-500 text-sm">tokens</span>
+                  </div>
+                  <p className="text-xl font-bold text-white">S${pkg.price_sgd}</p>
+                  <p className="text-xs text-gray-600">{pkg.per_token}</p>
+                </div>
 
-              <div className="flex items-center gap-1.5 text-xs text-gray-500">
-                <Zap className="w-3 h-3 text-gray-600 flex-shrink-0" />
-                <span>~{pkg.scans} standard scan{pkg.scans !== 1 ? "s" : ""}</span>
-              </div>
-
-              <Button
-                className={cn(
-                  "w-full text-sm font-semibold",
-                  pkg.popular
-                    ? "bg-[#10B981] hover:bg-[#059669] text-[#0A0E17]"
-                    : "bg-white/5 hover:bg-white/10 text-white border border-white/10 hover:border-white/20"
+                {pkg.savings ? (
+                  <p className="text-[11px] text-[#10B981] bg-[#10B981]/10 border border-[#10B981]/20 rounded-lg px-2.5 py-1.5 font-medium">
+                    {pkg.savings}
+                  </p>
+                ) : (
+                  <div className="h-[30px]" />
                 )}
-                onClick={() => { setSuccessPkg(null); setError(null); setConfirming(pkg.id); }}
-              >
-                Buy {pkg.label}
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
+
+                <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                  <Zap className="w-3 h-3 text-gray-600 flex-shrink-0" />
+                  <span>~{scans} standard scan{scans !== 1 ? "s" : ""}</span>
+                </div>
+
+                <Button
+                  className={cn(
+                    "w-full text-sm font-semibold",
+                    pkg.popular
+                      ? "bg-[#10B981] hover:bg-[#059669] text-[#0A0E17]"
+                      : "bg-white/5 hover:bg-white/10 text-white border border-white/10 hover:border-white/20"
+                  )}
+                  onClick={() => { setSuccessPkg(null); setError(null); setConfirming(pkg.id); }}
+                >
+                  Buy {pkg.label}
+                </Button>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
       {/* Cost reference table */}
@@ -210,6 +222,9 @@ export default function TokensPage() {
               </div>
             ))}
           </div>
+          <p className="text-[11px] text-gray-600 mt-4">
+            Costs shown for standard scans with ChatGPT + Claude (free tier models). Premium models cost more.
+          </p>
         </CardContent>
       </Card>
 

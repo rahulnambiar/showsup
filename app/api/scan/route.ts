@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdmin } from "@supabase/supabase-js";
 import { getBalance, deductTokens } from "@/lib/tokens";
-import { TOKEN_COSTS } from "@/lib/token-costs";
+import { calculateReportCost as calcDynamicCost } from "@/lib/pricing/cost-calculator";
 import { generateQueries, type QueryConfig } from "@/lib/query-generator";
 
 function getAdmin() {
@@ -351,27 +351,20 @@ interface ReportConfig {
 }
 
 function calculateTokenCost(config: ReportConfig | null): number {
-  if (!config) return TOKEN_COSTS.STANDARD_REPORT;
-
-  const base: Record<string, number> = {
-    quick_check: TOKEN_COSTS.QUICK_CHECK,
-    standard:    TOKEN_COSTS.STANDARD_REPORT,
-    deep:        TOKEN_COSTS.DEEP_ANALYSIS,
-  };
-
-  const ADDON_COSTS: Record<string, number> = {
-    persona_analysis:    TOKEN_COSTS.PERSONA_ANALYSIS,
-    commerce_deep_dive:  TOKEN_COSTS.COMMERCE_DEEP_DIVE,
-    sentiment_deep_dive: TOKEN_COSTS.SENTIMENT_DEEP_DIVE,
-    citation_tracking:   TOKEN_COSTS.CITATION_TRACKING,
-    improvement_plan:    TOKEN_COSTS.IMPROVEMENT_PLAN,
-    category_benchmark:  TOKEN_COSTS.CATEGORY_BENCHMARK,
-  };
-
-  const baseCost = base[config.type] ?? TOKEN_COSTS.STANDARD_REPORT;
-  const addonCost = (config.addons ?? []).reduce((sum, k) => sum + (ADDON_COSTS[k] ?? 0), 0);
-  const competitorCost = (config.extra_competitors ?? 0) * TOKEN_COSTS.ADD_COMPETITOR;
-  return baseCost + addonCost + competitorCost;
+  const addons = config?.addons ?? [];
+  return calcDynamicCost({
+    scanDepth:       (config?.type ?? 'standard') as 'quick_check' | 'standard' | 'deep',
+    models:          ['gpt-4o-mini', 'claude-3-haiku'],
+    competitorCount: config?.extra_competitors ?? 0,
+    modules: {
+      persona:         addons.includes('persona_analysis'),
+      commerce:        addons.includes('commerce_deep_dive'),
+      sentiment:       addons.includes('sentiment_deep_dive'),
+      citations:       addons.includes('citation_tracking'),
+      improvementPlan: addons.includes('improvement_plan'),
+      categoryBenchmark: addons.includes('category_benchmark'),
+    },
+  }).totalTokens;
 }
 
 // ── Module: Sentiment Deep Dive ───────────────────────────────────────────────

@@ -3,10 +3,10 @@ import { createClient } from "@/lib/supabase/server";
 import { addTokens } from "@/lib/tokens";
 
 const PACKAGES = {
-  starter:  { tokens: 200,  price_sgd: 19,  label: "Starter"  },
-  explorer: { tokens: 500,  price_sgd: 39,  label: "Explorer" },
-  growth:   { tokens: 1200, price_sgd: 79,  label: "Growth"   },
-  pro:      { tokens: 3000, price_sgd: 149, label: "Pro"       },
+  starter:  { tokens: 2500,  price_sgd: 19,  label: "Starter"  },
+  explorer: { tokens: 5000,  price_sgd: 39,  label: "Explorer" },
+  growth:   { tokens: 12000, price_sgd: 79,  label: "Growth"   },
+  pro:      { tokens: 30000, price_sgd: 149, label: "Pro"       },
 } as const;
 
 type PackageId = keyof typeof PACKAGES;
