@@ -37,6 +37,17 @@ async function callAnthropic(prompt: string, maxTokens = 400): Promise<string> {
   return data.content?.[0]?.text ?? "";
 }
 
+async function callAnthropicSonnet(prompt: string, maxTokens = 800): Promise<string> {
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-api-key": process.env.ANTHROPIC_API_KEY!, "anthropic-version": "2023-06-01" },
+    body: JSON.stringify({ model: "claude-sonnet-4-6", max_tokens: maxTokens, messages: [{ role: "user", content: prompt }] }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error?.message ?? "Anthropic Sonnet error");
+  return data.content?.[0]?.text ?? "";
+}
+
 // ── Analysis via Claude Haiku ─────────────────────────────────────────────────
 
 export interface AnalysisResult {
@@ -45,7 +56,10 @@ export interface AnalysisResult {
   is_recommended: boolean;
   sentiment: "positive" | "neutral" | "negative" | null;
   sentiment_reason: string;
-  competitors_found: Array<{ name: string; position: number; is_recommended: boolean }>;
+  brand_description: string | null;
+  key_phrases: string[];
+  competitors_found: Array<{ name: string; position: number; is_recommended: boolean; sentiment: string | null }>;
+  cited_urls: string[];
   key_context: string;
 }
 
@@ -57,7 +71,10 @@ function fallbackAnalysis(brand: string, response: string): AnalysisResult {
     is_recommended: false,
     sentiment: mentioned ? "neutral" : null,
     sentiment_reason: "Fallback: text match only",
+    brand_description: null,
+    key_phrases: [],
     competitors_found: [],
+    cited_urls: [],
     key_context: mentioned
       ? `${brand} appears in the response`
       : `${brand} was not found in the response`,
@@ -68,19 +85,26 @@ async function analyzeResponse(
   brand: string,
   category: string,
   query: string,
+  scoreCategory: string,
   response: string
 ): Promise<AnalysisResult> {
   const truncated = response.length > 600 ? response.slice(0, 600) + "…" : response;
-  const prompt = `Analyze this AI response about the brand '${brand}' in the ${category} industry.
+  const prompt = `Analyze this AI response about '${brand}' in the ${category} industry.
 Query: '${query}'
+Query Type: '${scoreCategory}' (one of: awareness, discovery, competitive, purchase_intent, alternatives, reputation, persona, commerce)
 Response: '${truncated}'
-Return ONLY valid JSON: { "brand_mentioned": true/false, "mention_position": 1-10 or null, "is_recommended": true/false, "sentiment": "positive"|"neutral"|"negative"|null, "sentiment_reason": "brief explanation", "competitors_found": [{"name": "string", "position": number, "is_recommended": boolean}], "key_context": "1-sentence summary of how brand was mentioned or why not" }`;
+Return ONLY valid JSON: { "brand_mentioned": true/false, "mention_position": 1-10 or null, "is_recommended": true/false, "sentiment": "positive"|"neutral"|"negative"|null, "sentiment_reason": "brief explanation", "brand_description": "how the AI described the brand in 1 sentence, or null", "key_phrases": ["phrase1", "phrase2"], "competitors_found": [{"name": "string", "position": number, "is_recommended": boolean, "sentiment": "positive"|"neutral"|"negative"|null}], "cited_urls": ["url1"], "key_context": "1-sentence summary of how brand was mentioned or why not" }`;
 
   try {
-    const text = await callAnthropic(prompt, 600);
+    const text = await callAnthropic(prompt, 700);
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) throw new Error("No JSON found");
-    return JSON.parse(jsonMatch[0]) as AnalysisResult;
+    const parsed = JSON.parse(jsonMatch[0]) as AnalysisResult;
+    parsed.key_phrases   = Array.isArray(parsed.key_phrases)   ? parsed.key_phrases   : [];
+    parsed.cited_urls    = Array.isArray(parsed.cited_urls)    ? parsed.cited_urls    : [];
+    parsed.competitors_found = Array.isArray(parsed.competitors_found) ? parsed.competitors_found : [];
+    parsed.brand_description = parsed.brand_description ?? null;
+    return parsed;
   } catch {
     return fallbackAnalysis(brand, response);
   }
@@ -350,6 +374,152 @@ function calculateTokenCost(config: ReportConfig | null): number {
   return baseCost + addonCost + competitorCost;
 }
 
+// ── Module: Sentiment Deep Dive ───────────────────────────────────────────────
+
+export interface PerceptionData {
+  summary: string;
+  positive_descriptors: string[];
+  negative_descriptors: string[];
+  perception_mismatches: string[];
+}
+
+async function runSentimentDeepDive(
+  brand: string,
+  allPromptResults: Array<{ scoreCategory: string; analysis: AnalysisResult }>
+): Promise<PerceptionData | null> {
+  const descriptions = allPromptResults
+    .filter((p) => p.analysis.brand_description)
+    .map((p) => p.analysis.brand_description as string);
+  const allPhrases = allPromptResults.flatMap((p) => p.analysis.key_phrases ?? []);
+  if (descriptions.length === 0 && allPhrases.length === 0) return null;
+
+  const prompt = `Based on these descriptions of "${brand}" from AI platforms: ${descriptions.join("; ")}
+Key phrases used: ${allPhrases.join(", ")}
+Summarize: 1) How AI perceives this brand in 2-3 sentences, 2) Top 5 positive descriptors, 3) Top 3 negative/neutral descriptors, 4) Any perception mismatches vs likely brand positioning.
+Return ONLY valid JSON: { "summary": "...", "positive_descriptors": ["..."], "negative_descriptors": ["..."], "perception_mismatches": ["..."] }`;
+
+  try {
+    const text = await callAnthropic(prompt, 600);
+    const match = text.match(/\{[\s\S]*\}/);
+    if (!match) return null;
+    return JSON.parse(match[0]) as PerceptionData;
+  } catch {
+    return null;
+  }
+}
+
+// ── Module: Citation Tracking ─────────────────────────────────────────────────
+
+export interface CitationData {
+  cited_pages: Array<{ url: string; count: number }>;
+  total_citations: number;
+  insight: string;
+}
+
+function runCitationTracking(
+  brand: string,
+  allPromptResults: Array<{ analysis: AnalysisResult }>
+): CitationData {
+  const urlCounts = new Map<string, number>();
+  for (const { analysis } of allPromptResults) {
+    for (const url of (analysis.cited_urls ?? [])) {
+      urlCounts.set(url, (urlCounts.get(url) ?? 0) + 1);
+    }
+  }
+  const cited_pages = Array.from(urlCounts.entries())
+    .map(([url, count]) => ({ url, count }))
+    .sort((a, b) => b.count - a.count);
+  const total_citations = cited_pages.reduce((s, p) => s + p.count, 0);
+  const insight = cited_pages.length === 0
+    ? `No pages from ${brand}'s domain were cited by AI models in this scan.`
+    : `${cited_pages[0].url} was the most cited page (${cited_pages[0].count} citation${cited_pages[0].count !== 1 ? "s" : ""}).`;
+  return { cited_pages, total_citations, insight };
+}
+
+// ── Module: Improvement Plan ──────────────────────────────────────────────────
+
+export interface ImprovementPlanItem {
+  title: string;
+  description: string;
+  impact: string;
+  effort: string;
+  affected_categories: string[];
+}
+
+export interface ImprovementPlan {
+  quick_wins: ImprovementPlanItem[];
+  this_month: ImprovementPlanItem[];
+  this_quarter: ImprovementPlanItem[];
+}
+
+async function runImprovementPlan(
+  brand: string,
+  category: string,
+  finalScore: number,
+  categoryScores: Record<string, number>,
+  competitorsData: CompetitorsData
+): Promise<ImprovementPlan | null> {
+  const compSummary = competitorsData.competitors.slice(0, 3)
+    .map((c) => `${c.name}: ${c.mention_rate}% mention rate, avg position ${c.avg_position ?? "N/A"}`)
+    .join("; ");
+
+  const prompt = `Based on this AI visibility audit for ${brand} in ${category}:
+Overall Score: ${finalScore}/100
+Category Scores: ${JSON.stringify(categoryScores)}
+Competitor comparison: ${compSummary || "No competitors detected"}
+
+Generate a 3-tier improvement plan as JSON:
+{
+  "quick_wins": [{"title": "...", "description": "...", "impact": "+X pts", "effort": "1 hour|1 day|1 week", "affected_categories": ["..."]}],
+  "this_month": [...same structure...],
+  "this_quarter": [...same structure...]
+}
+Be SPECIFIC — reference actual query gaps, competitor advantages, and concrete actions. Include at least 3 items per tier. Return ONLY valid JSON.`;
+
+  try {
+    const text = await callAnthropicSonnet(prompt, 1500);
+    const match = text.match(/\{[\s\S]*\}/);
+    if (!match) return null;
+    return JSON.parse(match[0]) as ImprovementPlan;
+  } catch {
+    return null;
+  }
+}
+
+// ── Module: Category Benchmark ────────────────────────────────────────────────
+
+export interface BenchmarkProfile {
+  score: number;
+  mention_rate: number;
+  avg_position: number;
+  recommend_rate: number;
+}
+
+export interface BenchmarkData {
+  leader: BenchmarkProfile;
+  average: BenchmarkProfile;
+  new_entrant: BenchmarkProfile;
+}
+
+async function runCategoryBenchmark(category: string): Promise<BenchmarkData | null> {
+  const prompt = `For the ${category} industry, what would typical AI visibility scores look like for: a market leader, an average brand, and a new entrant?
+Return ONLY valid JSON:
+{
+  "leader":      { "score": 0-100, "mention_rate": 0-100, "avg_position": 1-10, "recommend_rate": 0-100 },
+  "average":     { "score": 0-100, "mention_rate": 0-100, "avg_position": 1-10, "recommend_rate": 0-100 },
+  "new_entrant": { "score": 0-100, "mention_rate": 0-100, "avg_position": 1-10, "recommend_rate": 0-100 }
+}`;
+
+  try {
+    const text = await callAnthropic(prompt, 400);
+    const match = text.match(/\{[\s\S]*\}/);
+    if (!match) return null;
+    return JSON.parse(match[0]) as BenchmarkData;
+  } catch {
+    return null;
+  }
+}
+
 // ── Route handler ─────────────────────────────────────────────────────────────
 
 export async function POST(request: Request) {
@@ -410,7 +580,7 @@ export async function POST(request: Request) {
           queries.map(async (q) => {
             try {
               const response = await model.call(q.text);
-              const analysis = await analyzeResponse(brand, category, q.text, response);
+              const analysis = await analyzeResponse(brand, category, q.text, q.scoreCategory, response);
               const score = scoreFromAnalyses([analysis]);
               return { promptId: q.id, auditQueryId: q.auditId, scoreCategory: q.scoreCategory, prompt: q.text, response, analysis, mentioned: analysis.brand_mentioned, count: analysis.mention_position ?? 0, score };
             } catch (err) {
@@ -442,11 +612,35 @@ export async function POST(request: Request) {
     const competitors   = buildCompetitorProfiles(brand, allPromptResults);
     const shareOfVoice  = calculateShareOfVoice(brandProfile, competitors);
 
-    // Recommendations + competitive insights in parallel
-    const [recommendations, competitiveInsights] = await Promise.all([
+    const addons = reportConfig?.addons ?? [];
+
+    // Recommendations, insights, and all selected modules — all in parallel
+    const [
+      recommendations,
+      competitiveInsights,
+      perceptionData,
+      improvementPlan,
+      benchmarkData,
+    ] = await Promise.all([
       generateRecommendations(brand, category, finalScore, modelResults),
       generateCompetitiveInsights(brand, brandProfile, competitors),
+      addons.includes("sentiment_deep_dive")
+        ? runSentimentDeepDive(brand, allPromptResults)
+        : Promise.resolve(null),
+      addons.includes("improvement_plan")
+        ? runImprovementPlan(brand, category, finalScore, categoryScores, {
+            brand_profile: brandProfile, competitors, share_of_voice: shareOfVoice, insights: [],
+          })
+        : Promise.resolve(null),
+      addons.includes("category_benchmark")
+        ? runCategoryBenchmark(category)
+        : Promise.resolve(null),
     ]);
+
+    // Citation tracking is synchronous — run after analyses complete
+    const citationData = addons.includes("citation_tracking")
+      ? runCitationTracking(brand, allPromptResults)
+      : null;
 
     const competitorsData: CompetitorsData = {
       brand_profile: brandProfile,
@@ -462,7 +656,15 @@ export async function POST(request: Request) {
 
       const { data: fullScan, error: fullError } = await supabase
         .from("scans")
-        .insert({ user_id: user.id, brand_name: brand, website: url || null, url: url || null, category, status: "completed", overall_score: finalScore, recommendations, category_scores: categoryScores, competitors_data: competitorsData })
+        .insert({
+          user_id: user.id, brand_name: brand, website: url || null, url: url || null,
+          category, status: "completed", overall_score: finalScore,
+          recommendations, category_scores: categoryScores, competitors_data: competitorsData,
+          ...(perceptionData  && { perception_data:   perceptionData  }),
+          ...(citationData    && { citation_data:      citationData    }),
+          ...(improvementPlan && { improvement_plan:   improvementPlan }),
+          ...(benchmarkData   && { benchmark_data:     benchmarkData   }),
+        })
         .select("id").single();
 
       if (!fullError && fullScan?.id) {
@@ -602,7 +804,15 @@ export async function POST(request: Request) {
     // Deduct tokens
     await deductTokens(user.id, tokenCost, `Standard scan: ${brand}`, scanId ?? undefined);
 
-    return NextResponse.json({ scan_id: scanId, brand, category, url, overall_score: finalScore, category_scores: categoryScores, results: modelResults, recommendations, competitors_data: competitorsData });
+    return NextResponse.json({
+      scan_id: scanId, brand, category, url,
+      overall_score: finalScore, category_scores: categoryScores,
+      results: modelResults, recommendations, competitors_data: competitorsData,
+      ...(perceptionData  && { perception_data:   perceptionData  }),
+      ...(citationData    && { citation_data:      citationData    }),
+      ...(improvementPlan && { improvement_plan:   improvementPlan }),
+      ...(benchmarkData   && { benchmark_data:     benchmarkData   }),
+    });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Scan failed";
     return NextResponse.json({ error: message }, { status: 500 });
