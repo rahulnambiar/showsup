@@ -14,6 +14,7 @@ import {
   TrendingUp,
   Coins,
   ChevronDown,
+  Wand2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -21,11 +22,13 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import type { User } from "@supabase/supabase-js";
 
 const navItems = [
-  { href: "/app/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { href: "/app/scan", icon: Search, label: "New Scan" },
-  { href: "/app/scores", icon: BarChart3, label: "Scores" },
-  { href: "/app/trends", icon: TrendingUp, label: "Trends" },
-  { href: "/app/settings", icon: Settings, label: "Settings" },
+  { href: "/app/dashboard",     icon: LayoutDashboard, label: "Dashboard"      },
+  { href: "/app/report-builder",icon: Wand2,           label: "Report Builder" },
+  { href: "/app/scan",          icon: Search,          label: "Quick Scan"     },
+  { href: "/app/scores",        icon: BarChart3,       label: "Scores"         },
+  { href: "/app/trends",        icon: TrendingUp,      label: "Trends"         },
+  { href: "/app/tokens",        icon: Coins,           label: "Tokens"         },
+  { href: "/app/settings",      icon: Settings,        label: "Settings"       },
 ];
 
 interface SidebarProps {
@@ -102,14 +105,15 @@ function TokenWidget() {
             <p className="text-xs text-[#F59E0B]">Running low — a scan costs 150 tokens.</p>
           )}
           <div className="space-y-1.5">
-            <button
-              disabled
-              className="w-full text-xs font-semibold bg-[#10B981]/90 text-[#0A0E17] rounded-lg px-3 py-1.5 opacity-50 cursor-not-allowed"
-            >
-              Buy Tokens — coming soon
-            </button>
             <Link
               href="/app/tokens"
+              onClick={() => setOpen(false)}
+              className="block text-center text-xs font-semibold bg-[#10B981] hover:bg-[#059669] text-[#0A0E17] rounded-lg px-3 py-1.5 transition-colors"
+            >
+              Buy Tokens
+            </Link>
+            <Link
+              href="/app/tokens/history"
               onClick={() => setOpen(false)}
               className="block text-center text-xs text-gray-500 hover:text-gray-300 transition-colors py-0.5"
             >

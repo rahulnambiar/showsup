@@ -7,14 +7,22 @@ import { TOKEN_COSTS } from "@/lib/token-costs";
 
 const COMMERCE_CATEGORIES = ["Insurance", "Travel", "Finance", "E-commerce"];
 
-function buildPrompts(brand: string, category: string, niche?: string) {
+function buildPrompts(brand: string, category: string, niche?: string, competitors?: string[]) {
   // Use specific niche description for contextual prompts, fall back to category
   const space = niche || category;
+  const compList = competitors && competitors.length > 0
+    ? competitors.slice(0, 5).join(", ")
+    : null;
 
   const prompts = [
     { id: "direct",      text: `What is ${brand}? Describe what they do in 2-3 sentences.` },
     { id: "category",    text: `What are the best ${space} tools or companies? List 5-8.` },
-    { id: "competitive", text: `Compare ${brand} with its main competitors. What are the key differences?` },
+    {
+      id: "competitive",
+      text: compList
+        ? `Compare ${brand} with ${compList}. What are the key differences?`
+        : `Compare ${brand} with its main competitors. What are the key differences?`,
+    },
     { id: "reputation",  text: `${brand} reviews — is it worth using? What are the pros and cons?` },
     { id: "alternatives",text: `What are the best alternatives to ${brand} for ${space}?` },
     { id: "usecase",     text: `Best ${space} options for small businesses or startups.` },
@@ -345,6 +353,38 @@ Priority must be exactly "High", "Medium", or "Low". Make recommendations specif
   }
 }
 
+// ── Dynamic cost calculation from report config ───────────────────────────────
+
+interface ReportConfig {
+  type: "quick_check" | "standard" | "deep";
+  addons: string[];
+  extra_competitors: number;
+}
+
+function calculateTokenCost(config: ReportConfig | null): number {
+  if (!config) return TOKEN_COSTS.STANDARD_REPORT;
+
+  const base: Record<string, number> = {
+    quick_check: TOKEN_COSTS.QUICK_CHECK,
+    standard:    TOKEN_COSTS.STANDARD_REPORT,
+    deep:        TOKEN_COSTS.DEEP_ANALYSIS,
+  };
+
+  const ADDON_COSTS: Record<string, number> = {
+    persona_analysis:    TOKEN_COSTS.PERSONA_ANALYSIS,
+    commerce_deep_dive:  TOKEN_COSTS.COMMERCE_DEEP_DIVE,
+    sentiment_deep_dive: TOKEN_COSTS.SENTIMENT_DEEP_DIVE,
+    citation_tracking:   TOKEN_COSTS.CITATION_TRACKING,
+    improvement_plan:    TOKEN_COSTS.IMPROVEMENT_PLAN,
+    category_benchmark:  TOKEN_COSTS.CATEGORY_BENCHMARK,
+  };
+
+  const baseCost = base[config.type] ?? TOKEN_COSTS.STANDARD_REPORT;
+  const addonCost = (config.addons ?? []).reduce((sum, k) => sum + (ADDON_COSTS[k] ?? 0), 0);
+  const competitorCost = (config.extra_competitors ?? 0) * TOKEN_COSTS.ADD_COMPETITOR;
+  return baseCost + addonCost + competitorCost;
+}
+
 // ── Route handler ─────────────────────────────────────────────────────────────
 
 export async function POST(request: Request) {
@@ -358,11 +398,12 @@ export async function POST(request: Request) {
     const category: string = (body.category ?? "Other").trim();
     const niche: string    = (body.niche    ?? "").trim();
     const url: string      = (body.url ?? body.website ?? "").trim();
+    const reportConfig: ReportConfig | null = body.report_config ?? null;
 
     if (!brand) return NextResponse.json({ error: "Brand name is required" }, { status: 400 });
 
-    // Token check
-    const tokenCost = TOKEN_COSTS.STANDARD_REPORT; // 150
+    // Token check — cost varies based on report config
+    const tokenCost = calculateTokenCost(reportConfig);
     const balance = await getBalance(user.id);
     if (balance < tokenCost) {
       return NextResponse.json(
@@ -371,7 +412,10 @@ export async function POST(request: Request) {
       );
     }
 
-    const prompts = buildPrompts(brand, category, niche || undefined);
+    const passedCompetitors: string[] = Array.isArray(body.competitors)
+      ? body.competitors.filter((c: unknown) => typeof c === "string" && c.trim()).slice(0, 8)
+      : [];
+    const prompts = buildPrompts(brand, category, niche || undefined, passedCompetitors);
     const enabledModels = body.models ?? { chatgpt: true, claude: true };
     const allModels = [
       { id: "chatgpt", label: "ChatGPT", call: callOpenAI },
