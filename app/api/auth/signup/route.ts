@@ -90,34 +90,27 @@ export async function POST(request: Request) {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://showsup.co";
     const redirectTo = `${appUrl}/auth/callback?next=${encodeURIComponent(next ?? "/app/dashboard")}`;
 
-    // generateLink with type:'signup' creates the user + generates the confirmation link in one step
-    const { data: linkData, error: linkError } = await admin.auth.admin.generateLink({
-      type: "signup",
+    // Step 1: create user via admin API (bypasses signup restrictions)
+    const { error: createError } = await admin.auth.admin.createUser({
       email,
       password,
+      email_confirm: false,
+    });
+
+    // Ignore "already registered" — we'll just send a fresh link below
+    if (createError && !createError.message.toLowerCase().includes("already")) {
+      return NextResponse.json({ error: createError.message }, { status: 400 });
+    }
+
+    // Step 2: generate a magic link (no signup restrictions, no password needed)
+    const { data: linkData, error: linkError } = await admin.auth.admin.generateLink({
+      type: "magiclink",
+      email,
       options: { redirectTo },
     });
 
     if (linkError || !linkData?.properties?.action_link) {
-      // User already exists — generate a magic link to resend instead
-      if (linkError?.message?.toLowerCase().includes("already")) {
-        const { data: magicData, error: magicError } = await admin.auth.admin.generateLink({
-          type: "magiclink",
-          email,
-          options: { redirectTo },
-        });
-        if (magicError || !magicData?.properties?.action_link) {
-          return NextResponse.json({ error: "Failed to generate confirmation link." }, { status: 500 });
-        }
-        await resend.emails.send({
-          from: process.env.RESEND_FROM_EMAIL ?? "ShowsUp <noreply@showsup.co>",
-          to: email,
-          subject: "Confirm your ShowsUp account",
-          html: buildEmail(magicData.properties.action_link),
-        });
-        return NextResponse.json({ success: true });
-      }
-      return NextResponse.json({ error: linkError?.message ?? "Failed to create account." }, { status: 400 });
+      return NextResponse.json({ error: "Failed to generate confirmation link." }, { status: 500 });
     }
 
     const { error: emailError } = await resend.emails.send({
