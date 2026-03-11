@@ -109,12 +109,7 @@ export async function getTransactionHistory(userId: string, limit = 20) {
 export async function ensureSignupBonus(userId: string): Promise<void> {
   const supabase = getAdmin();
 
-  // Upsert profile — creates with default 50 tokens if missing
-  await supabase
-    .from("profiles")
-    .upsert({ id: userId }, { onConflict: "id", ignoreDuplicates: true });
-
-  // Only log once
+  // Only grant once
   const { data: existing } = await supabase
     .from("token_transactions")
     .select("id")
@@ -124,18 +119,32 @@ export async function ensureSignupBonus(userId: string): Promise<void> {
 
   if (existing) return;
 
+  // Get or create profile row
   const { data: profile } = await supabase
     .from("profiles")
     .select("token_balance")
     .eq("id", userId)
-    .single();
+    .maybeSingle();
 
-  const balance = profile?.token_balance ?? 50;
+  let finalBalance: number;
+
+  if (!profile) {
+    // No profile row yet — insert one with 50 tokens
+    await supabase.from("profiles").insert({ id: userId, token_balance: 50 });
+    finalBalance = 50;
+  } else if ((profile.token_balance ?? 0) === 0) {
+    // Row exists but balance is 0 (DB default didn't apply) — set it
+    await supabase.from("profiles").update({ token_balance: 50 }).eq("id", userId);
+    finalBalance = 50;
+  } else {
+    // Profile already has tokens (DB default of 50 applied correctly)
+    finalBalance = profile.token_balance;
+  }
 
   await supabase.from("token_transactions").insert({
     user_id: userId,
     amount: 50,
-    balance_after: balance,
+    balance_after: finalBalance,
     type: "signup_bonus",
     description: "Welcome! 50 free tokens to get started",
   });
