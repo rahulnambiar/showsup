@@ -169,8 +169,11 @@ export interface CompetitorProfile {
   sentiment: "positive" | "neutral" | "negative" | null;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface BrandProfile extends CompetitorProfile {}
+export interface BrandProfile extends CompetitorProfile {
+  sentiment_breakdown: { positive: number; neutral: number; negative: number };
+  sentiment_by_model: Record<string, "positive" | "neutral" | "negative">;
+  example_quotes: Array<{ model: string; prompt: string; key_context: string }>;
+}
 
 export interface CompetitorsData {
   brand_profile: BrandProfile;
@@ -181,22 +184,59 @@ export interface CompetitorsData {
 
 function buildBrandProfile(
   brand: string,
-  allPromptResults: Array<{ analysis: AnalysisResult }>
+  allPromptResults: Array<{ model?: string; analysis: AnalysisResult }>
 ): BrandProfile {
   const totalQueries = allPromptResults.length;
   const analyses     = allPromptResults.map((p) => p.analysis);
-  const mentioned    = analyses.filter((a) => a.brand_mentioned);
+  const mentioned    = allPromptResults.filter((p) => p.analysis.brand_mentioned);
   const positions    = mentioned
-    .map((a) => a.mention_position)
+    .map((p) => p.analysis.mention_position)
     .filter((p): p is number => p !== null && p !== undefined);
 
-  const sentimentCounts: Record<string, number> = {};
-  for (const a of mentioned) {
-    if (a.sentiment) sentimentCounts[a.sentiment] = (sentimentCounts[a.sentiment] ?? 0) + 1;
+  // Per-sentiment counts among brand-mentioned results
+  let posCount = 0, neuCount = 0, negCount = 0;
+  for (const { analysis: a } of mentioned) {
+    if (a.sentiment === "positive") posCount++;
+    else if (a.sentiment === "neutral") neuCount++;
+    else if (a.sentiment === "negative") negCount++;
   }
+  const sentTotal = Math.max(1, posCount + neuCount + negCount);
+  const sentiment_breakdown = {
+    positive: Math.round((posCount / sentTotal) * 100),
+    neutral:  Math.round((neuCount / sentTotal) * 100),
+    negative: Math.round((negCount / sentTotal) * 100),
+  };
+
   const topSentiment = (
-    Object.entries(sentimentCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? null
+    posCount >= neuCount && posCount >= negCount ? (posCount > 0 ? "positive" : null)
+    : negCount > neuCount ? "negative"
+    : neuCount > 0 ? "neutral"
+    : null
   ) as BrandProfile["sentiment"];
+
+  // Per-model dominant sentiment
+  const modelSentMap: Record<string, { pos: number; neu: number; neg: number }> = {};
+  for (const { model, analysis: a } of mentioned) {
+    if (!model) continue;
+    if (!modelSentMap[model]) modelSentMap[model] = { pos: 0, neu: 0, neg: 0 };
+    if (a.sentiment === "positive") modelSentMap[model]!.pos++;
+    else if (a.sentiment === "neutral") modelSentMap[model]!.neu++;
+    else if (a.sentiment === "negative") modelSentMap[model]!.neg++;
+  }
+  const sentiment_by_model: Record<string, "positive" | "neutral" | "negative"> = {};
+  for (const [modelId, counts] of Object.entries(modelSentMap)) {
+    sentiment_by_model[modelId] = counts.pos >= counts.neg && counts.pos >= counts.neu
+      ? "positive"
+      : counts.neg > counts.neu
+      ? "negative"
+      : "neutral";
+  }
+
+  // Example quotes (key_context from brand-mentioned results, up to 3)
+  const example_quotes = mentioned
+    .filter((p) => p.analysis.key_context && p.model)
+    .slice(0, 3)
+    .map((p) => ({ model: p.model!, prompt: p.analysis.key_context!, key_context: p.analysis.key_context! }));
 
   return {
     name: brand,
@@ -208,6 +248,9 @@ function buildBrandProfile(
       : null,
     recommend_count: analyses.filter((a) => a.is_recommended).length,
     sentiment: topSentiment,
+    sentiment_breakdown,
+    sentiment_by_model,
+    example_quotes,
   };
 }
 
@@ -596,7 +639,7 @@ export async function POST(request: Request) {
 
     // Category sub-scores (across all platforms combined)
     const allPromptResults = modelResults.flatMap((mr) =>
-      mr.prompts.map((p) => ({ scoreCategory: p.scoreCategory, analysis: p.analysis }))
+      mr.prompts.map((p) => ({ model: mr.model, scoreCategory: p.scoreCategory, analysis: p.analysis }))
     );
     const categoryScores = calculateCategorySubScores(allPromptResults);
 
@@ -620,20 +663,17 @@ export async function POST(request: Request) {
       addons.includes("sentiment_deep_dive")
         ? runSentimentDeepDive(brand, allPromptResults)
         : Promise.resolve(null),
-      addons.includes("improvement_plan")
-        ? runImprovementPlan(brand, category, finalScore, categoryScores, {
-            brand_profile: brandProfile, competitors, share_of_voice: shareOfVoice, insights: [],
-          })
-        : Promise.resolve(null),
+      // Improvement plan always runs — it's useful for every report
+      runImprovementPlan(brand, category, finalScore, categoryScores, {
+        brand_profile: brandProfile, competitors, share_of_voice: shareOfVoice, insights: [],
+      }),
       addons.includes("category_benchmark")
         ? runCategoryBenchmark(category)
         : Promise.resolve(null),
     ]);
 
-    // Citation tracking is synchronous — run after analyses complete
-    const citationData = addons.includes("citation_tracking")
-      ? runCitationTracking(brand, allPromptResults)
-      : null;
+    // Citation tracking always runs (synchronous — no extra API calls)
+    const citationData = runCitationTracking(brand, allPromptResults);
 
     const competitorsData: CompetitorsData & { recommendations?: typeof recommendations } = {
       brand_profile: brandProfile,

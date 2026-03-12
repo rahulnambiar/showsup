@@ -60,8 +60,13 @@ interface CompetitorProfile {
   mention_rate: number; avg_position: number | null;
   recommend_count: number; sentiment: string | null;
 }
+interface BrandProfile extends CompetitorProfile {
+  sentiment_breakdown?: { positive: number; neutral: number; negative: number };
+  sentiment_by_model?: Record<string, string>;
+  example_quotes?: Array<{ model: string; prompt: string; key_context: string }>;
+}
 interface CompetitorsData {
-  brand_profile: CompetitorProfile;
+  brand_profile: BrandProfile;
   competitors: CompetitorProfile[];
   share_of_voice: Array<{ name: string; share: number; mentions: number; isBrand: boolean }>;
   insights: string[];
@@ -444,33 +449,55 @@ function CompetitorInsightsSection({ insights }: { insights: string[] }) {
 // ── Sentiment Section (enriched) ──────────────────────────────────────────────
 
 function SentimentSection({
-  scanResults, byModel, perceptionData, brand,
+  scanResults, byModel, perceptionData, brand, brandProfile,
 }: {
   scanResults: ScanResultRow[];
   byModel: Record<string, ScanResultRow[]>;
   perceptionData: Json;
   brand: string;
+  brandProfile?: BrandProfile | null;
 }) {
-  const mentioned = scanResults.filter((r) => r.brand_mentioned && r.sentiment);
-  const pos   = mentioned.filter((r) => r.sentiment === "positive").length;
-  const neu   = mentioned.filter((r) => r.sentiment === "neutral").length;
-  const neg   = mentioned.filter((r) => r.sentiment === "negative").length;
-  const total = Math.max(1, pos + neu + neg);
-  const pct   = { pos: Math.round((pos / total) * 100), neu: Math.round((neu / total) * 100), neg: Math.round((neg / total) * 100) };
+  // Prefer stored aggregate sentiment_breakdown (computed at scan time from full analysis)
+  // Fall back to per-result r.sentiment (requires DB column that may not exist)
+  const hasBrandBreakdown = brandProfile?.sentiment_breakdown &&
+    (brandProfile.sentiment_breakdown.positive + brandProfile.sentiment_breakdown.neutral + brandProfile.sentiment_breakdown.negative) > 0;
 
-  // Example quotes (key_context from brand-mentioned rows)
-  const quotes = scanResults
-    .filter((r) => r.brand_mentioned && r.key_context)
-    .slice(0, 3);
+  let pct: { pos: number; neu: number; neg: number };
+  if (hasBrandBreakdown) {
+    pct = {
+      pos: brandProfile!.sentiment_breakdown!.positive,
+      neu: brandProfile!.sentiment_breakdown!.neutral,
+      neg: brandProfile!.sentiment_breakdown!.negative,
+    };
+  } else {
+    const mentioned = scanResults.filter((r) => r.brand_mentioned && r.sentiment);
+    const pos   = mentioned.filter((r) => r.sentiment === "positive").length;
+    const neu   = mentioned.filter((r) => r.sentiment === "neutral").length;
+    const neg   = mentioned.filter((r) => r.sentiment === "negative").length;
+    const total = Math.max(1, pos + neu + neg);
+    pct = { pos: Math.round((pos / total) * 100), neu: Math.round((neu / total) * 100), neg: Math.round((neg / total) * 100) };
+  }
 
-  // Platform breakdown
+  // Example quotes — prefer stored example_quotes, fall back to per-result key_context
+  const quotes: Array<{ model: string; prompt: string; key_context: string }> =
+    (brandProfile?.example_quotes && brandProfile.example_quotes.length > 0)
+      ? brandProfile.example_quotes
+      : scanResults
+          .filter((r) => r.brand_mentioned && r.key_context)
+          .slice(0, 3)
+          .map((r) => ({ model: r.model, prompt: r.prompt, key_context: r.key_context! }));
+
+  // Platform breakdown — prefer stored sentiment_by_model
   const platformSentiment = Object.entries(byModel).map(([modelId, results]) => {
+    const stored = brandProfile?.sentiment_by_model?.[modelId];
+    if (stored) {
+      return { modelId, label: MODEL_LABELS[modelId] ?? modelId, dominant: stored as string };
+    }
     const m = results.filter((r) => r.brand_mentioned && r.sentiment);
     const p = m.filter((r) => r.sentiment === "positive").length;
     const t = Math.max(1, m.length);
-    const pct = Math.round((p / t) * 100);
     const dominant = p / t >= 0.5 ? "positive" : m.filter((r) => r.sentiment === "negative").length / t >= 0.5 ? "negative" : "neutral";
-    return { modelId, label: MODEL_LABELS[modelId] ?? modelId, pct, dominant };
+    return { modelId, label: MODEL_LABELS[modelId] ?? modelId, dominant };
   });
 
   return (
@@ -1175,6 +1202,7 @@ export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: 
             byModel={byModel}
             perceptionData={perceptionData}
             brand={brand}
+            brandProfile={competitorsData?.brand_profile}
           />
           {!perceptionData && (
             <div className="mt-6">
