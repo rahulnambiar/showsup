@@ -696,6 +696,8 @@ export async function POST(request: Request) {
             score: pr.score,
           }))
         );
+        // Insert with optional columns (sentiment, key_context, mention_position).
+        // is_recommended does not exist in this DB schema — omitted.
         const fullRows = modelResults.flatMap((mr) =>
           mr.prompts.map((pr) => ({
             scan_id: scanId, model: mr.model, prompt: pr.prompt, response: pr.response,
@@ -703,7 +705,6 @@ export async function POST(request: Request) {
             mention_count: pr.count,
             score: pr.score,
             mention_position: pr.analysis.mention_position ?? null,
-            is_recommended: pr.analysis.is_recommended ?? false,
             sentiment: pr.analysis.sentiment ?? null,
             key_context: pr.analysis.key_context ?? null,
           }))
