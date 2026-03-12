@@ -488,37 +488,62 @@ export interface ImprovementPlan {
   this_quarter: ImprovementPlanItem[];
 }
 
+function fallbackImprovementPlan(brand: string, category: string, score: number): ImprovementPlan {
+  return {
+    quick_wins: [
+      { title: "Add an AI-optimised FAQ page", description: `Create a concise FAQ on your website covering the most common questions about ${brand} in the ${category} space. AI models often pull from FAQ content.`, impact: "+5 pts", effort: "1 day", affected_categories: ["awareness", "discovery"] },
+      { title: "Submit to AI data sources", description: "Ensure your brand is listed on Wikidata, Crunchbase, and industry directories — these are commonly referenced by AI training pipelines.", impact: "+4 pts", effort: "2 hours", affected_categories: ["awareness"] },
+      { title: "Publish a brand comparison page", description: `Write a transparent comparison of ${brand} vs key competitors in ${category}. This directly improves competitive query responses.`, impact: "+6 pts", effort: "1 day", affected_categories: ["competitive", "alternatives"] },
+    ],
+    this_month: [
+      { title: "Get featured in industry publications", description: `Pitch byline articles or product features to ${category} industry blogs and news sites. Third-party coverage is the strongest AI visibility signal.`, impact: "+8 pts", effort: "1 week", affected_categories: ["awareness", "reputation"] },
+      { title: "Collect and publish case studies", description: "AI models cite specific outcomes and customer results. Publish 2-3 detailed case studies showing measurable results from using your product.", impact: "+7 pts", effort: "1 week", affected_categories: ["reputation", "purchase_intent"] },
+      { title: "Build review presence on G2/Trustpilot", description: `Gather 10+ reviews on major review platforms. AI models frequently reference review sites when recommending ${category} solutions.`, impact: "+6 pts", effort: "2 weeks", affected_categories: ["reputation", "discovery"] },
+    ],
+    this_quarter: [
+      { title: "Launch a thought leadership content series", description: `Publish 4-6 in-depth guides positioning ${brand} as the definitive resource in ${category}. Target long-tail questions AI models are likely to answer.`, impact: "+10 pts", effort: "1 month", affected_categories: ["discovery", "awareness", "reputation"] },
+      { title: "Build strategic backlink profile", description: "Acquire links from authoritative domain sources in your industry. AI models weight heavily-cited sources more in their responses.", impact: "+9 pts", effort: "1 month", affected_categories: ["awareness", "competitive"] },
+      { title: "Create a dedicated 'How it works' resource hub", description: `Build comprehensive documentation, tutorials, and explainers about how ${brand} solves ${category} problems. Structured, factual content is ideal for AI citation.`, impact: "+8 pts", effort: "3 weeks", affected_categories: ["discovery", "purchase_intent"] },
+    ],
+  };
+}
+
 async function runImprovementPlan(
   brand: string,
   category: string,
   finalScore: number,
   categoryScores: Record<string, number>,
   competitorsData: CompetitorsData
-): Promise<ImprovementPlan | null> {
+): Promise<ImprovementPlan> {
   const compSummary = competitorsData.competitors.slice(0, 3)
     .map((c) => `${c.name}: ${c.mention_rate}% mention rate, avg position ${c.avg_position ?? "N/A"}`)
     .join("; ");
 
-  const prompt = `Based on this AI visibility audit for ${brand} in ${category}:
-Overall Score: ${finalScore}/100
-Category Scores: ${JSON.stringify(categoryScores)}
-Competitor comparison: ${compSummary || "No competitors detected"}
+  const prompt = `You are an AI visibility consultant. Generate a prioritised improvement plan for ${brand} (${category} industry).
 
-Generate a 3-tier improvement plan as JSON:
-{
-  "quick_wins": [{"title": "...", "description": "...", "impact": "+X pts", "effort": "1 hour|1 day|1 week", "affected_categories": ["..."]}],
-  "this_month": [...same structure...],
-  "this_quarter": [...same structure...]
-}
-Be SPECIFIC — reference actual query gaps, competitor advantages, and concrete actions. Include at least 3 items per tier. Return ONLY valid JSON.`;
+Audit data:
+- Overall Score: ${finalScore}/100
+- Category Scores: ${JSON.stringify(categoryScores)}
+- Competitors: ${compSummary || "none detected"}
+
+Return ONLY this exact JSON structure with NO extra text, markdown, or explanation:
+{"quick_wins":[{"title":"string","description":"string","impact":"+X pts","effort":"string","affected_categories":["string"]}],"this_month":[{"title":"string","description":"string","impact":"+X pts","effort":"string","affected_categories":["string"]}],"this_quarter":[{"title":"string","description":"string","impact":"+X pts","effort":"string","affected_categories":["string"]}]}
+
+Rules: 3 items per tier, specific to ${brand} and ${category}, reference actual score gaps.`;
 
   try {
     const text = await callAnthropicSonnet(prompt, 1500);
     const match = text.match(/\{[\s\S]*\}/);
-    if (!match) return null;
-    return JSON.parse(match[0]) as ImprovementPlan;
+    if (!match) return fallbackImprovementPlan(brand, category, finalScore);
+    const parsed = JSON.parse(match[0]) as ImprovementPlan;
+    // Validate — use fallback if any tier is missing or empty
+    const valid =
+      Array.isArray(parsed.quick_wins) && parsed.quick_wins.length > 0 &&
+      Array.isArray(parsed.this_month) && parsed.this_month.length > 0 &&
+      Array.isArray(parsed.this_quarter) && parsed.this_quarter.length > 0;
+    return valid ? parsed : fallbackImprovementPlan(brand, category, finalScore);
   } catch {
-    return null;
+    return fallbackImprovementPlan(brand, category, finalScore);
   }
 }
 
