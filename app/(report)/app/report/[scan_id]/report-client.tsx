@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { getActionCost } from "@/lib/pricing/cost-calculator";
 import {
   ChevronDown, Lock, ArrowLeft, ExternalLink, Zap, Lightbulb, CheckCircle2, Circle,
-  Share2, Download, Send, TrendingUp, FlaskConical,
+  Download, Send, TrendingUp, FlaskConical,
 } from "lucide-react";
 import { CompetitorHeatmap } from "./CompetitorHeatmap";
 
@@ -378,7 +378,6 @@ function ShareOfVoiceSection({ data, brand }: { data: CompetitorsData; brand: st
   }));
 
   const brandShare = data.brand_profile?.mention_rate ?? 0;
-  const category = "AI mentions";
 
   return (
     <div className="space-y-5">
@@ -450,12 +449,12 @@ function CompetitorInsightsSection({ insights }: { insights: string[] }) {
 // ── Sentiment Section (enriched) ──────────────────────────────────────────────
 
 function SentimentSection({
-  scanResults, byModel, perceptionData, brand, brandProfile,
+  scanResults, byModel, perceptionData, brandProfile,
 }: {
   scanResults: ScanResultRow[];
   byModel: Record<string, ScanResultRow[]>;
   perceptionData: Json;
-  brand: string;
+  brand?: string;
   brandProfile?: BrandProfile | null;
 }) {
   // Prefer stored aggregate sentiment_breakdown (computed at scan time from full analysis)
@@ -602,7 +601,6 @@ function SentimentSection({
 function CitationsSection({ citationData }: { citationData: Json }) {
   const pages: Array<{ url: string; count: number }> = citationData.cited_pages ?? [];
   const mostCited = pages[0];
-  const neverCited = pages.length === 0;
 
   return (
     <div className="space-y-4">

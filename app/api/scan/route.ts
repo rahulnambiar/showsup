@@ -488,6 +488,7 @@ export interface ImprovementPlan {
   this_quarter: ImprovementPlanItem[];
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function fallbackImprovementPlan(brand: string, category: string, score: number): ImprovementPlan {
   return {
     quick_wins: [
