@@ -635,11 +635,12 @@ export async function POST(request: Request) {
       ? runCitationTracking(brand, allPromptResults)
       : null;
 
-    const competitorsData: CompetitorsData = {
+    const competitorsData: CompetitorsData & { recommendations?: typeof recommendations } = {
       brand_profile: brandProfile,
       competitors,
       share_of_voice: shareOfVoice,
       insights: competitiveInsights,
+      recommendations,
     };
 
     // Persist to Supabase
@@ -652,7 +653,7 @@ export async function POST(request: Request) {
         .insert({
           user_id: user.id, brand_name: brand, website: url || null, url: url || null,
           category, status: "completed", overall_score: finalScore,
-          recommendations, category_scores: categoryScores, competitors_data: competitorsData,
+          category_scores: categoryScores, competitors_data: competitorsData,
           ...(perceptionData  && { perception_data:   perceptionData  }),
           ...(citationData    && { citation_data:      citationData    }),
           ...(improvementPlan && { improvement_plan:   improvementPlan }),
@@ -669,7 +670,7 @@ export async function POST(request: Request) {
           .insert({
             user_id: user.id, brand_name: brand, website: url || null,
             status: "completed", overall_score: finalScore,
-            category_scores: categoryScores, recommendations,
+            category_scores: categoryScores,
           })
           .select("id").single();
         if (minErr) console.error("[scans] fallback insert error:", minErr.message, minErr.details);

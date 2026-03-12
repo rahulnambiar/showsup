@@ -947,10 +947,13 @@ export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: 
     [competitorsData]
   );
 
-  const recommendations: Recommendation[] = useMemo(() =>
-    Array.isArray(scan.recommendations) ? scan.recommendations : [],
-    [scan.recommendations]
-  );
+  const recommendations: Recommendation[] = useMemo(() => {
+    // Stored inside competitors_data.recommendations (no dedicated column on scans)
+    const fromCompetitors = (scan.competitors_data as Json)?.recommendations;
+    const fromScan = (scan as Json).recommendations;
+    const src = Array.isArray(fromCompetitors) ? fromCompetitors : Array.isArray(fromScan) ? fromScan : [];
+    return src;
+  }, [scan]);
 
   const categoryScores: Record<string, number> | null = scan.category_scores ?? null;
   const totalQueries = scanResults.length;
