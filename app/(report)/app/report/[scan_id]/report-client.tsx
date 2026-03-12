@@ -987,7 +987,7 @@ export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: 
   }, []);
 
   // ── Build TOC ─────────────────────────────────────────────────────────────
-  const hasCompetitors = (competitorsData?.competitors?.length ?? 0) > 0;
+  const hasCompetitors = !!(competitorsData?.brand_profile && (competitorsData?.competitors?.length ?? 0) > 0);
 
   const tocSections: TocSection[] = useMemo(() => {
     const s: TocSection[] = [
@@ -1057,10 +1057,10 @@ export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: 
               modelResults={modelResultsSummary}
               recommendations={recommendations}
               categoryScores={categoryScores ?? undefined}
-              competitorsData={competitorsData ? {
+              competitorsData={competitorsData?.brand_profile ? {
                 ...competitorsData,
                 brand_profile: { ...competitorsData.brand_profile, sentiment: competitorsData.brand_profile.sentiment as "positive" | "neutral" | "negative" | null },
-                competitors: competitorsData.competitors.map((c) => ({ ...c, sentiment: c.sentiment as "positive" | "neutral" | "negative" | null })),
+                competitors: (competitorsData.competitors ?? []).map((c) => ({ ...c, sentiment: c.sentiment as "positive" | "neutral" | "negative" | null })),
               } : undefined}
             />
           </div>
