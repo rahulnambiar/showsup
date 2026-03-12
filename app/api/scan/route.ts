@@ -663,39 +663,51 @@ export async function POST(request: Request) {
       if (!fullError && fullScan?.id) {
         scan = fullScan;
       } else {
-        const { data: minScan } = await supabase
+        console.error("[scans] full insert error:", fullError?.message, fullError?.details);
+        const { data: minScan, error: minErr } = await supabase
           .from("scans")
-          .insert({ user_id: user.id, brand_name: brand, website: url || null, status: "completed", overall_score: finalScore })
+          .insert({
+            user_id: user.id, brand_name: brand, website: url || null,
+            status: "completed", overall_score: finalScore,
+            category_scores: categoryScores, recommendations,
+          })
           .select("id").single();
+        if (minErr) console.error("[scans] fallback insert error:", minErr.message, minErr.details);
         scan = minScan ?? null;
       }
 
       if (scan?.id) {
         scanId = scan.id;
 
-        // ── Existing scan_results table (keep for results display) ────────────
+        // ── Normalised audit tables (service role bypasses RLS) ──────────────
+        const admin = getAdmin();
+
+        // ── scan_results — use admin to bypass RLS on insert ─────────────────
         const rows = modelResults.flatMap((mr) =>
           mr.prompts.map((pr) => ({
             scan_id: scanId, model: mr.model, prompt: pr.prompt, response: pr.response,
             brand_mentioned: pr.analysis.brand_mentioned, mention_count: pr.count, score: pr.score,
-            mention_position: pr.analysis.mention_position ?? null, is_recommended: pr.analysis.is_recommended ?? false,
-            sentiment: pr.analysis.sentiment, key_context: pr.analysis.key_context,
+            mention_position: pr.analysis.mention_position ?? null,
+            is_recommended: pr.analysis.is_recommended ?? false,
+            sentiment: pr.analysis.sentiment ?? null,
+            key_context: pr.analysis.key_context ?? null,
           }))
         );
-        const { error: rowsError } = await supabase.from("scan_results").insert(rows);
+        const { error: rowsError } = await admin.from("scan_results").insert(rows);
         if (rowsError) {
-          await supabase.from("scan_results").insert(
+          console.error("[scan_results] insert error:", rowsError.message, rowsError.details);
+          // Fallback: minimal columns only
+          const { error: minRowsError } = await admin.from("scan_results").insert(
             modelResults.flatMap((mr) =>
               mr.prompts.map((pr) => ({
                 scan_id: scanId, model: mr.model, prompt: pr.prompt, response: pr.response,
                 brand_mentioned: pr.analysis.brand_mentioned, mention_count: pr.count, score: pr.score,
+                is_recommended: pr.analysis.is_recommended ?? false,
               }))
             )
           );
+          if (minRowsError) console.error("[scan_results] fallback insert error:", minRowsError.message, minRowsError.details);
         }
-
-        // ── Normalised audit tables (service role bypasses RLS) ──────────────
-        const admin = getAdmin();
         try {
           // Map our score categories to the DB check-constraint values
           const queryTypeMap: Record<string, string> = {
