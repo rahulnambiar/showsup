@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useId } from "react";
+import { useState, useEffect, useId, Fragment } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -216,13 +216,13 @@ function DashboardPreview() {
                 <div key={m} className="text-[9px] text-gray-500 text-center">{m}</div>
               ))}
               {HEATMAP.map((row) => (
-                <>
-                  <div key={row.brand} className="text-[9px] text-gray-400 truncate">{row.brand}</div>
-                  <HeatCell key={`${row.brand}-c`} score={row.chatgpt} />
-                  <HeatCell key={`${row.brand}-cl`} score={row.claude} />
-                  <HeatCell key={`${row.brand}-g`} score={row.gemini} />
-                  <HeatCell key={`${row.brand}-p`} score={row.perplexity} />
-                </>
+                <Fragment key={row.brand}>
+                  <div className="text-[9px] text-gray-400 truncate">{row.brand}</div>
+                  <HeatCell score={row.chatgpt} />
+                  <HeatCell score={row.claude} />
+                  <HeatCell score={row.gemini} />
+                  <HeatCell score={row.perplexity} />
+                </Fragment>
               ))}
             </div>
           </div>
