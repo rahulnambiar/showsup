@@ -696,25 +696,10 @@ export async function POST(request: Request) {
             score: pr.score,
           }))
         );
-        // Insert with optional columns (sentiment, key_context, mention_position).
-        // is_recommended does not exist in this DB schema — omitted.
-        const fullRows = modelResults.flatMap((mr) =>
-          mr.prompts.map((pr) => ({
-            scan_id: scanId, model: mr.model, prompt: pr.prompt, response: pr.response,
-            brand_mentioned: pr.analysis.brand_mentioned,
-            mention_count: pr.count,
-            score: pr.score,
-            mention_position: pr.analysis.mention_position ?? null,
-            sentiment: pr.analysis.sentiment ?? null,
-            key_context: pr.analysis.key_context ?? null,
-          }))
-        );
-        const { error: rowsError } = await admin.from("scan_results").insert(fullRows);
-        if (rowsError) {
-          console.error("[scan_results] full insert error:", rowsError.message, rowsError.details);
-          const { error: coreErr } = await admin.from("scan_results").insert(coreRows);
-          if (coreErr) console.error("[scan_results] core insert error:", coreErr.message, coreErr.details);
-        }
+        // Only insert columns confirmed to exist in this DB schema.
+        // Missing from schema: is_recommended, sentiment, key_context, mention_position
+        const { error: rowsError } = await admin.from("scan_results").insert(coreRows);
+        if (rowsError) console.error("[scan_results] insert error:", rowsError.message, rowsError.details);
         try {
           // Map our score categories to the DB check-constraint values
           const queryTypeMap: Record<string, string> = {
