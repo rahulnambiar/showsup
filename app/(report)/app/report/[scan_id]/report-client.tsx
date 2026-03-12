@@ -3,9 +3,15 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
+import {
+  BarChart, Bar, XAxis, YAxis, Cell, Tooltip, ResponsiveContainer,
+} from "recharts";
 import { cn } from "@/lib/utils";
 import { getActionCost } from "@/lib/pricing/cost-calculator";
-import { ChevronDown, Lock, ArrowLeft, ExternalLink, Zap } from "lucide-react";
+import {
+  ChevronDown, Lock, ArrowLeft, ExternalLink, Zap, Lightbulb, CheckCircle2, Circle,
+} from "lucide-react";
+import { CompetitorHeatmap } from "./CompetitorHeatmap";
 
 const PDFDownload = dynamic(
   () => import("@/components/pdf-download").then((m) => m.PDFDownload),
@@ -49,8 +55,17 @@ interface ScanResultRow {
 }
 
 interface Recommendation { title: string; description: string; priority: "High" | "Medium" | "Low" }
-interface CompetitorProfile { name: string; mention_count: number; total_queries: number; mention_rate: number; avg_position: number | null; recommend_count: number; sentiment: string | null }
-interface CompetitorsData { brand_profile: CompetitorProfile; competitors: CompetitorProfile[]; share_of_voice: Array<{ name: string; share: number; mentions: number; isBrand: boolean }>; insights: string[] }
+interface CompetitorProfile {
+  name: string; mention_count: number; total_queries: number;
+  mention_rate: number; avg_position: number | null;
+  recommend_count: number; sentiment: string | null;
+}
+interface CompetitorsData {
+  brand_profile: CompetitorProfile;
+  competitors: CompetitorProfile[];
+  share_of_voice: Array<{ name: string; share: number; mentions: number; isBrand: boolean }>;
+  insights: string[];
+}
 
 interface TocSection { id: string; label: string }
 
@@ -58,15 +73,15 @@ interface TocSection { id: string; label: string }
 
 const MODEL_LABELS: Record<string, string> = { chatgpt: "ChatGPT", claude: "Claude", gemini: "Gemini" };
 const MODEL_COLORS: Record<string, string> = { chatgpt: "#10B981", claude: "#C084FC", gemini: "#60A5FA" };
-const MODEL_ICONS: Record<string, string> = { chatgpt: "C", claude: "A", gemini: "G" };
+const MODEL_ICONS: Record<string, string>  = { chatgpt: "C", claude: "A", gemini: "G" };
 
 const CATEGORY_LABELS: Record<string, string> = {
-  awareness:      "Direct Awareness",
-  discovery:      "Category Discovery",
-  competitive:    "Competitive Positioning",
-  purchase_intent:"Purchase Intent",
-  alternatives:   "Alternatives",
-  reputation:     "Reputation",
+  awareness:       "Direct Awareness",
+  discovery:       "Category Discovery",
+  competitive:     "Competitive Positioning",
+  purchase_intent: "Purchase Intent",
+  alternatives:    "Alternatives",
+  reputation:      "Reputation",
 };
 
 const PRIORITY_STYLES: Record<string, string> = {
@@ -136,7 +151,6 @@ function ScoreGauge({ score }: { score: number }) {
 
   return (
     <div className="relative flex items-center justify-center">
-      {/* Glow */}
       <div
         className="absolute rounded-full blur-3xl opacity-20 transition-colors duration-1000"
         style={{ width: 220, height: 220, background: color }}
@@ -151,12 +165,8 @@ function ScoreGauge({ score }: { score: number }) {
           style={{ transition: "stroke 0.3s ease" }}
         />
         <g style={{ transform: "rotate(90deg)", transformOrigin: "110px 110px" }}>
-          <text x="110" y="100" textAnchor="middle" fill={color} fontSize="52" fontWeight="800" fontFamily="monospace">
-            {display}
-          </text>
-          <text x="110" y="130" textAnchor="middle" fill="rgba(255,255,255,0.3)" fontSize="16" fontWeight="500">
-            / 100
-          </text>
+          <text x="110" y="100" textAnchor="middle" fill={color} fontSize="52" fontWeight="800" fontFamily="monospace">{display}</text>
+          <text x="110" y="130" textAnchor="middle" fill="rgba(255,255,255,0.3)" fontSize="16" fontWeight="500">/ 100</text>
         </g>
       </svg>
     </div>
@@ -180,16 +190,14 @@ function FloatingTOC({ sections, activeId }: { sections: TocSection[]; activeId:
             onClick={() => scrollTo(s.id)}
             className={cn(
               "flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-left transition-all duration-200 group",
-              isActive
-                ? "bg-white/6 text-white"
-                : "text-gray-600 hover:text-gray-400 hover:bg-white/3"
+              isActive ? "bg-white/6 text-white" : "text-gray-600 hover:text-gray-400 hover:bg-white/3"
             )}
           >
             <span
               className={cn("w-1.5 h-1.5 rounded-full flex-shrink-0 transition-all duration-200", isActive ? "scale-125" : "opacity-50")}
               style={{ background: isActive ? "#10B981" : "currentColor" }}
             />
-            <span className={cn("text-xs font-medium whitespace-nowrap transition-colors duration-200", isActive ? "text-gray-200" : "text-gray-600 group-hover:text-gray-400")}>
+            <span className={cn("text-xs font-medium whitespace-nowrap", isActive ? "text-gray-200" : "text-gray-600 group-hover:text-gray-400")}>
               {s.label}
             </span>
           </button>
@@ -201,17 +209,12 @@ function FloatingTOC({ sections, activeId }: { sections: TocSection[]; activeId:
 
 // ── Query Row ─────────────────────────────────────────────────────────────────
 
-function QueryRow({
-  result, brand, competitorNames,
-}: {
-  result: ScanResultRow;
-  brand: string;
-  competitorNames: string[];
+function QueryRow({ result, brand, competitorNames }: {
+  result: ScanResultRow; brand: string; competitorNames: string[];
 }) {
   const [open, setOpen] = useState(false);
   const mentioned = result.brand_mentioned;
   const sentiment = result.sentiment;
-
   const sentimentDot = sentiment === "positive" ? "#10B981" : sentiment === "negative" ? "#EF4444" : "#6B7280";
 
   return (
@@ -223,9 +226,7 @@ function QueryRow({
         <ChevronDown className={cn("w-3.5 h-3.5 text-gray-600 flex-shrink-0 transition-transform", open && "rotate-180")} />
         <span className="flex-1 text-sm text-gray-300 truncate">{result.prompt}</span>
         <div className="flex items-center gap-2 flex-shrink-0">
-          {/* Sentiment dot */}
           <div className="w-2 h-2 rounded-full" style={{ background: sentimentDot }} />
-          {/* Mentioned badge */}
           <span className={cn(
             "text-[11px] font-medium px-2 py-0.5 rounded-full border",
             mentioned
@@ -264,72 +265,52 @@ function QueryRow({
 
 // ── Platform Section ──────────────────────────────────────────────────────────
 
-function PlatformSection({
-  byModel, brand, competitorNames,
-}: {
-  byModel: Record<string, ScanResultRow[]>;
-  brand: string;
-  competitorNames: string[];
+function PlatformSection({ byModel, brand, competitorNames }: {
+  byModel: Record<string, ScanResultRow[]>; brand: string; competitorNames: string[];
 }) {
   const [expanded, setExpanded] = useState<string | null>(null);
 
   return (
     <div className="space-y-3">
       {Object.entries(byModel).map(([modelId, results]) => {
-        const color = MODEL_COLORS[modelId] ?? "#6B7280";
-        const label = MODEL_LABELS[modelId] ?? modelId;
-        const icon  = MODEL_ICONS[modelId] ?? modelId[0].toUpperCase();
-        const modelScore = Math.round(results.reduce((s, r) => s + (r.score ?? 0), 0) / Math.max(1, results.length));
-        const mentionCount = results.filter((r) => r.brand_mentioned).length;
-        const mentionRate  = Math.round((mentionCount / Math.max(1, results.length)) * 100);
-        const isExpanded   = expanded === modelId;
+        const color       = MODEL_COLORS[modelId] ?? "#6B7280";
+        const label       = MODEL_LABELS[modelId] ?? modelId;
+        const icon        = MODEL_ICONS[modelId]  ?? modelId[0].toUpperCase();
+        const modelScore  = Math.round(results.reduce((s, r) => s + (r.score ?? 0), 0) / Math.max(1, results.length));
+        const mentionCount= results.filter((r) => r.brand_mentioned).length;
+        const mentionRate = Math.round((mentionCount / Math.max(1, results.length)) * 100);
+        const isExpanded  = expanded === modelId;
 
         return (
           <div key={modelId} className="rounded-2xl border border-white/8 bg-[#111827] overflow-hidden">
-            {/* Card header */}
             <button
               onClick={() => setExpanded(isExpanded ? null : modelId)}
               className="w-full flex items-center gap-4 p-5 hover:bg-white/[0.02] transition-colors text-left"
             >
-              {/* Model icon */}
               <div className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm flex-shrink-0"
                 style={{ background: `${color}20`, color }}>
                 {icon}
               </div>
-
-              {/* Name + score */}
               <div className="flex-1 min-w-0">
                 <p className="text-white font-semibold text-sm">{label}</p>
                 <p className="text-gray-500 text-xs mt-0.5">{mentionRate}% mention rate · {results.length} queries</p>
               </div>
-
-              {/* Score */}
               <div className="text-right flex-shrink-0">
-                <p className="text-3xl font-bold tabular-nums" style={{ color }}>
-                  {modelScore}
-                </p>
+                <p className="text-3xl font-bold tabular-nums" style={{ color }}>{modelScore}</p>
                 <p className="text-xs text-gray-600">/100</p>
               </div>
-
-              {/* Mentioned badge */}
               <span className={cn(
                 "text-xs font-medium px-2.5 py-1 rounded-full border flex-shrink-0",
-                mentionCount > 0
-                  ? "bg-[#10B981]/10 text-[#10B981] border-[#10B981]/25"
-                  : "bg-white/5 text-gray-500 border-white/10"
+                mentionCount > 0 ? "bg-[#10B981]/10 text-[#10B981] border-[#10B981]/25" : "bg-white/5 text-gray-500 border-white/10"
               )}>
                 {mentionCount > 0 ? `Found in ${mentionCount}` : "Not Found"}
               </span>
-
               <ChevronDown className={cn("w-4 h-4 text-gray-600 flex-shrink-0 transition-transform", isExpanded && "rotate-180")} />
             </button>
 
-            {/* Expanded query list */}
             {isExpanded && (
               <div className="border-t border-white/5">
-                <p className="px-4 pt-3 pb-2 text-[11px] text-gray-600 uppercase tracking-wider font-medium">
-                  All {results.length} queries
-                </p>
+                <p className="px-4 pt-3 pb-2 text-[11px] text-gray-600 uppercase tracking-wider font-medium">All {results.length} queries</p>
                 {results.map((r) => (
                   <QueryRow key={r.id} result={r} brand={brand} competitorNames={competitorNames} />
                 ))}
@@ -357,9 +338,9 @@ function VisibilitySection({ scores }: { scores: Record<string, number> }) {
     return () => obs.disconnect();
   }, []);
 
-  const items = Object.entries(CATEGORY_LABELS).map(([key, label]) => ({
-    key, label, score: scores[key] ?? 0,
-  })).sort((a, b) => b.score - a.score);
+  const items = Object.entries(CATEGORY_LABELS)
+    .map(([key, label]) => ({ key, label, score: scores[key] ?? 0 }))
+    .sort((a, b) => b.score - a.score);
 
   return (
     <div ref={ref} className="space-y-4">
@@ -381,84 +362,398 @@ function VisibilitySection({ scores }: { scores: Record<string, number> }) {
   );
 }
 
-// ── Competitor Section ────────────────────────────────────────────────────────
+// ── Share of Voice Section ────────────────────────────────────────────────────
 
-function CompetitorSection({ data, brand }: { data: CompetitorsData; brand: string }) {
-  const all = [
-    { ...data.brand_profile, isBrand: true },
-    ...(data.competitors ?? []).map((c) => ({ ...c, isBrand: false })),
-  ].slice(0, 5);
+function ShareOfVoiceSection({ data, brand }: { data: CompetitorsData; brand: string }) {
+  const chartData = data.share_of_voice.map((item) => ({
+    name: item.isBrand ? brand : item.name,
+    share: item.share,
+    isBrand: item.isBrand,
+  }));
 
-  const maxMentions = Math.max(...all.map((c) => c.mention_count), 1);
+  const brandShare = data.brand_profile?.mention_rate ?? 0;
+  const category = "AI mentions";
 
   return (
-    <div className="space-y-6">
-      {/* Bar chart */}
-      <div className="space-y-3">
-        {all.map((comp) => (
-          <div key={comp.name} className="flex items-center gap-3">
-            <span className={cn("text-sm w-28 truncate flex-shrink-0", comp.isBrand ? "text-[#10B981] font-semibold" : "text-gray-400")}>
-              {comp.name}
-            </span>
-            <div className="flex-1 h-6 rounded-lg bg-white/5 overflow-hidden relative">
-              <div
-                className={cn("h-full rounded-lg transition-all duration-700", comp.isBrand ? "bg-[#10B981]/40" : "bg-white/15")}
-                style={{ width: `${(comp.mention_count / maxMentions) * 100}%` }}
-              />
-              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-400 tabular-nums">
-                {comp.mention_count}
-              </span>
-            </div>
-            <span className="text-xs text-gray-600 w-16 text-right flex-shrink-0">{comp.mention_rate}% rate</span>
+    <div className="space-y-5">
+      <p className="text-sm text-gray-400">
+        {brand} captures{" "}
+        <span className="font-bold text-[#10B981]">{data.share_of_voice.find((s) => s.isBrand)?.share ?? 0}%</span>
+        {" "}of AI mentions in your category.{" "}
+        {brandShare >= 40
+          ? "Strong share of voice — you're a category leader."
+          : brandShare >= 20
+          ? "Moderate presence. There's room to capture more mindshare."
+          : "Low share of voice — competitors dominate AI responses."}
+      </p>
+
+      <ResponsiveContainer width="100%" height={chartData.length * 52 + 20}>
+        <BarChart
+          data={chartData}
+          layout="vertical"
+          margin={{ top: 0, right: 40, left: 0, bottom: 0 }}
+        >
+          <XAxis type="number" domain={[0, 100]} tick={{ fill: "#4B5563", fontSize: 11 }} tickFormatter={(v) => `${v}%`} axisLine={false} tickLine={false} />
+          <YAxis type="category" dataKey="name" tick={{ fill: "#9CA3AF", fontSize: 12, fontWeight: 500 }} width={100} axisLine={false} tickLine={false} />
+          <Tooltip
+            cursor={{ fill: "rgba(255,255,255,0.03)" }}
+            contentStyle={{ background: "#1F2937", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, fontSize: 12 }}
+            formatter={(v) => [`${v}% share of voice`]}
+            labelStyle={{ color: "#fff", fontWeight: 600 }}
+          />
+          <Bar dataKey="share" radius={[0, 6, 6, 0]} maxBarSize={28}>
+            {chartData.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={entry.isBrand ? "#10B981" : "#374151"} />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+
+      {/* Legend */}
+      <div className="flex flex-wrap gap-4">
+        {chartData.map((item) => (
+          <div key={item.name} className="flex items-center gap-1.5 text-xs text-gray-500">
+            <div className="w-2.5 h-2.5 rounded-sm" style={{ background: item.isBrand ? "#10B981" : "#374151" }} />
+            <span>{item.name}</span>
+            <span className="text-gray-700">({item.share}%)</span>
           </div>
         ))}
       </div>
+    </div>
+  );
+}
 
-      {/* Share of voice */}
-      {data.share_of_voice && data.share_of_voice.length > 0 && (
-        <div className="space-y-2">
-          <p className="text-xs text-gray-500 uppercase tracking-wider font-medium">Share of Voice</p>
-          <div className="flex rounded-xl overflow-hidden h-8 gap-0.5">
-            {data.share_of_voice.map((item) => (
-              <div
-                key={item.name}
-                style={{ width: `${item.share}%`, background: item.isBrand ? "#10B981" : "#1F2937" }}
-                className="relative group flex-shrink-0"
-                title={`${item.name}: ${item.share}%`}
-              >
-                {item.share >= 10 && (
-                  <span className={cn(
-                    "absolute inset-0 flex items-center justify-center text-[11px] font-semibold",
-                    item.isBrand ? "text-[#0A0E17]" : "text-gray-400"
-                  )}>
-                    {item.share}%
-                  </span>
-                )}
-              </div>
-            ))}
+// ── Competitive Insights Section ──────────────────────────────────────────────
+
+function CompetitorInsightsSection({ insights }: { insights: string[] }) {
+  if (!insights || insights.length === 0) return null;
+  return (
+    <div className="grid grid-cols-1 gap-3">
+      {insights.map((insight, i) => (
+        <div key={i} className="flex gap-3 rounded-xl border border-white/8 bg-[#111827] p-4">
+          <div className="w-8 h-8 rounded-lg bg-[#10B981]/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+            <Lightbulb className="w-4 h-4 text-[#10B981]" />
           </div>
-          <div className="flex flex-wrap gap-3">
-            {data.share_of_voice.map((item) => (
-              <div key={item.name} className="flex items-center gap-1.5 text-xs text-gray-500">
-                <div className="w-2 h-2 rounded-full" style={{ background: item.isBrand ? "#10B981" : "#374151" }} />
-                {item.name}
+          <p className="text-sm text-gray-300 leading-relaxed">{insight}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ── Sentiment Section (enriched) ──────────────────────────────────────────────
+
+function SentimentSection({
+  scanResults, byModel, perceptionData, brand,
+}: {
+  scanResults: ScanResultRow[];
+  byModel: Record<string, ScanResultRow[]>;
+  perceptionData: Json;
+  brand: string;
+}) {
+  const mentioned = scanResults.filter((r) => r.brand_mentioned && r.sentiment);
+  const pos   = mentioned.filter((r) => r.sentiment === "positive").length;
+  const neu   = mentioned.filter((r) => r.sentiment === "neutral").length;
+  const neg   = mentioned.filter((r) => r.sentiment === "negative").length;
+  const total = Math.max(1, pos + neu + neg);
+  const pct   = { pos: Math.round((pos / total) * 100), neu: Math.round((neu / total) * 100), neg: Math.round((neg / total) * 100) };
+
+  // Example quotes (key_context from brand-mentioned rows)
+  const quotes = scanResults
+    .filter((r) => r.brand_mentioned && r.key_context)
+    .slice(0, 3);
+
+  // Platform breakdown
+  const platformSentiment = Object.entries(byModel).map(([modelId, results]) => {
+    const m = results.filter((r) => r.brand_mentioned && r.sentiment);
+    const p = m.filter((r) => r.sentiment === "positive").length;
+    const t = Math.max(1, m.length);
+    const pct = Math.round((p / t) * 100);
+    const dominant = p / t >= 0.5 ? "positive" : m.filter((r) => r.sentiment === "negative").length / t >= 0.5 ? "negative" : "neutral";
+    return { modelId, label: MODEL_LABELS[modelId] ?? modelId, pct, dominant };
+  });
+
+  return (
+    <div className="space-y-6">
+      {/* Sentiment distribution bar */}
+      <div className="space-y-3">
+        <div className="flex rounded-xl overflow-hidden h-8 gap-0.5">
+          {pct.pos > 0 && (
+            <div className="bg-[#10B981] flex items-center justify-center text-xs font-bold text-[#0A0E17]" style={{ width: `${pct.pos}%` }} title={`Positive: ${pct.pos}%`}>
+              {pct.pos >= 10 && `${pct.pos}%`}
+            </div>
+          )}
+          {pct.neu > 0 && (
+            <div className="bg-[#F59E0B]/60 flex items-center justify-center text-xs font-bold text-[#0A0E17]" style={{ width: `${pct.neu}%` }} title={`Neutral: ${pct.neu}%`}>
+              {pct.neu >= 10 && `${pct.neu}%`}
+            </div>
+          )}
+          {pct.neg > 0 && (
+            <div className="bg-[#EF4444]/60 flex items-center justify-center text-xs font-bold text-white" style={{ width: `${pct.neg}%` }} title={`Negative: ${pct.neg}%`}>
+              {pct.neg >= 10 && `${pct.neg}%`}
+            </div>
+          )}
+        </div>
+        <div className="flex gap-5 text-xs">
+          <span className="flex items-center gap-1.5 text-gray-400"><span className="w-2.5 h-2.5 rounded-sm bg-[#10B981] inline-block" />{pct.pos}% Positive</span>
+          <span className="flex items-center gap-1.5 text-gray-400"><span className="w-2.5 h-2.5 rounded-sm bg-[#F59E0B]/60 inline-block" />{pct.neu}% Neutral</span>
+          <span className="flex items-center gap-1.5 text-gray-400"><span className="w-2.5 h-2.5 rounded-sm bg-[#EF4444]/60 inline-block" />{pct.neg}% Negative</span>
+        </div>
+      </div>
+
+      {/* Platform breakdown */}
+      {platformSentiment.length > 1 && (
+        <div className="flex flex-wrap gap-3">
+          {platformSentiment.map(({ modelId, label, dominant }) => {
+            const color = dominant === "positive" ? "#10B981" : dominant === "negative" ? "#EF4444" : "#F59E0B";
+            return (
+              <div key={modelId} className="flex items-center gap-2 rounded-xl border border-white/8 bg-[#111827] px-4 py-2.5">
+                <div className="w-2 h-2 rounded-full" style={{ background: color }} />
+                <span className="text-sm text-gray-300">{label} is <span className="font-semibold" style={{ color }}>{dominant}</span></span>
               </div>
-            ))}
-          </div>
+            );
+          })}
         </div>
       )}
 
-      {/* Insights */}
-      {data.insights && data.insights.length > 0 && (
+      {/* Example quotes */}
+      {quotes.length > 0 && (
         <div className="space-y-2">
-          {data.insights.map((insight, i) => (
-            <div key={i} className="flex gap-2.5 text-sm text-gray-400">
-              <span className="text-[#10B981] flex-shrink-0 mt-0.5">→</span>
-              <span>{insight}</span>
+          <p className="text-xs text-gray-600 uppercase tracking-wider font-medium">Example responses</p>
+          {quotes.map((r, i) => (
+            <div key={i} className="rounded-xl border border-white/8 bg-[#111827] p-4 space-y-1.5">
+              <p className="text-xs text-gray-600 uppercase tracking-wider">{r.model} · {r.prompt.slice(0, 60)}{r.prompt.length > 60 ? "…" : ""}</p>
+              <p className="text-sm text-gray-300 leading-relaxed italic">&ldquo;{r.key_context}&rdquo;</p>
             </div>
           ))}
         </div>
       )}
+
+      {/* Deep analysis (locked or unlocked) */}
+      {perceptionData ? (
+        <div className="space-y-4 pt-2 border-t border-white/8">
+          <p className="text-xs text-gray-500 uppercase tracking-wider font-medium">Deep Perception Analysis</p>
+          <p className="text-gray-300 leading-relaxed">{perceptionData.summary}</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="rounded-xl border border-[#10B981]/15 bg-[#10B981]/5 p-4 space-y-2">
+              <p className="text-xs text-[#10B981] font-semibold uppercase tracking-wider">Positive descriptors</p>
+              <div className="flex flex-wrap gap-2">
+                {(perceptionData.positive_descriptors ?? []).map((d: string, i: number) => (
+                  <span key={i} className="text-xs px-2.5 py-1 rounded-full bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20">{d}</span>
+                ))}
+              </div>
+            </div>
+            <div className="rounded-xl border border-amber-500/15 bg-amber-500/5 p-4 space-y-2">
+              <p className="text-xs text-amber-400 font-semibold uppercase tracking-wider">Critical descriptors</p>
+              <div className="flex flex-wrap gap-2">
+                {(perceptionData.negative_descriptors ?? []).map((d: string, i: number) => (
+                  <span key={i} className="text-xs px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">{d}</span>
+                ))}
+              </div>
+            </div>
+          </div>
+          {(perceptionData.perception_mismatches ?? []).length > 0 && (
+            <div className="space-y-1.5">
+              <p className="text-xs text-gray-500 uppercase tracking-wider font-medium">Perception gaps</p>
+              {perceptionData.perception_mismatches.map((m: string, i: number) => (
+                <div key={i} className="flex gap-2 text-sm text-gray-400">
+                  <span className="text-amber-400 flex-shrink-0">!</span>
+                  <span>{m}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+// ── Citations Section (enriched) ──────────────────────────────────────────────
+
+function CitationsSection({ citationData }: { citationData: Json }) {
+  const pages: Array<{ url: string; count: number }> = citationData.cited_pages ?? [];
+  const mostCited = pages[0];
+  const neverCited = pages.length === 0;
+
+  return (
+    <div className="space-y-4">
+      <p className="text-sm text-gray-400 leading-relaxed">{citationData.insight}</p>
+
+      {pages.length > 0 ? (
+        <>
+          <div className="space-y-2">
+            {pages.map((page, i) => (
+              <div key={i} className="flex items-center gap-3 rounded-xl border bg-[#111827] px-4 py-3"
+                style={{ borderColor: i === 0 ? "rgba(16,185,129,0.2)" : "rgba(255,255,255,0.06)" }}>
+                <ExternalLink className="w-3.5 h-3.5 text-gray-600 flex-shrink-0" />
+                <span className="text-xs text-gray-300 flex-1 truncate font-mono">{page.url}</span>
+                {i === 0 && (
+                  <span className="text-[10px] font-bold text-[#10B981] bg-[#10B981]/10 border border-[#10B981]/20 rounded-full px-2 py-0.5 flex-shrink-0">
+                    Most cited
+                  </span>
+                )}
+                <span className="text-sm font-bold text-[#10B981] tabular-nums flex-shrink-0">{page.count}×</span>
+              </div>
+            ))}
+          </div>
+
+          {mostCited && (
+            <div className="rounded-xl border border-[#10B981]/15 bg-[#10B981]/5 p-4">
+              <p className="text-xs text-[#10B981] font-semibold uppercase tracking-wider mb-1.5">Recommendation</p>
+              <p className="text-sm text-gray-300 leading-relaxed">
+                <strong className="text-white">{mostCited.url}</strong> is your most AI-cited page.
+                Ensure it stays up-to-date and includes specific, factual claims about your brand.
+                Pages not listed here are never mentioned by AI — consider adding more detailed, structured content to those sections.
+              </p>
+            </div>
+          )}
+        </>
+      ) : (
+        <div className="rounded-xl border border-amber-500/15 bg-amber-500/5 p-4">
+          <p className="text-sm text-gray-300">
+            No pages from your site were explicitly cited. This is common — most AI models don&apos;t cite sources in conversational answers.
+            Focus on getting your brand mentioned in third-party reviews, directories, and authoritative publications instead.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Improvement Plan Section (with checkboxes) ────────────────────────────────
+
+function ImprovementPlanSection({ plan }: { plan: Json }) {
+  const [done, setDone] = useState<Set<string>>(new Set());
+
+  const tiers = [
+    { key: "quick_wins",   label: "Quick Wins",   color: "#10B981", badge: "bg-[#10B981]/10 text-[#10B981] border-[#10B981]/20", desc: "Do this week"   },
+    { key: "this_month",   label: "This Month",   color: "#F59E0B", badge: "bg-amber-500/10 text-amber-400 border-amber-500/20",  desc: "Do this month"  },
+    { key: "this_quarter", label: "This Quarter", color: "#6366F1", badge: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",desc: "Do this quarter"},
+  ];
+
+  const allItems: Array<{ key: string; tier: string }> = tiers.flatMap(({ key }) =>
+    (plan[key] ?? []).map((_: Json, i: number) => ({ key: `${key}-${i}`, tier: key }))
+  );
+  const total     = allItems.length;
+  const completed = allItems.filter((x) => done.has(x.key)).length;
+  const progress  = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+  function toggle(key: string) {
+    setDone((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Progress bar */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between text-sm">
+          <span className="text-gray-400">{completed} of {total} recommendations completed</span>
+          <span className="font-semibold text-[#10B981]">{progress}%</span>
+        </div>
+        <div className="h-2 rounded-full bg-white/6 overflow-hidden">
+          <div
+            className="h-full rounded-full bg-[#10B981] transition-all duration-500"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      </div>
+
+      {tiers.map(({ key, label, color, badge, desc }) => {
+        const items: Json[] = plan[key] ?? [];
+        return (
+          <div key={key}>
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-2 h-2 rounded-full" style={{ background: color }} />
+              <p className="text-sm font-semibold text-white">{label}</p>
+              <span className={cn("text-[10px] font-semibold px-2 py-0.5 rounded-full border", badge)}>{desc}</span>
+            </div>
+            <div className="space-y-2">
+              {items.map((item: Json, i: number) => {
+                const itemKey = `${key}-${i}`;
+                const isDone = done.has(itemKey);
+                return (
+                  <div
+                    key={i}
+                    className={cn("rounded-xl border bg-[#111827] p-4 space-y-2 transition-opacity", isDone && "opacity-50")}
+                    style={{ borderColor: isDone ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.08)" }}
+                  >
+                    <div className="flex items-start gap-3">
+                      <button
+                        onClick={() => toggle(itemKey)}
+                        className="flex-shrink-0 mt-0.5 text-gray-600 hover:text-[#10B981] transition-colors"
+                      >
+                        {isDone
+                          ? <CheckCircle2 className="w-4 h-4 text-[#10B981]" />
+                          : <Circle className="w-4 h-4" />}
+                      </button>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-3">
+                          <p className={cn("text-sm font-medium", isDone ? "line-through text-gray-600" : "text-white")}>{item.title}</p>
+                          <div className="flex gap-2 flex-shrink-0">
+                            <span className="text-[11px] px-2 py-0.5 rounded-full bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20">{item.impact}</span>
+                            <span className="text-[11px] px-2 py-0.5 rounded-full bg-white/5 text-gray-400 border border-white/10">{item.effort}</span>
+                          </div>
+                        </div>
+                        <p className="text-xs text-gray-400 leading-relaxed mt-1">{item.description}</p>
+                        {Array.isArray(item.affected_categories) && item.affected_categories.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            {item.affected_categories.map((cat: string, j: number) => (
+                              <span key={j} className="text-[10px] px-1.5 py-0.5 rounded bg-white/5 text-gray-500">{cat}</span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── Benchmark Section ─────────────────────────────────────────────────────────
+
+function BenchmarkSection({ data, actualScore }: { data: Json; actualScore: number }) {
+  const tiers = [
+    { key: "leader",      label: "Market Leader", color: "#10B981" },
+    { key: "average",     label: "Average Brand",  color: "#F59E0B" },
+    { key: "new_entrant", label: "New Entrant",    color: "#6B7280" },
+  ];
+
+  return (
+    <div className="space-y-4">
+      <div className="space-y-3">
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-[#10B981] font-semibold w-28 flex-shrink-0">Your Brand</span>
+          <div className="flex-1 h-7 rounded-lg bg-white/5 overflow-hidden relative">
+            <div className="h-full rounded-lg bg-[#10B981]/50" style={{ width: `${actualScore}%` }} />
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-bold text-[#10B981]">{actualScore}</span>
+          </div>
+        </div>
+        {tiers.map(({ key, label, color }) => {
+          const s = data[key]?.score ?? 0;
+          return (
+            <div key={key} className="flex items-center gap-3">
+              <span className="text-sm text-gray-400 w-28 flex-shrink-0">{label}</span>
+              <div className="flex-1 h-7 rounded-lg bg-white/5 overflow-hidden relative">
+                <div className="h-full rounded-lg" style={{ width: `${s}%`, background: `${color}30` }} />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-semibold" style={{ color }}>{s}</span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <p className="text-xs text-gray-600 italic">Benchmark values are AI-generated estimates for your industry category.</p>
     </div>
   );
 }
@@ -466,18 +761,20 @@ function CompetitorSection({ data, brand }: { data: CompetitorsData; brand: stri
 // ── Locked Module Card ─────────────────────────────────────────────────────────
 
 function LockedModuleCard({
-  title, description, unlockKey, scanId, onUnlocked,
+  title, description, unlockKey, scanId, tokenBalance, onUnlocked,
 }: {
   title: string;
   description: string;
   unlockKey: string;
   scanId: string;
+  tokenBalance: number | null;
   onUnlocked: (data: Json) => void;
 }) {
   const [confirming, setConfirming] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading]       = useState(false);
+  const [error, setError]           = useState<string | null>(null);
   const cost = getActionCost(`unlock_${unlockKey}`);
+  const hasBalance = tokenBalance === null || tokenBalance >= cost;
 
   async function handleUnlock() {
     setLoading(true);
@@ -500,7 +797,7 @@ function LockedModuleCard({
 
   return (
     <div className="relative rounded-2xl border border-white/8 bg-[#111827] overflow-hidden min-h-[220px]">
-      {/* Blurred content preview */}
+      {/* Blurred preview */}
       <div className="p-6 blur-sm select-none pointer-events-none opacity-30 space-y-3">
         {[75, 50, 90, 60, 40, 70].map((w, i) => (
           <div key={i} className="flex gap-3 items-center">
@@ -510,7 +807,7 @@ function LockedModuleCard({
         ))}
       </div>
 
-      {/* Lock overlay */}
+      {/* Overlay */}
       <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#0A0E17]/80 backdrop-blur-[2px] p-6 text-center space-y-4">
         <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
           <Lock className="w-5 h-5 text-gray-400" />
@@ -524,7 +821,23 @@ function LockedModuleCard({
           <p className="text-xs text-[#EF4444] bg-[#EF4444]/10 border border-[#EF4444]/20 rounded-lg px-3 py-2">{error}</p>
         )}
 
-        {confirming ? (
+        {/* Insufficient balance */}
+        {!hasBalance && !confirming && (
+          <div className="space-y-2 text-center">
+            <p className="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2">
+              Need {cost - (tokenBalance ?? 0)} more tokens to unlock
+            </p>
+            <Link
+              href="/app/tokens"
+              className="inline-flex items-center gap-2 px-5 py-2 text-sm font-semibold bg-[#10B981] hover:bg-[#059669] text-[#0A0E17] rounded-xl transition-colors"
+            >
+              Buy tokens
+            </Link>
+          </div>
+        )}
+
+        {/* Has balance */}
+        {hasBalance && (confirming ? (
           <div className="space-y-3 w-full max-w-xs">
             <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-gray-300">
               This will deduct <span className="font-bold text-white">{cost} tokens</span> from your balance.
@@ -541,7 +854,7 @@ function LockedModuleCard({
                 disabled={loading}
                 className="flex-1 px-5 py-2 text-sm font-semibold bg-[#10B981] hover:bg-[#059669] text-[#0A0E17] rounded-lg transition-colors flex items-center justify-center gap-2"
               >
-                {loading ? <span className="w-4 h-4 border-2 border-[#0A0E17]/30 border-t-[#0A0E17] rounded-full animate-spin" /> : null}
+                {loading && <span className="w-4 h-4 border-2 border-[#0A0E17]/30 border-t-[#0A0E17] rounded-full animate-spin" />}
                 {loading ? "Unlocking…" : "Confirm unlock"}
               </button>
             </div>
@@ -554,112 +867,19 @@ function LockedModuleCard({
             <Lock className="w-3.5 h-3.5 text-gray-400" />
             Unlock for {cost} tokens
           </button>
-        )}
+        ))}
       </div>
     </div>
   );
 }
 
-// ── Improvement Plan Section ──────────────────────────────────────────────────
+// ── Upgrade Banner ─────────────────────────────────────────────────────────────
 
-function ImprovementPlanSection({ plan }: { plan: Json }) {
-  const tiers = [
-    { key: "quick_wins",   label: "Quick Wins",    color: "#10B981", desc: "Do this week"   },
-    { key: "this_month",   label: "This Month",    color: "#14B8A6", desc: "Do this month"  },
-    { key: "this_quarter", label: "This Quarter",  color: "#6366F1", desc: "Do this quarter"},
-  ];
-
-  return (
-    <div className="space-y-6">
-      {tiers.map(({ key, label, color, desc }) => {
-        const items: Json[] = plan[key] ?? [];
-        return (
-          <div key={key}>
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-2 h-2 rounded-full" style={{ background: color }} />
-              <p className="text-sm font-semibold text-white">{label}</p>
-              <span className="text-xs text-gray-600">{desc}</span>
-            </div>
-            <div className="space-y-2">
-              {items.map((item: Json, i: number) => (
-                <div key={i} className="rounded-xl border border-white/8 bg-[#111827] p-4 space-y-2">
-                  <div className="flex items-start justify-between gap-3">
-                    <p className="text-sm font-medium text-white">{item.title}</p>
-                    <div className="flex gap-2 flex-shrink-0">
-                      <span className="text-[11px] px-2 py-0.5 rounded-full bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20">{item.impact}</span>
-                      <span className="text-[11px] px-2 py-0.5 rounded-full bg-white/5 text-gray-400 border border-white/10">{item.effort}</span>
-                    </div>
-                  </div>
-                  <p className="text-xs text-gray-400 leading-relaxed">{item.description}</p>
-                  {Array.isArray(item.affected_categories) && item.affected_categories.length > 0 && (
-                    <div className="flex flex-wrap gap-1">
-                      {item.affected_categories.map((cat: string, j: number) => (
-                        <span key={j} className="text-[10px] px-1.5 py-0.5 rounded bg-white/5 text-gray-500">{cat}</span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-// ── Benchmark Section ─────────────────────────────────────────────────────────
-
-function BenchmarkSection({ data, actualScore }: { data: Json; actualScore: number }) {
-  const tiers = [
-    { key: "leader",      label: "Market Leader",  color: "#10B981" },
-    { key: "average",     label: "Average Brand",  color: "#F59E0B" },
-    { key: "new_entrant", label: "New Entrant",     color: "#6B7280" },
-  ];
-
-  return (
-    <div className="space-y-4">
-      {/* Your score vs benchmarks */}
-      <div className="space-y-3">
-        {/* Your score */}
-        <div className="flex items-center gap-3">
-          <span className="text-sm text-[#10B981] font-semibold w-28 flex-shrink-0">Your Brand</span>
-          <div className="flex-1 h-7 rounded-lg bg-white/5 overflow-hidden relative">
-            <div className="h-full rounded-lg bg-[#10B981]/50" style={{ width: `${actualScore}%` }} />
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-bold text-[#10B981]">{actualScore}</span>
-          </div>
-        </div>
-
-        {tiers.map(({ key, label, color }) => {
-          const score = data[key]?.score ?? 0;
-          return (
-            <div key={key} className="flex items-center gap-3">
-              <span className="text-sm text-gray-400 w-28 flex-shrink-0">{label}</span>
-              <div className="flex-1 h-7 rounded-lg bg-white/5 overflow-hidden relative">
-                <div className="h-full rounded-lg" style={{ width: `${score}%`, background: `${color}30` }} />
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-semibold" style={{ color }}>{score}</span>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      <p className="text-xs text-gray-600 italic">
-        Benchmark values are AI-generated estimates for the {`industry`} category.
-      </p>
-    </div>
-  );
-}
-
-// ── Upsell Banner ─────────────────────────────────────────────────────────────
-
-function UpgradeBanner({ queryCount, scanId }: { queryCount: number; scanId: string }) {
-  const isQuick = queryCount <= 12;
+function UpgradeBanner({ queryCount }: { queryCount: number }) {
+  const isQuick    = queryCount <= 12;
   const isStandard = queryCount > 12 && queryCount <= 30;
-  if (!isQuick && !isStandard) return null;
-
   const [dismissed, setDismissed] = useState(false);
-  if (dismissed) return null;
+  if ((!isQuick && !isStandard) || dismissed) return null;
 
   return (
     <div className="rounded-2xl border border-[#10B981]/20 bg-[#10B981]/5 p-5 flex items-center gap-4">
@@ -677,13 +897,8 @@ function UpgradeBanner({ queryCount, scanId }: { queryCount: number; scanId: str
         </p>
       </div>
       <div className="flex items-center gap-2 flex-shrink-0">
-        <button onClick={() => setDismissed(true)} className="text-xs text-gray-600 hover:text-gray-400 px-2 py-1">
-          Dismiss
-        </button>
-        <Link
-          href="/app/report-builder"
-          className="text-xs font-semibold bg-[#10B981] hover:bg-[#059669] text-[#0A0E17] rounded-lg px-3 py-2 transition-colors"
-        >
+        <button onClick={() => setDismissed(true)} className="text-xs text-gray-600 hover:text-gray-400 px-2 py-1">Dismiss</button>
+        <Link href="/app/report-builder" className="text-xs font-semibold bg-[#10B981] hover:bg-[#059669] text-[#0A0E17] rounded-lg px-3 py-2 transition-colors">
           Upgrade →
         </Link>
       </div>
@@ -705,21 +920,18 @@ function Section({ id, title, children, className }: { id: string; title: string
 // ── Main Report Page ──────────────────────────────────────────────────────────
 
 export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: ScanResultRow[] }) {
-  const [tokenBalance, setTokenBalance] = useState<number | null>(null);
-  const [activeSection, setActiveSection] = useState<string>("score");
+  const [tokenBalance,   setTokenBalance]   = useState<number | null>(null);
+  const [activeSection,  setActiveSection]  = useState<string>("score");
+  const [improvementPlan,setImprovementPlan]= useState<Json>(scan.improvement_plan ?? null);
+  const [benchmarkData,  setBenchmarkData]  = useState<Json>(scan.benchmark_data   ?? null);
+  const [perceptionData, setPerceptionData] = useState<Json>(scan.perception_data  ?? null);
+  const [citationData,   setCitationData]   = useState<Json>(scan.citation_data    ?? null);
 
-  // Module state (can be unlocked)
-  const [improvementPlan, setImprovementPlan] = useState<Json>(scan.improvement_plan ?? null);
-  const [benchmarkData,   setBenchmarkData]   = useState<Json>(scan.benchmark_data   ?? null);
-  const [perceptionData,  setPerceptionData]  = useState<Json>(scan.perception_data  ?? null);
-  const [citationData,    setCitationData]    = useState<Json>(scan.citation_data    ?? null);
+  const score    = scan.overall_score ?? 0;
+  const brand    = scan.brand_name;
+  const siteUrl  = scan.url || scan.website;
+  const dateStr  = new Date(scan.created_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
 
-  const score = scan.overall_score ?? 0;
-  const brand = scan.brand_name;
-  const siteUrl = scan.url || scan.website;
-  const dateStr = new Date(scan.created_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
-
-  // Group results by model
   const byModel = useMemo(() =>
     scanResults.reduce<Record<string, ScanResultRow[]>>((acc, r) => {
       if (!acc[r.model]) acc[r.model] = [];
@@ -729,7 +941,6 @@ export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: 
     [scanResults]
   );
 
-  // Competitor names for highlighting
   const competitorsData: CompetitorsData | null = scan.competitors_data ?? null;
   const competitorNames = useMemo(() =>
     (competitorsData?.competitors ?? []).map((c) => c.name).filter(Boolean),
@@ -744,7 +955,6 @@ export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: 
   const categoryScores: Record<string, number> | null = scan.category_scores ?? null;
   const totalQueries = scanResults.length;
 
-  // Model results summary for PDF
   const modelResultsSummary = useMemo(() =>
     Object.entries(byModel).map(([modelId, results]) => ({
       model: modelId,
@@ -755,7 +965,18 @@ export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: 
     [byModel]
   );
 
-  // ── Token balance ───────────────────────────────────────────────────────────
+  // byModel summary for heatmap (mention count + total per model)
+  const byModelSummary = useMemo(() =>
+    Object.fromEntries(
+      Object.entries(byModel).map(([modelId, results]) => [
+        modelId,
+        { mention_count: results.filter((r) => r.brand_mentioned).length, total: results.length },
+      ])
+    ),
+    [byModel]
+  );
+
+  // ── Token balance ─────────────────────────────────────────────────────────
   useEffect(() => {
     function load() {
       fetch("/api/tokens/balance").then((r) => r.json()).then((d) => setTokenBalance(d.balance ?? null)).catch(() => {});
@@ -765,26 +986,26 @@ export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: 
     return () => window.removeEventListener("tokenBalanceChanged", load);
   }, []);
 
-  // ── Build TOC ───────────────────────────────────────────────────────────────
-  const tocSections: TocSection[] = useMemo(() => {
-    const sections: TocSection[] = [
-      { id: "score",      label: "Score"       },
-      { id: "platforms",  label: "Platforms"   },
-    ];
-    if (categoryScores)                              sections.push({ id: "visibility",     label: "Visibility"    });
-    if (competitorsData?.competitors?.length)        sections.push({ id: "competitors",    label: "Competitors"   });
-    if (recommendations.length)                      sections.push({ id: "recommendations",label: "Actions"       });
-    sections.push({ id: "sentiment",   label: "Sentiment"     });
-    sections.push({ id: "citations",   label: "Citations"     });
-    sections.push({ id: "improvement", label: "Improvement"   });
-    sections.push({ id: "benchmark",   label: "Benchmark"     });
-    return sections;
-  }, [categoryScores, competitorsData, recommendations]);
+  // ── Build TOC ─────────────────────────────────────────────────────────────
+  const hasCompetitors = (competitorsData?.competitors?.length ?? 0) > 0;
 
-  // ── Scroll tracking ─────────────────────────────────────────────────────────
-  // Use a scroll listener — find the topmost section whose top is within the
-  // upper 40% of the viewport. More reliable than IntersectionObserver for
-  // sections of wildly varying heights.
+  const tocSections: TocSection[] = useMemo(() => {
+    const s: TocSection[] = [
+      { id: "score",     label: "Score"     },
+      { id: "platforms", label: "Platforms" },
+    ];
+    if (categoryScores)         s.push({ id: "visibility",  label: "Visibility"  });
+    if (hasCompetitors)         s.push({ id: "heatmap",     label: "Heatmap"     });
+    if (hasCompetitors)         s.push({ id: "share",       label: "Share"       });
+    if (recommendations.length) s.push({ id: "actions",     label: "Actions"     });
+    s.push({ id: "sentiment",   label: "Sentiment"   });
+    s.push({ id: "citations",   label: "Citations"   });
+    s.push({ id: "improvement", label: "Improvement" });
+    s.push({ id: "benchmark",   label: "Benchmark"   });
+    return s;
+  }, [categoryScores, hasCompetitors, recommendations.length]);
+
+  // ── Scroll tracking ───────────────────────────────────────────────────────
   useEffect(() => {
     function onScroll() {
       const threshold = window.innerHeight * 0.4;
@@ -792,13 +1013,12 @@ export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: 
       for (const { id } of tocSections) {
         const el = document.getElementById(id);
         if (!el) continue;
-        const top = el.getBoundingClientRect().top;
-        if (top <= threshold) best = id;
+        if (el.getBoundingClientRect().top <= threshold) best = id;
       }
       if (best) setActiveSection(best);
     }
     window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll(); // run once on mount
+    onScroll();
     return () => window.removeEventListener("scroll", onScroll);
   }, [tocSections]);
 
@@ -808,7 +1028,6 @@ export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: 
       {/* ── Sticky Header ── */}
       <header className="sticky top-0 z-50 bg-[#0A0E17]/90 backdrop-blur-xl border-b border-white/6">
         <div className="max-w-4xl mx-auto px-6 h-14 flex items-center gap-4">
-          {/* Left */}
           <div className="flex items-center gap-3 min-w-0 flex-1">
             <Link href="/app/scores" className="text-gray-500 hover:text-white transition-colors flex-shrink-0">
               <ArrowLeft className="w-4 h-4" />
@@ -818,19 +1037,13 @@ export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: 
             </div>
             <div className="min-w-0">
               <span className="text-sm font-semibold text-white truncate block">{brand}</span>
-              {siteUrl && (
-                <span className="text-[11px] text-gray-600 truncate block">{siteUrl}</span>
-              )}
+              {siteUrl && <span className="text-[11px] text-gray-600 truncate block">{siteUrl}</span>}
             </div>
           </div>
-
-          {/* Center */}
           <div className="hidden md:block text-center flex-shrink-0">
             <p className="text-xs text-gray-500 font-medium">AI Visibility Report</p>
             <p className="text-[11px] text-gray-700">{dateStr}</p>
           </div>
-
-          {/* Right */}
           <div className="flex items-center gap-2 flex-shrink-0">
             {tokenBalance !== null && (
               <span className="hidden sm:flex items-center gap-1.5 text-xs text-gray-500 border border-white/8 rounded-lg px-2.5 py-1.5">
@@ -838,9 +1051,7 @@ export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: 
               </span>
             )}
             <PDFDownload
-              brand={brand}
-              score={score}
-              date={dateStr}
+              brand={brand} score={score} date={dateStr}
               category={scan.category ?? undefined}
               url={siteUrl ?? undefined}
               modelResults={modelResultsSummary}
@@ -856,13 +1067,11 @@ export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: 
         </div>
       </header>
 
-      {/* ── Floating TOC ── */}
       <FloatingTOC sections={tocSections} activeId={activeSection} />
 
-      {/* ── Main Content ── */}
       <main className="max-w-4xl mx-auto px-6 py-16 space-y-24">
 
-        {/* ── Section 1: Score Hero ── */}
+        {/* ── 1: Score ── */}
         <section id="score" className="scroll-mt-20 text-center space-y-6">
           <ScoreGauge score={score} />
           <div className="space-y-2">
@@ -878,8 +1087,6 @@ export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: 
               Scanned across {Object.keys(byModel).length} AI platform{Object.keys(byModel).length !== 1 ? "s" : ""} · {totalQueries} queries analysed · {dateStr}
             </p>
           </div>
-
-          {/* Quick stats row */}
           <div className="flex flex-wrap justify-center gap-6 pt-2">
             {Object.entries(byModel).map(([modelId, results]) => {
               const ms = Math.round(results.reduce((s, r) => s + (r.score ?? 0), 0) / Math.max(1, results.length));
@@ -893,31 +1100,55 @@ export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: 
           </div>
         </section>
 
-        {/* ── Upgrade banner (quick check) ── */}
-        <UpgradeBanner queryCount={totalQueries} scanId={scan.id} />
+        <UpgradeBanner queryCount={totalQueries} />
 
-        {/* ── Section 2: Platform Breakdown ── */}
+        {/* ── 2: Platform Breakdown ── */}
         <Section id="platforms" title="Platform Breakdown">
           <PlatformSection byModel={byModel} brand={brand} competitorNames={competitorNames} />
         </Section>
 
-        {/* ── Section 3: Visibility Breakdown ── */}
+        {/* ── 3: Visibility Breakdown ── */}
         {categoryScores && (
           <Section id="visibility" title="Visibility Breakdown">
             <VisibilitySection scores={categoryScores} />
           </Section>
         )}
 
-        {/* ── Section 4: Competitors ── */}
-        {competitorsData && (competitorsData.competitors?.length ?? 0) > 0 && (
-          <Section id="competitors" title="Competitive Landscape">
-            <CompetitorSection data={competitorsData} brand={brand} />
+        {/* ── 4: Competitor Heatmap ── */}
+        {hasCompetitors && competitorsData && (
+          <Section id="heatmap" title="Competitor Heatmap">
+            <CompetitorHeatmap
+              brand={brand}
+              brandProfile={competitorsData.brand_profile}
+              competitors={competitorsData.competitors}
+              byModel={byModelSummary}
+              scanResults={scanResults.map((r) => ({
+                prompt: r.prompt,
+                response: r.response,
+                brand_mentioned: r.brand_mentioned,
+                key_context: r.key_context,
+                model: r.model,
+              }))}
+            />
           </Section>
         )}
 
-        {/* ── Section 5: Recommendations ── */}
+        {/* ── 5: Share of Voice ── */}
+        {hasCompetitors && competitorsData && (competitorsData.share_of_voice?.length ?? 0) > 0 && (
+          <Section id="share" title="Share of Voice">
+            <ShareOfVoiceSection data={competitorsData} brand={brand} />
+            {(competitorsData.insights?.length ?? 0) > 0 && (
+              <div className="mt-8">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-4">Competitive Insights</p>
+                <CompetitorInsightsSection insights={competitorsData.insights} />
+              </div>
+            )}
+          </Section>
+        )}
+
+        {/* ── 6: Recommendations ── */}
         {recommendations.length > 0 && (
-          <Section id="recommendations" title="Recommendations">
+          <Section id="actions" title="Recommended Actions">
             <div className="space-y-3">
               {recommendations.map((rec, i) => (
                 <div key={i} className="rounded-xl border border-white/8 bg-[#111827] p-4 flex items-start gap-3">
@@ -934,98 +1165,61 @@ export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: 
           </Section>
         )}
 
-        {/* ── Section 6: Sentiment ── */}
-        <Section id="sentiment" title="Brand Perception">
-          {perceptionData ? (
-            <div className="space-y-5">
-              <p className="text-gray-300 leading-relaxed">{perceptionData.summary}</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="rounded-xl border border-[#10B981]/15 bg-[#10B981]/5 p-4 space-y-2">
-                  <p className="text-xs text-[#10B981] font-semibold uppercase tracking-wider">Positive descriptors</p>
-                  <div className="flex flex-wrap gap-2">
-                    {(perceptionData.positive_descriptors ?? []).map((d: string, i: number) => (
-                      <span key={i} className="text-xs px-2.5 py-1 rounded-full bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20">{d}</span>
-                    ))}
-                  </div>
-                </div>
-                <div className="rounded-xl border border-amber-500/15 bg-amber-500/5 p-4 space-y-2">
-                  <p className="text-xs text-amber-400 font-semibold uppercase tracking-wider">Critical descriptors</p>
-                  <div className="flex flex-wrap gap-2">
-                    {(perceptionData.negative_descriptors ?? []).map((d: string, i: number) => (
-                      <span key={i} className="text-xs px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">{d}</span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-              {(perceptionData.perception_mismatches ?? []).length > 0 && (
-                <div className="space-y-1.5">
-                  <p className="text-xs text-gray-500 uppercase tracking-wider font-medium">Perception gaps</p>
-                  {perceptionData.perception_mismatches.map((m: string, i: number) => (
-                    <div key={i} className="flex gap-2 text-sm text-gray-400">
-                      <span className="text-amber-400 flex-shrink-0">!</span>
-                      <span>{m}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
+        {/* ── 7: Sentiment ── */}
+        <Section id="sentiment" title="Brand Sentiment">
+          <SentimentSection
+            scanResults={scanResults}
+            byModel={byModel}
+            perceptionData={perceptionData}
+            brand={brand}
+          />
+          {!perceptionData && (
+            <div className="mt-6">
+              <LockedModuleCard
+                title="Deep Perception Analysis"
+                description="How AI models describe your brand — key descriptors, perception gaps vs. your positioning, and sentiment mismatches."
+                unlockKey="sentiment"
+                scanId={scan.id}
+                tokenBalance={tokenBalance}
+                onUnlocked={(data) => setPerceptionData(data)}
+              />
             </div>
-          ) : (
-            <LockedModuleCard
-              title="Brand Perception Analysis"
-              description="See how AI models describe your brand — top descriptors, sentiment patterns, and perception gaps vs. your positioning."
-              unlockKey="sentiment"
-              scanId={scan.id}
-              onUnlocked={(data) => setPerceptionData(data)}
-            />
           )}
         </Section>
 
-        {/* ── Section 7: Citations ── */}
+        {/* ── 8: Citations ── */}
         <Section id="citations" title="Citation Tracking">
           {citationData ? (
-            <div className="space-y-4">
-              <p className="text-sm text-gray-400">{citationData.insight}</p>
-              {(citationData.cited_pages ?? []).length > 0 ? (
-                <div className="space-y-2">
-                  {citationData.cited_pages.map((page: Json, i: number) => (
-                    <div key={i} className="flex items-center gap-3 rounded-xl border border-white/8 bg-[#111827] px-4 py-3">
-                      <ExternalLink className="w-3.5 h-3.5 text-gray-600 flex-shrink-0" />
-                      <span className="text-sm text-gray-300 flex-1 truncate font-mono text-xs">{page.url}</span>
-                      <span className="text-sm font-bold text-[#10B981] tabular-nums">{page.count}×</span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-gray-600">No specific pages were cited in this scan.</p>
-              )}
-            </div>
+            <CitationsSection citationData={citationData} />
           ) : (
             <LockedModuleCard
               title="Citation Page Tracking"
-              description="Discover which pages on your website AI models cite and recommend — and which pages are never mentioned."
+              description="Which pages on your website AI models cite — and which are never mentioned."
               unlockKey="citations"
               scanId={scan.id}
+              tokenBalance={tokenBalance}
               onUnlocked={(data) => setCitationData(data)}
             />
           )}
         </Section>
 
-        {/* ── Section 8: Improvement Plan ── */}
+        {/* ── 9: Improvement Plan ── */}
         <Section id="improvement" title="AI Improvement Plan">
           {improvementPlan ? (
             <ImprovementPlanSection plan={improvementPlan} />
           ) : (
             <LockedModuleCard
               title="3-Tier Improvement Plan"
-              description="A specific, prioritized action plan to improve your AI visibility — quick wins, monthly goals, and quarterly initiatives."
+              description="A prioritised action plan — quick wins, monthly goals, and quarterly initiatives to boost your AI visibility."
               unlockKey="improvement_plan"
               scanId={scan.id}
+              tokenBalance={tokenBalance}
               onUnlocked={(data) => setImprovementPlan(data)}
             />
           )}
         </Section>
 
-        {/* ── Section 9: Benchmark ── */}
+        {/* ── 10: Benchmark ── */}
         <Section id="benchmark" title="Industry Benchmark">
           {benchmarkData ? (
             <BenchmarkSection data={benchmarkData} actualScore={score} />
@@ -1035,6 +1229,7 @@ export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: 
               description="Compare your scores against typical market leaders, average brands, and new entrants in your category."
               unlockKey="benchmark"
               scanId={scan.id}
+              tokenBalance={tokenBalance}
               onUnlocked={(data) => setBenchmarkData(data)}
             />
           )}
@@ -1050,6 +1245,7 @@ export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: 
             View all reports →
           </Link>
         </div>
+
       </main>
     </div>
   );
