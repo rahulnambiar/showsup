@@ -651,7 +651,7 @@ export async function POST(request: Request) {
       const { data: fullScan, error: fullError } = await supabase
         .from("scans")
         .insert({
-          user_id: user.id, brand_name: brand, website: url || null, url: url || null,
+          user_id: user.id, brand_name: brand, website: url || null,
           category, status: "completed", overall_score: finalScore,
           category_scores: categoryScores, competitors_data: competitorsData,
           ...(perceptionData  && { perception_data:   perceptionData  }),
@@ -684,30 +684,35 @@ export async function POST(request: Request) {
         const admin = getAdmin();
 
         // ── scan_results — use admin to bypass RLS on insert ─────────────────
-        const rows = modelResults.flatMap((mr) =>
+        // Core columns (guaranteed to exist): scan_id, model, prompt, response,
+        //   brand_mentioned, mention_count, score
+        // Optional columns added progressively — each tier falls back if the
+        //   previous tier fails due to a missing column.
+        const coreRows = modelResults.flatMap((mr) =>
           mr.prompts.map((pr) => ({
             scan_id: scanId, model: mr.model, prompt: pr.prompt, response: pr.response,
-            brand_mentioned: pr.analysis.brand_mentioned, mention_count: pr.count, score: pr.score,
+            brand_mentioned: pr.analysis.brand_mentioned,
+            mention_count: pr.count,
+            score: pr.score,
+          }))
+        );
+        const fullRows = modelResults.flatMap((mr) =>
+          mr.prompts.map((pr) => ({
+            scan_id: scanId, model: mr.model, prompt: pr.prompt, response: pr.response,
+            brand_mentioned: pr.analysis.brand_mentioned,
+            mention_count: pr.count,
+            score: pr.score,
             mention_position: pr.analysis.mention_position ?? null,
             is_recommended: pr.analysis.is_recommended ?? false,
             sentiment: pr.analysis.sentiment ?? null,
             key_context: pr.analysis.key_context ?? null,
           }))
         );
-        const { error: rowsError } = await admin.from("scan_results").insert(rows);
+        const { error: rowsError } = await admin.from("scan_results").insert(fullRows);
         if (rowsError) {
-          console.error("[scan_results] insert error:", rowsError.message, rowsError.details);
-          // Fallback: minimal columns only
-          const { error: minRowsError } = await admin.from("scan_results").insert(
-            modelResults.flatMap((mr) =>
-              mr.prompts.map((pr) => ({
-                scan_id: scanId, model: mr.model, prompt: pr.prompt, response: pr.response,
-                brand_mentioned: pr.analysis.brand_mentioned, mention_count: pr.count, score: pr.score,
-                is_recommended: pr.analysis.is_recommended ?? false,
-              }))
-            )
-          );
-          if (minRowsError) console.error("[scan_results] fallback insert error:", minRowsError.message, minRowsError.details);
+          console.error("[scan_results] full insert error:", rowsError.message, rowsError.details);
+          const { error: coreErr } = await admin.from("scan_results").insert(coreRows);
+          if (coreErr) console.error("[scan_results] core insert error:", coreErr.message, coreErr.details);
         }
         try {
           // Map our score categories to the DB check-constraint values

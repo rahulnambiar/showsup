@@ -11,7 +11,7 @@ export default async function ReportDetailPage({ params }: { params: { scan_id: 
     supabase.from("scans").select("*").eq("id", params.scan_id).single(),
     supabase
       .from("scan_results")
-      .select("id, model, prompt, response, brand_mentioned, mention_count, score, mention_position, is_recommended, sentiment, key_context")
+      .select("*")
       .eq("scan_id", params.scan_id)
       .order("model"),
   ]);
