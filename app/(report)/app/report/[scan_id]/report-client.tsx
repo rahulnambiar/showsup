@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { getActionCost } from "@/lib/pricing/cost-calculator";
 import {
   ChevronDown, Lock, ArrowLeft, ExternalLink, Zap, Lightbulb, CheckCircle2, Circle,
+  Share2, Download, Send, TrendingUp, FlaskConical,
 } from "lucide-react";
 import { CompetitorHeatmap } from "./CompetitorHeatmap";
 
@@ -648,9 +649,9 @@ function CitationsSection({ citationData }: { citationData: Json }) {
   );
 }
 
-// ── Improvement Plan Section (with checkboxes) ────────────────────────────────
+// ── Improvement Plan Section (with checkboxes + score simulator) ──────────────
 
-function ImprovementPlanSection({ plan }: { plan: Json }) {
+function ImprovementPlanSection({ plan, currentScore }: { plan: Json; currentScore: number }) {
   const [done, setDone] = useState<Set<string>>(new Set());
 
   const tiers = [
@@ -659,12 +660,20 @@ function ImprovementPlanSection({ plan }: { plan: Json }) {
     { key: "this_quarter", label: "This Quarter", color: "#6366F1", badge: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",desc: "Do this quarter"},
   ];
 
-  const allItems: Array<{ key: string; tier: string }> = tiers.flatMap(({ key }) =>
-    (plan[key] ?? []).map((_: Json, i: number) => ({ key: `${key}-${i}`, tier: key }))
+  const allItems: Array<{ key: string; tier: string; impact: number }> = tiers.flatMap(({ key }) =>
+    (plan[key] ?? []).map((item: Json, i: number) => {
+      const match = String(item?.impact ?? "").match(/\+?(\d+)/);
+      return { key: `${key}-${i}`, tier: key, impact: match ? parseInt(match[1]) : 0 };
+    })
   );
   const total     = allItems.length;
   const completed = allItems.filter((x) => done.has(x.key)).length;
   const progress  = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+  // Score simulator
+  const projectedGain   = allItems.filter((x) => done.has(x.key)).reduce((s, x) => s + x.impact, 0);
+  const projectedScore  = Math.min(100, currentScore + projectedGain);
+  const hasSelections   = done.size > 0;
 
   function toggle(key: string) {
     setDone((prev) => {
@@ -744,6 +753,58 @@ function ImprovementPlanSection({ plan }: { plan: Json }) {
           </div>
         );
       })}
+
+      {/* ── Score Simulator ── */}
+      <div className={cn(
+        "rounded-2xl border p-5 transition-all duration-500",
+        hasSelections
+          ? "border-[#10B981]/25 bg-[#10B981]/5"
+          : "border-white/8 bg-[#111827]"
+      )}>
+        <div className="flex items-center gap-2 mb-4">
+          <FlaskConical className="w-4 h-4 text-[#10B981]" />
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">What-If Score Simulator</p>
+        </div>
+        <p className="text-xs text-gray-500 mb-4">
+          Check recommendations above to project your score improvement.
+        </p>
+        <div className="flex items-center gap-4">
+          {/* Current score */}
+          <div className="text-center">
+            <p className="text-3xl font-bold tabular-nums text-gray-400">{currentScore}</p>
+            <p className="text-[10px] text-gray-600 mt-0.5 uppercase tracking-wider">Current</p>
+          </div>
+          {/* Arrow + gain */}
+          <div className="flex-1 flex flex-col items-center gap-1">
+            <div className="flex items-center gap-2 w-full">
+              <div className="flex-1 h-0.5 bg-white/8" />
+              <TrendingUp className={cn("w-4 h-4 flex-shrink-0 transition-colors", hasSelections ? "text-[#10B981]" : "text-gray-700")} />
+              <div className="flex-1 h-0.5 bg-white/8" />
+            </div>
+            {hasSelections && (
+              <span className="text-xs font-bold text-[#10B981]">+{projectedGain} pts from {done.size} action{done.size !== 1 ? "s" : ""}</span>
+            )}
+          </div>
+          {/* Projected score */}
+          <div className="text-center">
+            <p
+              className="text-3xl font-bold tabular-nums transition-all duration-500"
+              style={{ color: hasSelections ? scoreColor(projectedScore) : "#374151" }}
+            >
+              {hasSelections ? projectedScore : "—"}
+            </p>
+            <p className="text-[10px] text-gray-600 mt-0.5 uppercase tracking-wider">Projected</p>
+          </div>
+        </div>
+        {hasSelections && projectedScore !== currentScore && (
+          <div className="mt-4 h-2 rounded-full bg-white/6 overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all duration-700"
+              style={{ width: `${projectedScore}%`, background: scoreColor(projectedScore) }}
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -933,12 +994,280 @@ function UpgradeBanner({ queryCount }: { queryCount: number }) {
   );
 }
 
+// ── Query Explorer Section ────────────────────────────────────────────────────
+
+const MODEL_OPTIONS = [
+  { id: "chatgpt", label: "ChatGPT", color: "#10B981" },
+  { id: "claude",  label: "Claude",  color: "#C084FC" },
+];
+
+interface QueryResult {
+  id: number;
+  query: string;
+  model: string;
+  response: string;
+  analysis: {
+    brand_mentioned: boolean;
+    mention_position: number | null;
+    sentiment: string | null;
+    competitors_found: string[];
+    key_context: string;
+  };
+}
+
+function QueryExplorerSection({
+  scan, brand, competitorNames, tokenBalance,
+}: {
+  scan: ScanRow; brand: string; competitorNames: string[]; tokenBalance: number | null;
+}) {
+  const [query,    setQuery]   = useState("");
+  const [model,    setModel]   = useState("chatgpt");
+  const [loading,  setLoading] = useState(false);
+  const [error,    setError]   = useState<string | null>(null);
+  const [history,  setHistory] = useState<QueryResult[]>([]);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const MAX_QUERIES = 20;
+  const COST = 5;
+  const canSubmit = query.trim().length > 0 && !loading && history.length < MAX_QUERIES;
+  const insufficientBalance = tokenBalance !== null && tokenBalance < COST;
+
+  async function submit() {
+    if (!canSubmit || insufficientBalance) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/report/query-test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ scan_id: scan.id, model, query: query.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Query failed");
+      window.dispatchEvent(new Event("tokenBalanceChanged"));
+      setHistory((prev) => [{
+        id: Date.now(), query: query.trim(), model,
+        response: data.response, analysis: data.analysis,
+      }, ...prev]);
+      setQuery("");
+      inputRef.current?.focus();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Query failed");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function handleKey(e: React.KeyboardEvent) {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submit(); }
+  }
+
+  return (
+    <div className="space-y-5">
+      <p className="text-sm text-gray-400">
+        Test any query live against ChatGPT or Claude — see if {brand} gets mentioned and how.
+        Each query costs <span className="font-semibold text-white">5 🪙</span>.
+      </p>
+
+      {/* Input area */}
+      <div className="rounded-2xl border border-white/8 bg-[#111827] p-4 space-y-4">
+        {/* Platform toggle */}
+        <div className="flex gap-2">
+          {MODEL_OPTIONS.map((m) => (
+            <button
+              key={m.id}
+              onClick={() => setModel(m.id)}
+              className={cn(
+                "flex-1 py-2 rounded-lg text-sm font-medium transition-all border",
+                model === m.id
+                  ? "border-transparent text-[#0A0E17]"
+                  : "border-white/10 text-gray-500 bg-transparent hover:text-gray-300"
+              )}
+              style={model === m.id ? { background: m.color } : {}}
+            >
+              {m.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Query input */}
+        <input
+          ref={inputRef}
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={handleKey}
+          placeholder="Type any question about your brand or category..."
+          className="w-full bg-[#0A0E17] border border-white/8 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-[#10B981]/40 transition-colors"
+          disabled={loading || history.length >= MAX_QUERIES}
+        />
+
+        {error && (
+          <p className="text-xs text-[#EF4444] bg-[#EF4444]/10 border border-[#EF4444]/20 rounded-lg px-3 py-2">{error}</p>
+        )}
+
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-gray-600">
+            {history.length}/{MAX_QUERIES} queries used this session
+          </span>
+          <button
+            onClick={submit}
+            disabled={!canSubmit || insufficientBalance}
+            className={cn(
+              "flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all",
+              canSubmit && !insufficientBalance
+                ? "bg-[#10B981] hover:bg-[#059669] text-[#0A0E17]"
+                : "bg-white/5 text-gray-600 cursor-not-allowed"
+            )}
+          >
+            {loading ? (
+              <span className="w-4 h-4 border-2 border-current/30 border-t-current rounded-full animate-spin" />
+            ) : (
+              <Send className="w-3.5 h-3.5" />
+            )}
+            {loading ? "Querying…" : insufficientBalance ? `Need ${COST} 🪙` : `Test Query — ${COST} 🪙`}
+          </button>
+        </div>
+      </div>
+
+      {/* Query history */}
+      {history.length > 0 && (
+        <div className="space-y-3">
+          {history.map((item) => (
+            <QueryResultCard key={item.id} item={item} brand={brand} competitorNames={competitorNames} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function QueryResultCard({ item, brand, competitorNames }: {
+  item: QueryResult; brand: string; competitorNames: string[];
+}) {
+  const [open, setOpen] = useState(true);
+  const { analysis } = item;
+  const modelLabel = MODEL_LABELS[item.model] ?? item.model;
+  const modelColor = MODEL_COLORS[item.model] ?? "#6B7280";
+  const sentColor  = analysis.sentiment === "positive" ? "#10B981" : analysis.sentiment === "negative" ? "#EF4444" : "#F59E0B";
+
+  return (
+    <div className="rounded-2xl border border-white/8 bg-[#111827] overflow-hidden">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center gap-3 p-4 hover:bg-white/[0.02] transition-colors text-left"
+      >
+        <ChevronDown className={cn("w-4 h-4 text-gray-600 flex-shrink-0 transition-transform", open && "rotate-180")} />
+        <div className="flex-1 min-w-0">
+          <p className="text-sm text-gray-200 truncate">{item.query}</p>
+        </div>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: `${modelColor}20`, color: modelColor }}>{modelLabel}</span>
+          <span className={cn(
+            "text-[11px] font-medium px-2 py-0.5 rounded-full border",
+            analysis.brand_mentioned
+              ? "bg-[#10B981]/10 text-[#10B981] border-[#10B981]/25"
+              : "bg-white/5 text-gray-500 border-white/10"
+          )}>
+            {analysis.brand_mentioned ? "✓ Mentioned" : "✗ Not found"}
+          </span>
+          {analysis.sentiment && (
+            <span className="text-[11px] font-medium" style={{ color: sentColor }}>{analysis.sentiment}</span>
+          )}
+        </div>
+      </button>
+
+      {open && (
+        <div className="border-t border-white/5 p-4 space-y-4">
+          {/* Analysis badges */}
+          <div className="flex flex-wrap gap-2">
+            {analysis.brand_mentioned && analysis.mention_position !== null && (
+              <span className="text-xs bg-white/5 text-gray-400 border border-white/10 rounded-full px-3 py-1">
+                Position #{analysis.mention_position}
+              </span>
+            )}
+            {analysis.competitors_found.length > 0 && (
+              <span className="text-xs bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-full px-3 py-1">
+                Competitors: {analysis.competitors_found.slice(0, 3).join(", ")}
+              </span>
+            )}
+            {analysis.key_context && (
+              <span className="text-xs bg-white/5 text-gray-400 border border-white/10 rounded-full px-3 py-1 italic">
+                {analysis.key_context}
+              </span>
+            )}
+          </div>
+          {/* Full response */}
+          <div
+            className="text-sm text-gray-300 leading-relaxed bg-[#0A0E17] rounded-xl p-4 max-h-72 overflow-y-auto border border-white/5"
+            dangerouslySetInnerHTML={{ __html: getHighlightedHTML(item.response, brand, competitorNames) }}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Share Button ──────────────────────────────────────────────────────────────
+
+function ShareButton({ targetRef, label }: { targetRef: React.RefObject<HTMLElement | null>; label: string }) {
+  const [state, setState] = useState<"idle" | "capturing" | "done">("idle");
+
+  async function handleShare() {
+    if (!targetRef.current || state !== "idle") return;
+    setState("capturing");
+    try {
+      const { toPng } = await import("html-to-image");
+      const dataUrl = await toPng(targetRef.current, {
+        backgroundColor: "#0A0E17",
+        pixelRatio: 2,
+        style: { borderRadius: "0px" },
+      });
+      const link = document.createElement("a");
+      link.download = `showsup-${label.toLowerCase().replace(/\s+/g, "-")}.png`;
+      link.href = dataUrl;
+      link.click();
+      setState("done");
+      setTimeout(() => setState("idle"), 2000);
+    } catch {
+      setState("idle");
+    }
+  }
+
+  return (
+    <button
+      onClick={handleShare}
+      className={cn(
+        "flex items-center gap-1.5 text-[10px] font-medium px-2 py-1 rounded-lg border transition-all",
+        state === "done"
+          ? "border-[#10B981]/30 text-[#10B981] bg-[#10B981]/5"
+          : "border-white/8 text-gray-600 hover:text-gray-400 hover:border-white/15 bg-transparent"
+      )}
+      title="Download as image"
+    >
+      {state === "capturing" ? (
+        <span className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin" />
+      ) : state === "done" ? (
+        <CheckCircle2 className="w-3 h-3" />
+      ) : (
+        <Download className="w-3 h-3" />
+      )}
+      {state === "done" ? "Saved" : "Save"}
+    </button>
+  );
+}
+
 // ── Section Wrapper ───────────────────────────────────────────────────────────
 
-function Section({ id, title, children, className }: { id: string; title: string; children: React.ReactNode; className?: string }) {
+function Section({ id, title, children, className, shareable }: {
+  id: string; title: string; children: React.ReactNode; className?: string; shareable?: boolean;
+}) {
+  const ref = useRef<HTMLElement>(null);
   return (
-    <section id={id} className={cn("scroll-mt-20", className)}>
-      <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-6">{title}</h2>
+    <section ref={ref} id={id} className={cn("scroll-mt-20", className)}>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-widest">{title}</h2>
+        {shareable && <ShareButton targetRef={ref} label={title} />}
+      </div>
       {children}
     </section>
   );
@@ -949,6 +1278,7 @@ function Section({ id, title, children, className }: { id: string; title: string
 export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: ScanResultRow[] }) {
   const [tokenBalance,   setTokenBalance]   = useState<number | null>(null);
   const [activeSection,  setActiveSection]  = useState<string>("score");
+  const [scrollProgress, setScrollProgress] = useState(0);
   const [improvementPlan,setImprovementPlan]= useState<Json>(scan.improvement_plan ?? null);
   const [benchmarkData,  setBenchmarkData]  = useState<Json>(scan.benchmark_data   ?? null);
   const [perceptionData, setPerceptionData] = useState<Json>(scan.perception_data  ?? null);
@@ -1028,16 +1358,18 @@ export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: 
     if (hasCompetitors)         s.push({ id: "heatmap",     label: "Heatmap"     });
     if (hasCompetitors)         s.push({ id: "share",       label: "Share"       });
     if (recommendations.length) s.push({ id: "actions",     label: "Actions"     });
-    s.push({ id: "sentiment",   label: "Sentiment"   });
-    s.push({ id: "citations",   label: "Citations"   });
-    s.push({ id: "improvement", label: "Improvement" });
-    s.push({ id: "benchmark",   label: "Benchmark"   });
+    s.push({ id: "sentiment",      label: "Sentiment"   });
+    s.push({ id: "citations",      label: "Citations"   });
+    s.push({ id: "improvement",    label: "Improvement" });
+    s.push({ id: "benchmark",      label: "Benchmark"   });
+    s.push({ id: "query-explorer", label: "Try Query"   });
     return s;
   }, [categoryScores, hasCompetitors, recommendations.length]);
 
   // ── Scroll tracking ───────────────────────────────────────────────────────
   useEffect(() => {
     function onScroll() {
+      // Active section
       const threshold = window.innerHeight * 0.4;
       let best: string | null = null;
       for (const { id } of tocSections) {
@@ -1046,6 +1378,10 @@ export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: 
         if (el.getBoundingClientRect().top <= threshold) best = id;
       }
       if (best) setActiveSection(best);
+      // Scroll progress
+      const scrollTop = window.scrollY;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      setScrollProgress(docHeight > 0 ? Math.min(100, Math.round((scrollTop / docHeight) * 100)) : 0);
     }
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
@@ -1057,6 +1393,13 @@ export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: 
 
       {/* ── Sticky Header ── */}
       <header className="sticky top-0 z-50 bg-[#0A0E17]/90 backdrop-blur-xl border-b border-white/6">
+        {/* Progress bar */}
+        <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-white/4">
+          <div
+            className="h-full bg-[#10B981] transition-all duration-150"
+            style={{ width: `${scrollProgress}%` }}
+          />
+        </div>
         <div className="max-w-4xl mx-auto px-6 h-14 flex items-center gap-4">
           <div className="flex items-center gap-3 min-w-0 flex-1">
             <Link href="/app/scores" className="text-gray-500 hover:text-white transition-colors flex-shrink-0">
@@ -1133,20 +1476,20 @@ export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: 
         <UpgradeBanner queryCount={totalQueries} />
 
         {/* ── 2: Platform Breakdown ── */}
-        <Section id="platforms" title="Platform Breakdown">
+        <Section id="platforms" title="Platform Breakdown" shareable>
           <PlatformSection byModel={byModel} brand={brand} competitorNames={competitorNames} />
         </Section>
 
         {/* ── 3: Visibility Breakdown ── */}
         {categoryScores && (
-          <Section id="visibility" title="Visibility Breakdown">
+          <Section id="visibility" title="Visibility Breakdown" shareable>
             <VisibilitySection scores={categoryScores} />
           </Section>
         )}
 
         {/* ── 4: Competitor Heatmap ── */}
         {hasCompetitors && competitorsData && (
-          <Section id="heatmap" title="Competitor Heatmap">
+          <Section id="heatmap" title="Competitor Heatmap" shareable>
             <CompetitorHeatmap
               brand={brand}
               brandProfile={competitorsData.brand_profile}
@@ -1165,7 +1508,7 @@ export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: 
 
         {/* ── 5: Share of Voice ── */}
         {hasCompetitors && competitorsData && (competitorsData.share_of_voice?.length ?? 0) > 0 && (
-          <Section id="share" title="Share of Voice">
+          <Section id="share" title="Share of Voice" shareable>
             <ShareOfVoiceSection data={competitorsData} brand={brand} />
             {(competitorsData.insights?.length ?? 0) > 0 && (
               <div className="mt-8">
@@ -1237,7 +1580,7 @@ export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: 
         {/* ── 9: Improvement Plan ── */}
         <Section id="improvement" title="AI Improvement Plan">
           {improvementPlan ? (
-            <ImprovementPlanSection plan={improvementPlan} />
+            <ImprovementPlanSection plan={improvementPlan} currentScore={score} />
           ) : (
             <LockedModuleCard
               title="3-Tier Improvement Plan"
@@ -1251,7 +1594,7 @@ export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: 
         </Section>
 
         {/* ── 10: Benchmark ── */}
-        <Section id="benchmark" title="Industry Benchmark">
+        <Section id="benchmark" title="Industry Benchmark" shareable>
           {benchmarkData ? (
             <BenchmarkSection data={benchmarkData} actualScore={score} />
           ) : (
@@ -1264,6 +1607,16 @@ export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: 
               onUnlocked={(data) => setBenchmarkData(data)}
             />
           )}
+        </Section>
+
+        {/* ── 11: Query Explorer ── */}
+        <Section id="query-explorer" title="Try Your Own Query">
+          <QueryExplorerSection
+            scan={scan}
+            brand={brand}
+            competitorNames={competitorNames}
+            tokenBalance={tokenBalance}
+          />
         </Section>
 
         {/* ── Footer ── */}
