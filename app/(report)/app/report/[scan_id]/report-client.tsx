@@ -1422,6 +1422,7 @@ export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: 
               </span>
             )}
             <PDFDownload
+              scanId={scan.id}
               brand={brand} score={score} date={dateStr}
               category={scan.category ?? undefined}
               url={siteUrl ?? undefined}
@@ -1433,6 +1434,14 @@ export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: 
                 brand_profile: { ...competitorsData.brand_profile, sentiment: competitorsData.brand_profile.sentiment as "positive" | "neutral" | "negative" | null },
                 competitors: (competitorsData.competitors ?? []).map((c) => ({ ...c, sentiment: c.sentiment as "positive" | "neutral" | "negative" | null })),
               } : undefined}
+              improvementPlan={improvementPlan}
+              scanResults={scanResults.map((r) => ({
+                model: r.model,
+                prompt: r.prompt,
+                brand_mentioned: r.brand_mentioned ?? false,
+                score: r.score ?? 0,
+              }))}
+              tokenBalance={tokenBalance}
             />
           </div>
         </div>
