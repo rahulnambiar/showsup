@@ -8,8 +8,6 @@ import { createClient } from "@/lib/supabase/client";
 import { WaitlistModal } from "@/components/waitlist-modal";
 import {
   BarChart3,
-  Check,
-  X,
   ChevronDown,
   ArrowRight,
   Globe,
@@ -57,6 +55,9 @@ function Nav() {
           >
             How It Works
           </button>
+          <Link href="/report-builder" className="text-sm text-[#9CA3AF] hover:text-white transition-colors">
+            Report Builder
+          </Link>
           <button
             onClick={() => scrollToId("pricing")}
             className="text-sm text-[#9CA3AF] hover:text-white transition-colors"
@@ -71,7 +72,7 @@ function Nav() {
           </Link>
         </nav>
 
-        {/* CTA — scrolls to hero URL input */}
+        {/* CTA */}
         <button
           onClick={() => scrollToId("hero")}
           className="hidden md:inline-flex items-center gap-1.5 text-sm font-medium text-[#10B981] border border-[#10B981]/60 hover:border-[#10B981] hover:bg-[#10B981]/8 rounded-lg px-4 py-2 transition-all"
@@ -281,60 +282,58 @@ function ChatMockup() {
   );
 }
 
-// ─── Pricing ──────────────────────────────────────────────────────────────────
+// ─── Report Templates ─────────────────────────────────────────────────────────
 
-const PLANS = [
+const LANDING_TEMPLATES = [
   {
-    name: "Free",
-    monthly: 0,
-    annual: 0,
-    desc: "Check your brand once",
-    features: [
-      { text: "1 brand scan", ok: true },
-      { text: "3 AI models", ok: true },
-      { text: "Basic score", ok: true },
-      { text: "Scan history", ok: false },
-      { text: "Trend tracking", ok: false },
-      { text: "API access", ok: false },
-    ],
-    cta: "Check free",
-    action: "scroll-hero" as const,
+    id: "quick",
+    label: "Quick Check",
+    tokens: "~40 tokens",
+    tagline: "Perfect for a quick pulse check",
+    items: ["Basic visibility score", "2 AI platforms", "8 queries"],
     highlight: false,
   },
   {
-    name: "Starter",
-    monthly: 29,
-    annual: 23,
-    desc: "For growing brands",
-    features: [
-      { text: "5 brands", ok: true },
-      { text: "All AI models", ok: true },
-      { text: "Full score breakdown", ok: true },
-      { text: "30-day history", ok: true },
-      { text: "Trend tracking", ok: false },
-      { text: "API access", ok: false },
-    ],
-    cta: "Join Waitlist",
-    action: "waitlist-starter" as const,
-    highlight: false,
-  },
-  {
-    name: "Growth",
-    monthly: 79,
-    annual: 63,
-    desc: "For serious visibility",
-    features: [
-      { text: "Unlimited brands", ok: true },
-      { text: "All AI models", ok: true },
-      { text: "Full score breakdown", ok: true },
-      { text: "Unlimited history", ok: true },
-      { text: "Trend tracking", ok: true },
-      { text: "API access", ok: true },
-    ],
-    cta: "Join Waitlist",
-    action: "waitlist-growth" as const,
+    id: "standard",
+    label: "Standard Report",
+    tokens: "~140 tokens",
+    tagline: "Most popular — best for understanding your position",
+    items: ["Full visibility breakdown", "2 AI platforms, 20 queries", "3 competitor benchmark", "AI improvement recommendations"],
     highlight: true,
   },
+  {
+    id: "competitive",
+    label: "Competitive Intel",
+    tokens: "~250 tokens",
+    tagline: "For brands that need to beat specific competitors",
+    items: ["Everything in Standard", "5 competitors", "Persona analysis", "Sentiment deep dive"],
+    highlight: false,
+  },
+  {
+    id: "full",
+    label: "Full Analysis",
+    tokens: "~500 tokens",
+    tagline: "The complete picture — our most comprehensive report",
+    items: ["Every module enabled", "Deep scan (50 queries)", "Premium model options", "Commerce deep dive"],
+    highlight: false,
+  },
+];
+
+// ─── Token packages ───────────────────────────────────────────────────────────
+
+const TOKEN_PACKAGES = [
+  { id: "starter",  label: "Starter",  tokens: "2,500",  price: "$19",  currency: "SGD", reports: "~18 Standard Reports",  rate: "$0.0076/token", highlight: false, badge: null },
+  { id: "explorer", label: "Explorer", tokens: "5,000",  price: "$39",  currency: "SGD", reports: "~36 Standard Reports",  rate: "$0.0078/token", highlight: true,  badge: "Most Popular" },
+  { id: "growth",   label: "Growth",   tokens: "12,000", price: "$79",  currency: "SGD", reports: "~86 Standard Reports",  rate: "$0.0066/token", highlight: false, badge: "Best Value" },
+  { id: "pro",      label: "Pro",      tokens: "30,000", price: "$149", currency: "SGD", reports: "~214 Standard Reports", rate: "$0.0050/token", highlight: false, badge: null },
+];
+
+const TOKEN_EXPLAIN = [
+  { action: "Quick Check",     cost: "~40 tokens"  },
+  { action: "Standard Report", cost: "~140 tokens" },
+  { action: "Deep Analysis",   cost: "~335 tokens" },
+  { action: "Custom Query",    cost: "~5 tokens"   },
+  { action: "Full PDF Export", cost: "25 tokens"   },
 ];
 
 // ─── FAQ ──────────────────────────────────────────────────────────────────────
@@ -345,24 +344,24 @@ const FAQS = [
     a: "We send targeted prompts to ChatGPT, Claude, Gemini, and Perplexity — then analyse the responses to see if and how your brand is mentioned. Each response is scored based on whether you appear, how prominently, and in what context.",
   },
   {
-    q: "Which AI platforms do you scan?",
-    a: "We scan ChatGPT (GPT-4o), Claude (Haiku & Sonnet), Gemini (2.0 Flash), and Perplexity. We add new models as they reach mainstream adoption.",
+    q: "What are tokens?",
+    a: "Tokens are ShowsUp's internal currency for AI compute. Each report, query, or export costs a set number of tokens based on the AI processing required. You get 1,000 free tokens on signup — enough for about 7 full Standard Reports. Buy more anytime with no monthly commitment.",
   },
   {
-    q: "How often are scans run?",
-    a: "Free scans are on-demand. Paid plans include scheduled scans — daily on Growth, weekly on Starter — so you automatically track changes over time.",
+    q: "Which AI platforms do you scan?",
+    a: "We scan ChatGPT (GPT-4o-mini) and Claude (Haiku). Gemini and Perplexity are coming soon.",
   },
   {
     q: "How is the score calculated?",
     a: "Your ShowsUp Score (0–100) is a weighted average across all model responses and prompt types. It factors in whether your brand is mentioned, how early in the response, and how positively it's framed.",
   },
   {
-    q: "Why does my score differ between models?",
-    a: "Each AI has different training data and ranking biases. That's the point — seeing where you're strong or invisible helps you prioritise where to improve.",
+    q: "Why do token costs vary by model?",
+    a: "Each AI model has different compute costs. Premium models provide deeper analysis but cost more to run. Prices reflect actual API costs — and may decrease over time as AI becomes cheaper. Your purchased tokens never expire or change.",
   },
   {
-    q: "Is the free scan really free?",
-    a: "Yes. Enter your URL, we scan immediately, show you your score — no credit card, no account required for the basic check.",
+    q: "Is the free tier really free?",
+    a: "Yes. Every new account gets 1,000 tokens — no credit card required. That's enough for a full Standard Report with competitor analysis. Buy more tokens when you need them.",
   },
 ];
 
@@ -392,18 +391,7 @@ function FaqItem({ q, a }: { q: string; a: string }) {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function HomePage() {
-  const [annual, setAnnual] = useState(false);
   const [waitlistPlan, setWaitlistPlan] = useState<"starter" | "growth" | null>(null);
-
-  function handlePlanCta(action: typeof PLANS[number]["action"]) {
-    if (action === "scroll-hero") {
-      scrollToId("hero");
-    } else if (action === "waitlist-starter") {
-      setWaitlistPlan("starter");
-    } else if (action === "waitlist-growth") {
-      setWaitlistPlan("growth");
-    }
-  }
 
   return (
     <div className="bg-[#0A0E17] text-white">
@@ -425,7 +413,10 @@ export default function HomePage() {
 
           <p className="text-lg sm:text-xl text-gray-400 max-w-xl mx-auto leading-relaxed">
             Millions ask ChatGPT, Claude, and Gemini which brands to choose.{" "}
-            <span className="text-gray-200">Find out if yours makes the cut.</span>
+            <span className="text-gray-200">
+              ShowsUp tells you whether your brand appears in those answers — and how to fix it if it doesn&apos;t.
+            </span>{" "}
+            <span className="text-[#10B981] font-medium">Get 1,000 free tokens to start.</span>
           </p>
 
           <div className="flex justify-center">
@@ -433,7 +424,7 @@ export default function HomePage() {
           </div>
 
           <p className="text-sm text-gray-600">
-            Free · No signup · Results in 60 seconds
+            Free. 1,000 tokens. No credit card required.
           </p>
         </div>
       </section>
@@ -514,7 +505,7 @@ export default function HomePage() {
                 icon: Zap,
                 step: "02",
                 title: "We scan every AI",
-                desc: "Our engine fires targeted prompts at ChatGPT, Claude, Gemini, and Perplexity simultaneously.",
+                desc: "Our engine fires targeted prompts at ChatGPT, Claude, and Gemini simultaneously.",
               },
               {
                 icon: TrendingUp,
@@ -558,8 +549,75 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── COMMERCE ── */}
+      {/* ── REPORT TEMPLATES ── */}
       <section className="py-24 px-6 bg-[#0D1220]">
+        <div className="max-w-5xl mx-auto space-y-12">
+          <div className="text-center space-y-3">
+            <h2 className="text-3xl sm:text-4xl font-bold">Choose your report type</h2>
+            <p className="text-gray-400 max-w-xl mx-auto">
+              Start with a template or configure every detail in the Report Builder.
+            </p>
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {LANDING_TEMPLATES.map((t) => (
+              <div
+                key={t.id}
+                className={cn(
+                  "bg-[#111827] rounded-xl border p-5 flex flex-col gap-4 relative",
+                  t.highlight ? "border-[#10B981]/40" : "border-[#1F2937]"
+                )}
+              >
+                {t.highlight && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                    <span className="bg-[#10B981] text-[#0A0E17] text-[10px] font-bold px-3 py-1 rounded-full whitespace-nowrap">
+                      Most Popular
+                    </span>
+                  </div>
+                )}
+
+                <div>
+                  <p className="font-semibold text-white mb-0.5">{t.label}</p>
+                  <p className="text-xs font-semibold text-[#10B981]">{t.tokens}</p>
+                </div>
+
+                <ul className="space-y-1.5 flex-1">
+                  {t.items.map((item) => (
+                    <li key={item} className="flex items-start gap-2 text-xs text-gray-400">
+                      <span className="text-[#10B981] mt-0.5 flex-shrink-0">✓</span>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+
+                <p className="text-[11px] text-gray-600 italic leading-snug">{t.tagline}</p>
+
+                <Link
+                  href={`/report-builder?template=${t.id}`}
+                  className={cn(
+                    "text-center text-xs font-semibold py-2 rounded-lg transition-colors",
+                    t.highlight
+                      ? "bg-[#10B981] hover:bg-[#059669] text-[#0A0E17]"
+                      : "border border-white/15 text-white hover:bg-white/5"
+                  )}
+                >
+                  Configure →
+                </Link>
+              </div>
+            ))}
+          </div>
+
+          <p className="text-center text-sm text-gray-500">
+            Want full control?{" "}
+            <Link href="/report-builder" className="text-[#10B981] hover:underline">
+              Open the Report Builder →
+            </Link>
+          </p>
+        </div>
+      </section>
+
+      {/* ── COMMERCE ── */}
+      <section className="py-24 px-6">
         <div className="max-w-5xl mx-auto space-y-14">
           <div className="text-center space-y-3">
             <h2 className="text-3xl sm:text-4xl font-bold">
@@ -615,98 +673,203 @@ export default function HomePage() {
       </section>
 
       {/* ── PRICING ── */}
-      <section id="pricing" className="py-24 px-6">
-        <div className="max-w-5xl mx-auto space-y-12">
-          <div className="text-center space-y-4">
-            <h2 className="text-3xl sm:text-4xl font-bold">
-              Plans that grow with your brand
-            </h2>
-            <div className="inline-flex items-center bg-[#111827] border border-white/8 rounded-lg p-1 gap-1">
-              {(["Monthly", "Annual"] as const).map((label) => (
-                <button
-                  key={label}
-                  onClick={() => setAnnual(label === "Annual")}
+      <section id="pricing" className="py-24 px-6 bg-[#0D1220]">
+        <div className="max-w-5xl mx-auto space-y-20">
+
+          {/* Part A: Token Packages */}
+          <div className="space-y-10">
+            <div className="text-center space-y-3">
+              <h2 className="text-3xl sm:text-4xl font-bold">Pay for what you use</h2>
+              <p className="text-gray-400 max-w-xl mx-auto">
+                Buy tokens once, use them anytime. No commitment, no subscription required.
+              </p>
+            </div>
+
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {TOKEN_PACKAGES.map((pkg) => (
+                <div
+                  key={pkg.id}
                   className={cn(
-                    "text-sm px-4 py-1.5 rounded-md transition-all font-medium",
-                    (label === "Annual") === annual
-                      ? "bg-[#10B981] text-[#0A0E17]"
-                      : "text-gray-400 hover:text-white"
+                    "bg-[#111827] rounded-xl border p-6 flex flex-col gap-4 relative",
+                    pkg.highlight ? "border-[#10B981]/50" : "border-[#1F2937]"
                   )}
                 >
-                  {label}
-                  {label === "Annual" && (
-                    <span className="ml-1.5 text-[10px] font-semibold opacity-80">−20%</span>
+                  {pkg.badge && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                      <span className={cn(
+                        "text-[10px] font-bold px-3 py-1 rounded-full whitespace-nowrap",
+                        pkg.badge === "Most Popular"
+                          ? "bg-[#10B981] text-[#0A0E17]"
+                          : "bg-[#F59E0B] text-[#0A0E17]"
+                      )}>
+                        {pkg.badge}
+                      </span>
+                    </div>
                   )}
-                </button>
+
+                  <div>
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">{pkg.label}</p>
+                    <p className="text-3xl font-bold text-white">{pkg.tokens}</p>
+                    <p className="text-xs text-gray-500">tokens</p>
+                  </div>
+
+                  <div>
+                    <p className="text-2xl font-bold text-white">{pkg.price} <span className="text-sm font-normal text-gray-500">{pkg.currency}</span></p>
+                    <p className="text-xs text-gray-500 mt-0.5">{pkg.rate}</p>
+                  </div>
+
+                  <p className="text-xs text-gray-400 flex-1">{pkg.reports}</p>
+
+                  <Link
+                    href="/app/tokens"
+                    className={cn(
+                      "text-center text-xs font-semibold py-2.5 rounded-lg transition-colors",
+                      pkg.highlight
+                        ? "bg-[#10B981] hover:bg-[#059669] text-[#0A0E17]"
+                        : "border border-white/15 text-white hover:bg-white/5"
+                    )}
+                  >
+                    Buy {pkg.label} →
+                  </Link>
+                </div>
               ))}
             </div>
+
+            <p className="text-center text-sm text-gray-400">
+              🎁 Every signup gets{" "}
+              <span className="text-white font-semibold">1,000 free tokens</span>
+              {" "}— enough for ~7 full Standard Reports
+            </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-5">
-            {PLANS.map((plan) => (
-              <div
-                key={plan.name}
-                className={cn(
-                  "rounded-xl border p-7 flex flex-col gap-6 relative",
-                  plan.highlight
-                    ? "bg-[#111827] border-[#10B981]/50"
-                    : "bg-[#111827] border-[#1F2937]"
-                )}
-              >
-                {plan.highlight && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="bg-[#10B981] text-[#0A0E17] text-xs font-bold px-3 py-1 rounded-full">
-                      Most Popular
-                    </span>
-                  </div>
-                )}
+          {/* Part B: Monthly Plans */}
+          <div className="space-y-10">
+            <div className="text-center space-y-3">
+              <h2 className="text-2xl sm:text-3xl font-bold">Or subscribe for monthly monitoring</h2>
+              <p className="text-gray-400 max-w-xl mx-auto">
+                Tokens auto-refill each month. Track your brand visibility continuously.
+              </p>
+            </div>
 
-                <div className="space-y-1">
-                  <p className="font-semibold text-white">{plan.name}</p>
-                  <p className="text-gray-500 text-sm">{plan.desc}</p>
-                </div>
-
+            <div className="grid md:grid-cols-3 gap-5">
+              {/* Free */}
+              <div className="bg-[#111827] border border-[#1F2937] rounded-xl p-7 flex flex-col gap-5">
                 <div>
-                  <span className="text-4xl font-bold text-white">
-                    ${annual ? plan.annual : plan.monthly}
-                  </span>
-                  {plan.monthly > 0 && (
-                    <span className="text-gray-500 text-sm ml-1">/mo</span>
-                  )}
+                  <p className="font-semibold text-white mb-0.5">Free</p>
+                  <p className="text-gray-500 text-sm">Get started for free</p>
                 </div>
-
-                <ul className="space-y-2.5 flex-1">
-                  {plan.features.map(({ text, ok }) => (
-                    <li key={text} className="flex items-center gap-2.5 text-sm">
-                      {ok ? (
-                        <Check className="w-4 h-4 text-[#10B981] flex-shrink-0" />
-                      ) : (
-                        <X className="w-4 h-4 text-gray-600 flex-shrink-0" />
-                      )}
-                      <span className={ok ? "text-gray-200" : "text-gray-600"}>{text}</span>
+                <div>
+                  <span className="text-4xl font-bold text-white">$0</span>
+                </div>
+                <ul className="space-y-2 flex-1">
+                  {["1,000 tokens (one-time)", "Standard reports", "PDF export"].map((f) => (
+                    <li key={f} className="flex items-center gap-2 text-sm text-gray-300">
+                      <span className="text-[#10B981] flex-shrink-0">✓</span>{f}
                     </li>
                   ))}
                 </ul>
-
-                <button
-                  onClick={() => handlePlanCta(plan.action)}
-                  className={cn(
-                    "w-full text-center text-sm font-semibold py-2.5 rounded-lg transition-colors",
-                    plan.highlight
-                      ? "bg-[#10B981] hover:bg-[#059669] text-[#0A0E17]"
-                      : "border border-white/15 text-white hover:bg-white/5"
-                  )}
+                <Link
+                  href="/signup"
+                  className="w-full text-center text-sm font-semibold py-2.5 rounded-lg border border-white/15 text-white hover:bg-white/5 transition-colors"
                 >
-                  {plan.cta}
+                  Sign up free →
+                </Link>
+              </div>
+
+              {/* Starter Monthly */}
+              <div className="bg-[#111827] border border-[#1F2937] rounded-xl p-7 flex flex-col gap-5">
+                <div>
+                  <p className="font-semibold text-white mb-0.5">Starter Monthly</p>
+                  <p className="text-gray-500 text-sm">Ongoing brand monitoring</p>
+                </div>
+                <div>
+                  <span className="text-4xl font-bold text-white">$29</span>
+                  <span className="text-gray-500 text-sm ml-1">SGD/mo</span>
+                </div>
+                <ul className="space-y-2 flex-1">
+                  {["3,000 tokens/month", "Rollover up to 2,000 unused", "Scheduled re-scans", "Email reports"].map((f) => (
+                    <li key={f} className="flex items-center gap-2 text-sm text-gray-300">
+                      <span className="text-[#10B981] flex-shrink-0">✓</span>{f}
+                    </li>
+                  ))}
+                </ul>
+                <button
+                  onClick={() => setWaitlistPlan("starter")}
+                  className="w-full text-center text-sm font-semibold py-2.5 rounded-lg border border-white/15 text-white hover:bg-white/5 transition-colors"
+                >
+                  Join Waitlist →
                 </button>
               </div>
-            ))}
+
+              {/* Growth Monthly */}
+              <div className="bg-[#111827] border border-[#10B981]/40 rounded-xl p-7 flex flex-col gap-5 relative">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                  <span className="bg-[#10B981] text-[#0A0E17] text-[10px] font-bold px-3 py-1 rounded-full">
+                    Most Popular
+                  </span>
+                </div>
+                <div>
+                  <p className="font-semibold text-white mb-0.5">Growth Monthly</p>
+                  <p className="text-gray-500 text-sm">For serious AI visibility</p>
+                </div>
+                <div>
+                  <span className="text-4xl font-bold text-white">$79</span>
+                  <span className="text-gray-500 text-sm ml-1">SGD/mo</span>
+                </div>
+                <ul className="space-y-2 flex-1">
+                  {["8,000 tokens/month", "Rollover up to 5,000 unused", "All features + priority scanning", "Email reports"].map((f) => (
+                    <li key={f} className="flex items-center gap-2 text-sm text-gray-300">
+                      <span className="text-[#10B981] flex-shrink-0">✓</span>{f}
+                    </li>
+                  ))}
+                </ul>
+                <button
+                  onClick={() => setWaitlistPlan("growth")}
+                  className="w-full text-center text-sm font-semibold py-2.5 rounded-lg bg-[#10B981] hover:bg-[#059669] text-[#0A0E17] transition-colors"
+                >
+                  Join Waitlist →
+                </button>
+              </div>
+            </div>
           </div>
+
+          {/* How Tokens Work */}
+          <div className="space-y-8">
+            <div className="text-center space-y-2">
+              <h3 className="text-xl font-bold text-white">What can I do with tokens?</h3>
+              <p className="text-gray-400 text-sm max-w-md mx-auto">
+                Every action in ShowsUp costs tokens based on actual AI compute used.
+              </p>
+            </div>
+
+            <div className="max-w-lg mx-auto bg-[#111827] border border-[#1F2937] rounded-xl overflow-hidden">
+              <div className="px-5 py-3 bg-white/4 border-b border-white/8 grid grid-cols-2">
+                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Action</span>
+                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide text-right">Cost</span>
+              </div>
+              {TOKEN_EXPLAIN.map((row, i) => (
+                <div key={row.action} className={cn("px-5 py-3 grid grid-cols-2", i < TOKEN_EXPLAIN.length - 1 && "border-b border-white/6")}>
+                  <span className="text-sm text-gray-300">{row.action}</span>
+                  <span className="text-sm font-semibold text-[#10B981] text-right">{row.cost}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="max-w-lg mx-auto space-y-3">
+              <p className="text-xs text-gray-500 leading-relaxed text-center">
+                <span className="text-gray-400 font-medium">Prices are dynamic</span> — they reflect actual AI compute costs. Premium models cost more tokens because they provide deeper analysis.
+              </p>
+              <p className="text-xs text-gray-500 leading-relaxed text-center">
+                Token costs may decrease over time as AI becomes cheaper. Your purchased packages never change.
+              </p>
+            </div>
+          </div>
+
         </div>
       </section>
 
       {/* ── FAQ ── */}
-      <section className="py-24 px-6 bg-[#0D1220]">
+      <section className="py-24 px-6">
         <div className="max-w-2xl mx-auto space-y-10">
           <div className="text-center space-y-3">
             <h2 className="text-3xl sm:text-4xl font-bold">
@@ -722,13 +885,13 @@ export default function HomePage() {
       </section>
 
       {/* ── FOOTER CTA ── */}
-      <section className="py-24 px-6 text-center">
+      <section className="py-24 px-6 text-center bg-[#0D1220]">
         <div className="max-w-2xl mx-auto space-y-7">
           <h2 className="text-3xl sm:text-4xl font-bold">
             Check if your brand shows up
           </h2>
           <p className="text-gray-400">
-            Free scan. No credit card. Results in under 60 seconds.
+            1,000 free tokens. No credit card. Results in under 60 seconds.
           </p>
           <div className="flex justify-center">
             <UrlInput />
@@ -744,13 +907,16 @@ export default function HomePage() {
             <span className="text-sm font-semibold text-white">ShowsUp</span>
           </div>
 
-          <div className="flex items-center gap-6">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 justify-center">
             <button
               onClick={() => scrollToId("how-it-works")}
               className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
             >
               How It Works
             </button>
+            <Link href="/report-builder" className="text-xs text-gray-500 hover:text-gray-300 transition-colors">
+              Report Builder
+            </Link>
             <button
               onClick={() => scrollToId("pricing")}
               className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
