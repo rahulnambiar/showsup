@@ -92,7 +92,7 @@ function EmptyNoBrand() {
         </p>
       </div>
       <Link
-        href="/app/scan"
+        href="/app/report-builder"
         className="inline-flex items-center bg-[#10B981] hover:bg-[#059669] text-[#0A0E17] font-semibold rounded-lg px-5 py-2.5 text-sm transition-colors"
       >
         Run a scan
@@ -116,7 +116,7 @@ function EmptyNotEnough({ brand }: { brand: string }) {
         </p>
       </div>
       <Link
-        href="/app/scan"
+        href="/app/report-builder"
         className="inline-flex items-center gap-2 border border-white/15 hover:border-white/30 text-gray-300 hover:text-white rounded-lg px-4 py-2 text-sm transition-colors"
       >
         Scan {brand} again →

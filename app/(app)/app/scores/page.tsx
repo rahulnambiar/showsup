@@ -22,10 +22,10 @@ export default async function ScoresPage() {
           <p className="text-gray-500 text-sm mt-1">Your AI visibility scan history.</p>
         </div>
         <Link
-          href="/app/scan"
+          href="/app/report-builder"
           className="inline-flex items-center bg-[#10B981] hover:bg-[#059669] text-[#0A0E17] font-semibold rounded-lg px-4 py-2 text-sm transition-colors"
         >
-          New scan
+          New analysis
         </Link>
       </div>
 

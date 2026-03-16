@@ -190,8 +190,8 @@ export function getActionCost(action: string): number {
     unlock_citations:        usdToTokens(analysisCost('response_analysis', 40) * 0.3),
     unlock_improvement_plan: usdToTokens(analysisCost('recommendations')),
     unlock_benchmark:        usdToTokens(analysisCost('brand_detection')),
-    pdf_full:    20,  // fixed — minimal API cost, mostly generation
-    pdf_premium: 40,  // fixed — includes executive summary Sonnet call
+    pdf_full:       25,  // full report PDF
+    pdf_board_ready: 50,  // board-ready PDF with AI exec summary
   };
   return costs[action] ?? PRICING_CONFIG.MIN_TOKENS;
 }

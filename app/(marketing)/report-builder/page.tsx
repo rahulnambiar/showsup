@@ -11,7 +11,8 @@ import {
   getModuleDelta,
   type ReportConfig,
 } from "@/lib/pricing/cost-calculator";
-import { BarChart3, Zap, Info, ArrowRight } from "lucide-react";
+import { Zap, Info, ArrowRight } from "lucide-react";
+import { MarketingNav } from "@/components/marketing-nav";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -381,7 +382,7 @@ function PublicReportBuilderPage() {
   if (scanning) {
     return (
       <div className="min-h-screen bg-[#0A0E17] flex flex-col">
-        <PageNav />
+        <MarketingNav />
         <div className="flex-1 p-8 max-w-2xl mx-auto w-full space-y-6 pt-24">
           <div className="space-y-1">
             <h1 className="text-2xl font-bold text-white">Generating Report…</h1>
@@ -419,7 +420,7 @@ function PublicReportBuilderPage() {
 
   return (
     <div className="min-h-screen bg-[#0A0E17]">
-      <PageNav />
+      <MarketingNav />
 
       <div className="max-w-6xl mx-auto px-6 pt-24 pb-16 space-y-8">
         {/* Header */}
@@ -793,24 +794,3 @@ function PublicReportBuilderPage() {
   );
 }
 
-// ── Minimal public nav ────────────────────────────────────────────────────────
-
-function PageNav() {
-  return (
-    <header className="fixed top-0 inset-x-0 z-50 bg-[#0A0E17]/90 backdrop-blur-md border-b border-white/8">
-      <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between gap-6">
-        <Link href="/" className="flex items-center gap-2">
-          <BarChart3 className="w-5 h-5 text-[#10B981]" />
-          <span className="text-base font-semibold text-white tracking-tight">ShowsUp</span>
-        </Link>
-        <div className="flex items-center gap-4">
-          <Link href="/#pricing" className="text-sm text-gray-400 hover:text-white transition-colors hidden sm:block">Pricing</Link>
-          <Link href="/login" className="text-sm text-gray-400 hover:text-white transition-colors">Login</Link>
-          <Link href="/signup" className="text-sm font-medium text-[#10B981] border border-[#10B981]/60 hover:bg-[#10B981]/8 rounded-lg px-3 py-1.5 transition-all">
-            Sign up free
-          </Link>
-        </div>
-      </div>
-    </header>
-  );
-}

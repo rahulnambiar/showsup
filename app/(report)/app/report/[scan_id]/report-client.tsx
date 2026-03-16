@@ -860,7 +860,8 @@ function LockedModuleCard({
   const [loading, setLoading]       = useState(false);
   const [error, setError]           = useState<string | null>(null);
   const cost = getActionCost(`unlock_${unlockKey}`);
-  const hasBalance = tokenBalance === null || tokenBalance >= cost;
+  const balanceLoaded = tokenBalance !== null;
+  const hasBalance = balanceLoaded && tokenBalance >= cost;
 
   async function handleUnlock() {
     setLoading(true);
@@ -907,8 +908,13 @@ function LockedModuleCard({
           <p className="text-xs text-[#EF4444] bg-[#EF4444]/10 border border-[#EF4444]/20 rounded-lg px-3 py-2">{error}</p>
         )}
 
+        {/* Loading state */}
+        {!balanceLoaded && (
+          <div className="w-8 h-8 border-2 border-white/10 border-t-[#10B981] rounded-full animate-spin" />
+        )}
+
         {/* Insufficient balance */}
-        {!hasBalance && !confirming && (
+        {balanceLoaded && !hasBalance && !confirming && (
           <div className="space-y-2 text-center">
             <p className="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2">
               Need {cost - (tokenBalance ?? 0)} more tokens to unlock
@@ -923,7 +929,7 @@ function LockedModuleCard({
         )}
 
         {/* Has balance */}
-        {hasBalance && (confirming ? (
+        {balanceLoaded && hasBalance && (confirming ? (
           <div className="space-y-3 w-full max-w-xs">
             <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-gray-300">
               This will deduct <span className="font-bold text-white">{cost} tokens</span> from your balance.

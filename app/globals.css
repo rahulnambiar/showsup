@@ -15,17 +15,29 @@
 }
 
 @layer base {
-  :root {
-    /* ShowsUp brand CSS variables */
+  /* ── Dark theme (default) ───────────────────────────────────────────────── */
+  :root, :root.dark {
     --bg-primary: #0A0E17;
     --bg-secondary: #111827;
     --bg-tertiary: #1F2937;
+    --border-color: rgba(255,255,255,0.08);
+    --border-color-hover: rgba(255,255,255,0.15);
+    --text-primary: #F9FAFB;
+    --text-secondary: #9CA3AF;
+    --text-tertiary: #6B7280;
+    --card-bg: #111827;
+    --card-border: rgba(255,255,255,0.08);
+    --sidebar-bg: #111827;
+    --input-bg: #1F2937;
+    --input-border: rgba(255,255,255,0.1);
     --accent-primary: #10B981;
+    --accent-primary-hover: #059669;
     --score-red: #EF4444;
     --score-amber: #F59E0B;
+    --score-teal: #14B8A6;
     --score-green: #10B981;
 
-    /* shadcn/ui dark theme tokens (always dark for this app) */
+    /* shadcn/ui dark theme tokens */
     --background: #0A0E17;
     --foreground: 240 10% 97%;
     --card: #111827;
@@ -56,6 +68,58 @@
     --sidebar-ring: #10B981;
   }
 
+  /* ── Light theme ─────────────────────────────────────────────────────────── */
+  :root.light {
+    --bg-primary: #FFFFFF;
+    --bg-secondary: #F9FAFB;
+    --bg-tertiary: #F3F4F6;
+    --border-color: #E5E7EB;
+    --border-color-hover: #D1D5DB;
+    --text-primary: #111827;
+    --text-secondary: #4B5563;
+    --text-tertiary: #9CA3AF;
+    --card-bg: #FFFFFF;
+    --card-border: #E5E7EB;
+    --sidebar-bg: #F9FAFB;
+    --input-bg: #FFFFFF;
+    --input-border: #D1D5DB;
+    --accent-primary: #059669;
+    --accent-primary-hover: #047857;
+    --score-red: #DC2626;
+    --score-amber: #D97706;
+    --score-teal: #0D9488;
+    --score-green: #059669;
+
+    /* shadcn/ui light overrides */
+    --background: #FFFFFF;
+    --foreground: 222 47% 11%;
+    --card: #FFFFFF;
+    --card-foreground: 222 47% 11%;
+    --popover: #FFFFFF;
+    --popover-foreground: 222 47% 11%;
+    --primary: #059669;
+    --primary-foreground: #FFFFFF;
+    --secondary: #F3F4F6;
+    --secondary-foreground: 222 47% 11%;
+    --muted: #F9FAFB;
+    --muted-foreground: 220 9% 46%;
+    --accent: #059669;
+    --accent-foreground: #FFFFFF;
+    --destructive: #DC2626;
+    --destructive-foreground: #FFFFFF;
+    --border: #E5E7EB;
+    --input: #E5E7EB;
+    --ring: #059669;
+    --sidebar: #F9FAFB;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary: #059669;
+    --sidebar-primary-foreground: #FFFFFF;
+    --sidebar-accent: #F3F4F6;
+    --sidebar-accent-foreground: 222 47% 11%;
+    --sidebar-border: #E5E7EB;
+    --sidebar-ring: #059669;
+  }
+
   * {
     @apply border-border;
     outline-color: rgb(16 185 129 / 0.5);
@@ -63,11 +127,50 @@
 
   body {
     @apply bg-background text-foreground;
-    background-color: #0A0E17;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 
   html {
     @apply font-sans;
     scroll-behavior: smooth;
+    transition: color 0.2s ease;
   }
+}
+
+/* ── Light mode overrides for hardcoded dark Tailwind classes ────────────────
+   Components use hardcoded dark hex values; these overrides make them
+   respond to the .light class on <html> without modifying every component.
+──────────────────────────────────────────────────────────────────────────── */
+:root.light {
+  /* Backgrounds */
+  .bg-\[\#0A0E17\]        { background-color: #F9FAFB; }
+  .bg-\[\#0d1117\]        { background-color: #F9FAFB; }
+  .bg-\[\#111827\]        { background-color: #FFFFFF; }
+  .bg-\[\#1F2937\]        { background-color: #F3F4F6; }
+  .bg-\[\#374151\]        { background-color: #E5E7EB; }
+  /* Subtle white-tint backgrounds → subtle dark tints */
+  .bg-white\/\[0\.03\]    { background-color: rgba(0,0,0,0.02); }
+  .bg-white\/\[0\.06\]    { background-color: rgba(0,0,0,0.04); }
+  .bg-white\/5            { background-color: rgba(0,0,0,0.03); }
+  .bg-white\/8            { background-color: rgba(0,0,0,0.05); }
+  .bg-white\/10           { background-color: rgba(0,0,0,0.06); }
+
+  /* Text */
+  .text-white             { color: #111827; }
+  .text-gray-100          { color: #1F2937; }
+  .text-gray-200          { color: #374151; }
+  .text-gray-300          { color: #4B5563; }
+
+  /* Hover text */
+  .hover\:text-white:hover { color: #111827; }
+
+  /* Borders */
+  .border-white\/8        { border-color: #E5E7EB; }
+  .border-white\/10       { border-color: #E5E7EB; }
+  .border-white\/12       { border-color: #E5E7EB; }
+  .border-white\/15       { border-color: #D1D5DB; }
+  .border-white\/20       { border-color: #D1D5DB; }
+  .border-white\/25       { border-color: #D1D5DB; }
 }

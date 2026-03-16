@@ -256,7 +256,8 @@ function buildBrandProfile(
 
 function buildCompetitorProfiles(
   brand: string,
-  allPromptResults: Array<{ analysis: AnalysisResult }>
+  allPromptResults: Array<{ analysis: AnalysisResult }>,
+  passedCompetitors: string[] = []
 ): CompetitorProfile[] {
   const brandLower = brand.toLowerCase();
   const totalQueries = allPromptResults.length;
@@ -267,11 +268,21 @@ function buildCompetitorProfiles(
     mention_count: number;
   }>();
 
+  // Seed map with user-specified competitors so they always appear even if AI didn't mention them
+  for (const name of passedCompetitors) {
+    if (!name || name.length < 2) continue;
+    const key = name.toLowerCase().trim();
+    if (key.includes(brandLower) || brandLower.includes(key)) continue;
+    if (!profileMap.has(key)) profileMap.set(key, { displayName: name, positions: [], recommend_count: 0, mention_count: 0 });
+  }
+
+  // Accumulate data from AI responses
   for (const { analysis } of allPromptResults) {
     for (const comp of (analysis.competitors_found ?? [])) {
       if (!comp.name || comp.name.length < 2) continue;
       const key = comp.name.toLowerCase().trim();
       if (key.includes(brandLower) || brandLower.includes(key)) continue;
+      // If this name matches a seeded competitor (fuzzy: same key), update it; otherwise add new entry
       if (!profileMap.has(key)) profileMap.set(key, { displayName: comp.name, positions: [], recommend_count: 0, mention_count: 0 });
       const entry = profileMap.get(key)!;
       entry.mention_count++;
@@ -292,9 +303,10 @@ function buildCompetitorProfiles(
       recommend_count: d.recommend_count,
       sentiment: null as null,
     }))
-    .filter((c) => c.mention_count >= 1)
+    // Keep all user-specified competitors (even 0 mentions) + AI-discovered ones with ≥1 mention
+    .filter((c) => passedCompetitors.map((p) => p.toLowerCase().trim()).includes(c.name.toLowerCase().trim()) || c.mention_count >= 1)
     .sort((a, b) => b.mention_count - a.mention_count)
-    .slice(0, 4);
+    .slice(0, 8);
 }
 
 function calculateShareOfVoice(
@@ -671,7 +683,7 @@ export async function POST(request: Request) {
 
     // Competitor profiles (pure JS — zero extra API calls)
     const brandProfile  = buildBrandProfile(brand, allPromptResults);
-    const competitors   = buildCompetitorProfiles(brand, allPromptResults);
+    const competitors   = buildCompetitorProfiles(brand, allPromptResults, passedCompetitors);
     const shareOfVoice  = calculateShareOfVoice(brandProfile, competitors);
 
     const addons = reportConfig?.addons ?? [];

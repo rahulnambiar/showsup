@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Coins, Zap, Info } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -92,8 +92,9 @@ function StepCircle({ status }: { status: StepState["status"] }) {
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
-export default function ReportBuilderPage() {
+function ReportBuilderPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   // Brand config
   const [url, setUrl] = useState("");
@@ -130,6 +131,18 @@ export default function ReportBuilderPage() {
       setModules((prev) => ({ ...prev, commerce: true }));
     }
   }, [category]);
+
+  // Pre-fill URL from ?url= param or pendingUrl in localStorage
+  useEffect(() => {
+    const paramUrl = searchParams.get("url");
+    const pending = localStorage.getItem("pendingUrl");
+    const initial = paramUrl || pending || "";
+    if (initial) {
+      setUrl(initial);
+      if (pending) localStorage.removeItem("pendingUrl");
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Fetch token balance
   useEffect(() => {
@@ -765,5 +778,13 @@ export default function ReportBuilderPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ReportBuilderPageWrapper() {
+  return (
+    <Suspense>
+      <ReportBuilderPage />
+    </Suspense>
   );
 }

@@ -6,82 +6,20 @@ import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { WaitlistModal } from "@/components/waitlist-modal";
+import { MarketingNav } from "@/components/marketing-nav";
 import {
   BarChart3,
   ChevronDown,
-  ArrowRight,
   Globe,
   Zap,
   TrendingUp,
 } from "lucide-react";
+import { posthog } from "@/lib/posthog";
 
 // ─── Smooth scroll helper ────────────────────────────────────────────────────
 
 function scrollToId(id: string) {
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
-}
-
-// ─── Nav ─────────────────────────────────────────────────────────────────────
-
-function Nav() {
-  const [scrolled, setScrolled] = useState(false);
-  useEffect(() => {
-    const fn = () => setScrolled(window.scrollY > 16);
-    window.addEventListener("scroll", fn, { passive: true });
-    return () => window.removeEventListener("scroll", fn);
-  }, []);
-
-  return (
-    <header
-      className={cn(
-        "fixed top-0 inset-x-0 z-50 transition-all duration-300",
-        scrolled
-          ? "bg-[#0A0E17]/90 backdrop-blur-md border-b border-white/8"
-          : "bg-transparent"
-      )}
-    >
-      <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between gap-6">
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 flex-shrink-0">
-          <BarChart3 className="w-5 h-5 text-[#10B981]" />
-          <span className="text-base font-semibold text-white tracking-tight">ShowsUp</span>
-        </Link>
-
-        {/* Center links */}
-        <nav className="hidden md:flex items-center gap-7">
-          <button
-            onClick={() => scrollToId("how-it-works")}
-            className="text-sm text-[#9CA3AF] hover:text-white transition-colors"
-          >
-            How It Works
-          </button>
-          <Link href="/report-builder" className="text-sm text-[#9CA3AF] hover:text-white transition-colors">
-            Report Builder
-          </Link>
-          <button
-            onClick={() => scrollToId("pricing")}
-            className="text-sm text-[#9CA3AF] hover:text-white transition-colors"
-          >
-            Pricing
-          </button>
-          <Link href="/blog" className="text-sm text-[#9CA3AF] hover:text-white transition-colors">
-            Blog
-          </Link>
-          <Link href="/login" className="text-sm text-[#9CA3AF] hover:text-white transition-colors">
-            Login
-          </Link>
-        </nav>
-
-        {/* CTA */}
-        <button
-          onClick={() => scrollToId("hero")}
-          className="hidden md:inline-flex items-center gap-1.5 text-sm font-medium text-[#10B981] border border-[#10B981]/60 hover:border-[#10B981] hover:bg-[#10B981]/8 rounded-lg px-4 py-2 transition-all"
-        >
-          Check your brand <ArrowRight className="w-3.5 h-3.5" />
-        </button>
-      </div>
-    </header>
-  );
 }
 
 // ─── URL Input ────────────────────────────────────────────────────────────────
@@ -100,7 +38,7 @@ function UrlInput({ size = "default" }: { size?: "default" | "lg" }) {
     const { data: { session } } = await supabase.auth.getSession();
 
     if (session) {
-      router.push(`/app/scan?url=${encodeURIComponent(trimmed)}`);
+      router.push(`/app/report-builder?url=${encodeURIComponent(trimmed)}`);
     } else {
       localStorage.setItem("pendingUrl", trimmed);
       router.push("/signup");
@@ -393,9 +331,41 @@ function FaqItem({ q, a }: { q: string; a: string }) {
 export default function HomePage() {
   const [waitlistPlan, setWaitlistPlan] = useState<"starter" | "growth" | null>(null);
 
+  // Analytics + UTM tracking
+  useEffect(() => {
+    // Page view
+    posthog.capture("landing_page_viewed");
+
+    // Capture + store UTM params
+    const params = new URLSearchParams(window.location.search);
+    const utmData = {
+      utm_source:   params.get("utm_source"),
+      utm_medium:   params.get("utm_medium"),
+      utm_campaign: params.get("utm_campaign"),
+      utm_content:  params.get("utm_content"),
+    };
+    if (utmData.utm_source) {
+      localStorage.setItem("utm_data", JSON.stringify(utmData));
+      posthog.capture("utm_visit", utmData);
+    }
+
+    // Pricing scroll observer
+    const pricingEl = document.getElementById("pricing");
+    if (!pricingEl) return;
+    let fired = false;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && !fired) {
+        fired = true;
+        posthog.capture("pricing_viewed");
+      }
+    }, { threshold: 0.1 });
+    observer.observe(pricingEl);
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <div className="bg-[#0A0E17] text-white">
-      <Nav />
+      <MarketingNav />
 
       {/* ── HERO ── */}
       <section id="hero" className="pt-36 pb-28 px-6 text-center">

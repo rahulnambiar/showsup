@@ -165,10 +165,10 @@ export default async function DashboardPage() {
             </p>
           </div>
           <Link
-            href="/app/scan"
+            href="/app/report-builder"
             className="inline-flex items-center gap-2 bg-[#10B981] hover:bg-[#059669] text-[#0A0E17] font-semibold rounded-lg px-5 py-2.5 text-sm transition-colors"
           >
-            Run your first scan →
+            Analyse your brand →
           </Link>
         </div>
       ) : (
@@ -180,10 +180,10 @@ export default async function DashboardPage() {
                 View all
               </Link>
               <Link
-                href="/app/scan"
+                href="/app/report-builder"
                 className="text-xs font-semibold text-[#10B981] hover:text-[#059669] transition-colors"
               >
-                Run new scan →
+                New analysis →
               </Link>
             </div>
           </div>
@@ -194,7 +194,7 @@ export default async function DashboardPage() {
               return (
                 <Link
                   key={scan.id}
-                  href={`/app/scores/${scan.id}`}
+                  href={`/app/report/${scan.id}`}
                   className={cn(
                     "flex items-center gap-4 px-5 py-3.5 hover:bg-white/[0.03] transition-colors",
                     i !== recentScans.length - 1 && "border-b border-white/5"

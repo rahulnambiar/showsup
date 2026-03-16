@@ -14,8 +14,17 @@ function getAdminClient() {
 
 // ── LLM helpers ───────────────────────────────────────────────────────────────
 
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error(`Request timed out after ${ms / 1000}s`)), ms)
+    ),
+  ]);
+}
+
 async function callAnthropic(prompt: string, maxTokens = 600): Promise<string> {
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
+  const res = await withTimeout(fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -27,14 +36,14 @@ async function callAnthropic(prompt: string, maxTokens = 600): Promise<string> {
       max_tokens: maxTokens,
       messages: [{ role: "user", content: prompt }],
     }),
-  });
+  }), 25000);
   const data = await res.json();
   if (!res.ok) throw new Error(data.error?.message ?? "Anthropic error");
   return data.content?.[0]?.text ?? "";
 }
 
 async function callAnthropicSonnet(prompt: string, maxTokens = 1500): Promise<string> {
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
+  const res = await withTimeout(fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -46,7 +55,7 @@ async function callAnthropicSonnet(prompt: string, maxTokens = 1500): Promise<st
       max_tokens: maxTokens,
       messages: [{ role: "user", content: prompt }],
     }),
-  });
+  }), 45000);
   const data = await res.json();
   if (!res.ok) throw new Error(data.error?.message ?? "Anthropic Sonnet error");
   return data.content?.[0]?.text ?? "";
@@ -251,7 +260,10 @@ export async function POST(request: Request) {
     }
 
     if (!moduleData) {
-      return NextResponse.json({ error: "Module generation failed" }, { status: 500 });
+      return NextResponse.json(
+        { error: "AI generation failed — please try again. Your tokens were not charged." },
+        { status: 500 }
+      );
     }
 
     // Deduct tokens

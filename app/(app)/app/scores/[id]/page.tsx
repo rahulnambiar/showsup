@@ -178,10 +178,10 @@ export default async function ScanDetailPage({ params }: { params: { id: string 
           />
           <ShareButton />
           <Link
-            href="/app/scan"
+            href="/app/report-builder"
             className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-400 hover:text-white border border-white/15 hover:border-white/30 rounded-lg px-3 py-2 transition-colors"
           >
-            New Scan
+            New Analysis
           </Link>
         </div>
       </div>
@@ -326,10 +326,10 @@ export default async function ScanDetailPage({ params }: { params: { id: string 
       {/* ── Footer CTA ── */}
       <div className="pt-2 pb-4">
         <Link
-          href="/app/scan"
+          href="/app/report-builder"
           className="inline-flex items-center gap-2 bg-[#10B981] hover:bg-[#059669] text-[#0A0E17] font-semibold rounded-lg px-5 py-2.5 text-sm transition-colors"
         >
-          Run another scan
+          New analysis
         </Link>
       </div>
     </div>

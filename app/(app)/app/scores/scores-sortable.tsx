@@ -50,10 +50,10 @@ export function ScoresSortable({ scans }: { scans: Scan[] }) {
         <p className="text-white font-semibold">No scans yet</p>
         <p className="text-gray-500 text-sm">Run your first scan to see results here.</p>
         <Link
-          href="/app/scan"
+          href="/app/report-builder"
           className="inline-flex items-center bg-[#10B981] hover:bg-[#059669] text-[#0A0E17] font-semibold rounded-lg px-5 py-2.5 text-sm transition-colors mt-2"
         >
-          Run a scan
+          Analyse your brand
         </Link>
       </div>
     );
@@ -122,7 +122,7 @@ export function ScoresSortable({ scans }: { scans: Scan[] }) {
               return (
                 <Link
                   key={scan.id}
-                  href={`/app/scores/${scan.id}`}
+                  href={`/app/report/${scan.id}`}
                   className={cn(
                     "flex items-center gap-4 px-5 py-3.5 hover:bg-white/[0.03] transition-colors",
                     i !== groupScans.length - 1 && "border-b border-white/5"
