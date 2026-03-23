@@ -11,6 +11,7 @@ import { AnimatedScoreRing } from "./animated-score";
 import { PlatformCard } from "./platform-card";
 import { CategoryBreakdown } from "@/components/category-breakdown";
 import { CompetitiveBenchmark, type CompetitorsData } from "@/components/competitive-benchmark";
+import { ReportTracker } from "./report-tracker";
 
 // Dynamic import for PDF (client only)
 const PDFDownload = dynamic(
@@ -152,6 +153,7 @@ export default async function ScanDetailPage({ params }: { params: { id: string 
 
   return (
     <div className="p-6 md:p-8 max-w-3xl mx-auto space-y-6">
+      <ReportTracker scanId={params.id} score={score} brand={scan.brand_name} />
 
       {/* ── Nav bar ── */}
       <div className="flex items-center justify-between flex-wrap gap-3">

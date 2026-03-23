@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { trackLoginCompleted } from "@/lib/analytics";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -40,6 +41,7 @@ export default function LoginPage() {
       return;
     }
 
+    trackLoginCompleted("email");
     const redirectPath = getRedirectPath();
     router.push(redirectPath);
     router.refresh();
@@ -48,6 +50,7 @@ export default function LoginPage() {
   async function handleGoogleLogin() {
     setError(null);
     setOauthLoading(true);
+    trackLoginCompleted("google");
 
     const supabase = createClient();
     const pendingUrl = localStorage.getItem("pendingUrl");

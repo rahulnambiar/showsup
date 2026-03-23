@@ -12,6 +12,7 @@ import { CategoryBreakdown } from "@/components/category-breakdown";
 import { CompetitiveBenchmark, type CompetitorsData } from "@/components/competitive-benchmark";
 import { PDFDownload } from "@/components/pdf-download";
 import { ShareButton } from "@/components/share-button";
+import { trackScanStarted, trackScanCompleted, trackScanFailed } from "@/lib/analytics";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -445,6 +446,7 @@ function ScanPageInner() {
 
     setError(null);
     setScanning(true);
+    trackScanStarted({ brand: brand.trim(), url: url.trim(), models: Object.entries(models).filter(([, v]) => v).map(([k]) => k) });
 
     const promptCount = 6 + (COMMERCE_CATS.includes(category) ? 2 : 0);
     const compText = competitors.length > 0
@@ -519,6 +521,7 @@ function ScanPageInner() {
       if (!res.ok) {
         updateStep("chatgpt", "error");
         updateStep("claude", "error");
+        trackScanFailed(data.error ?? "scan_failed");
         setError(data.error ?? "Scan failed. Please try again.");
         setScanning(false);
         return;
@@ -535,6 +538,7 @@ function ScanPageInner() {
       await delay(450);
       updateStep("score", "done");
 
+      trackScanCompleted({ brand: data.brand, score: data.overall_score, category: data.category });
       toast.success(`Scan complete! ShowsUp Score: ${data.overall_score}/100`);
       window.dispatchEvent(new Event("tokenBalanceChanged"));
 

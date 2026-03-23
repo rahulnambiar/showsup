@@ -58,30 +58,30 @@ export function MarketingNav() {
       <div className="max-w-[1200px] mx-auto px-6 h-16 flex items-center justify-between gap-6">
         {/* Logo */}
         <Link href="/" className="flex-shrink-0">
-          <span className="text-base font-semibold text-white tracking-tight">ShowsUp</span>
+          <span className="text-base font-semibold text-[#FFFFFF] tracking-tight">ShowsUp</span>
         </Link>
 
         {/* Center links — desktop */}
         <nav className="hidden md:flex items-center gap-7">
           <button
             onClick={() => scrollOrLink("product")}
-            className="text-sm text-[#9CA3AF] hover:text-white transition-colors"
+            className="text-sm text-[#9CA3AF] hover:text-[#FFFFFF] transition-colors"
           >
             Product
           </button>
           <button
             onClick={() => scrollOrLink("cli")}
-            className="text-sm text-[#9CA3AF] hover:text-white transition-colors"
+            className="text-sm text-[#9CA3AF] hover:text-[#FFFFFF] transition-colors"
           >
             CLI
           </button>
           <button
             onClick={() => scrollOrLink("pricing")}
-            className="text-sm text-[#9CA3AF] hover:text-white transition-colors"
+            className="text-sm text-[#9CA3AF] hover:text-[#FFFFFF] transition-colors"
           >
             Pricing
           </button>
-          <Link href="#" className="text-sm text-[#9CA3AF] hover:text-white transition-colors">
+          <Link href="#" className="text-sm text-[#9CA3AF] hover:text-[#FFFFFF] transition-colors">
             Docs
           </Link>
         </nav>
@@ -92,7 +92,7 @@ export function MarketingNav() {
             href={GITHUB_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 text-sm text-[#9CA3AF] hover:text-white border border-[#1F2937] hover:border-white/20 rounded-lg px-3 py-1.5 transition-colors"
+            className="flex items-center gap-1.5 text-sm text-[#9CA3AF] hover:text-[#FFFFFF] border border-[#1F2937] hover:border-[rgba(255,255,255,0.2)] rounded-lg px-3 py-1.5 transition-colors"
           >
             <Github className="w-3.5 h-3.5" />
             {stars !== null ? (
@@ -113,7 +113,7 @@ export function MarketingNav() {
               Dashboard →
             </Link>
           ) : (
-            <Link href="/login" className="text-sm text-[#9CA3AF] hover:text-white transition-colors">
+            <Link href="/login" className="text-sm text-[#9CA3AF] hover:text-[#FFFFFF] transition-colors">
               Sign in
             </Link>
           )}
@@ -132,13 +132,13 @@ export function MarketingNav() {
             href={GITHUB_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="p-2 text-[#9CA3AF] hover:text-white transition-colors"
+            className="p-2 text-[#9CA3AF] hover:text-[#FFFFFF] transition-colors"
           >
             <Github className="w-4 h-4" />
           </a>
           <button
             onClick={() => setMenuOpen(!menuOpen)}
-            className="p-2 text-[#9CA3AF] hover:text-white transition-colors"
+            className="p-2 text-[#9CA3AF] hover:text-[#FFFFFF] transition-colors"
           >
             {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
@@ -156,12 +156,12 @@ export function MarketingNav() {
             <button
               key={label}
               onClick={action}
-              className="block w-full text-left text-sm text-[#9CA3AF] hover:text-white py-2 transition-colors"
+              className="block w-full text-left text-sm text-[#9CA3AF] hover:text-[#FFFFFF] py-2 transition-colors"
             >
               {label}
             </button>
           ))}
-          <Link href="#" className="block text-sm text-[#9CA3AF] hover:text-white py-2 transition-colors">
+          <Link href="#" className="block text-sm text-[#9CA3AF] hover:text-[#FFFFFF] py-2 transition-colors">
             Docs
           </Link>
           <div className="pt-4 border-t border-[#1F2937] space-y-3">
@@ -170,7 +170,7 @@ export function MarketingNav() {
                 Dashboard →
               </Link>
             ) : (
-              <Link href="/login" className="block text-sm text-[#9CA3AF] hover:text-white py-1">
+              <Link href="/login" className="block text-sm text-[#9CA3AF] hover:text-[#FFFFFF] py-1">
                 Sign in
               </Link>
             )}

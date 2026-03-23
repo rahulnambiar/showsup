@@ -15,6 +15,7 @@ import {
   getModuleDelta,
   type ReportConfig,
 } from "@/lib/pricing/cost-calculator";
+import { trackReportBuilderOpened, trackScanStarted, trackScanCompleted, trackScanFailed } from "@/lib/analytics";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -146,6 +147,7 @@ function ReportBuilderPage() {
 
   // Fetch token balance
   useEffect(() => {
+    trackReportBuilderOpened();
     fetch("/api/tokens/balance")
       .then((r) => r.json())
       .then((d) => typeof d.balance === "number" && setTokenBalance(d.balance));
@@ -265,6 +267,7 @@ function ReportBuilderPage() {
     if (!brand.trim() || !url.trim()) return;
     setScanError(null);
     setScanning(true);
+    trackScanStarted({ brand: brand.trim(), url: url.trim(), depth: scanDepth, models: selectedModels });
 
     const initialSteps: StepState[] = [
       { id: "setup",   label: `Configuring report for ${brand}…`, status: "running" },
@@ -323,11 +326,13 @@ function ReportBuilderPage() {
       if (!res.ok) {
         updateStep("chatgpt", "error");
         updateStep("claude", "error");
+        trackScanFailed(data.error ?? "report_generation_failed");
         setScanError(data.error ?? "Report generation failed.");
         setScanning(false);
         return;
       }
 
+      trackScanCompleted({ brand: brand.trim(), score: data.overall_score ?? 0, category, depth: scanDepth });
       updateStep("chatgpt", "done");
       updateStep("claude", "done");
       updateStep("analyze", "running");
@@ -459,7 +464,7 @@ function ReportBuilderPage() {
                 </Button>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <Label className="text-gray-400 text-xs">Brand name</Label>
                   <div className="relative">

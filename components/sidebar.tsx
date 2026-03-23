@@ -40,13 +40,17 @@ const mobileTabItems = [
 
 function TokenWidget() {
   const [balance, setBalance] = useState<number | null>(null);
+  const [selfHost, setSelfHost] = useState(false);
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   function refreshBalance() {
     fetch("/api/tokens/balance")
       .then((r) => r.json())
-      .then((d) => setBalance(d.balance ?? null))
+      .then((d) => {
+        if (d.selfHost) { setSelfHost(true); setBalance(null); }
+        else setBalance(d.balance ?? null);
+      })
       .catch(() => {});
   }
 
@@ -63,6 +67,18 @@ function TokenWidget() {
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
+
+  if (selfHost) {
+    return (
+      <div className="mx-2 mb-3">
+        <div className="w-full flex items-center gap-2 rounded-lg px-3 py-2 text-sm border border-emerald-200 bg-emerald-50">
+          <Coins className="w-3.5 h-3.5 flex-shrink-0 text-emerald-600" />
+          <span className="font-semibold text-sm text-emerald-700">Unlimited</span>
+          <span className="text-emerald-500 text-xs">self-host</span>
+        </div>
+      </div>
+    );
+  }
 
   if (balance === null) return null;
 

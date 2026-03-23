@@ -28,7 +28,17 @@ export async function updateSession(request: NextRequest) {
   // Refresh the session — must not write any logic between createServerClient and getUser
   const {
     data: { user },
+    error,
   } = await supabase.auth.getUser();
+
+  // Stale/invalid refresh token — clear auth cookies and treat as logged-out
+  if (error?.code === "refresh_token_not_found" || error?.status === 400) {
+    supabaseResponse.cookies.getAll().forEach(({ name }) => {
+      if (name.includes("sb-") && (name.includes("-auth-token") || name.includes("-refresh-token"))) {
+        supabaseResponse.cookies.delete(name);
+      }
+    });
+  }
 
   const { pathname } = request.nextUrl;
 

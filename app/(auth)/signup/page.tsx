@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { trackSignupStarted, trackSignupCompleted } from "@/lib/analytics";
 
 export default function SignupPage() {
   const [email, setEmail] = useState("");
@@ -22,6 +23,7 @@ export default function SignupPage() {
     e.preventDefault();
     setError(null);
     setLoading(true);
+    trackSignupStarted("email");
 
     const pendingUrl = localStorage.getItem("pendingUrl");
     const nextPath = pendingUrl
@@ -46,6 +48,7 @@ export default function SignupPage() {
       return;
     }
 
+    trackSignupCompleted("email");
     setSuccess(true);
     setLoading(false);
   }
@@ -79,6 +82,8 @@ export default function SignupPage() {
   async function handleGoogleSignup() {
     setError(null);
     setOauthLoading(true);
+    trackSignupStarted("google");
+    trackSignupCompleted("google");
 
     const supabase = createClient();
     const pendingUrl = localStorage.getItem("pendingUrl");

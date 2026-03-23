@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { calculateReportCost, getActionCost } from "@/lib/pricing/cost-calculator";
+import { trackTokensPageViewed, trackTokensPackageSelected, trackTokensPurchaseClicked } from "@/lib/analytics";
 
 const PACKAGES = [
   {
@@ -80,6 +81,7 @@ export default function TokensPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    trackTokensPageViewed();
     fetch("/api/tokens/balance")
       .then((r) => r.json())
       .then((d) => setBalance(d.balance ?? 0));
@@ -91,6 +93,8 @@ export default function TokensPage() {
     if (!confirming) return;
     setError(null);
     setPurchasing(true);
+    const pkg = PACKAGES.find((p) => p.id === confirming);
+    if (pkg) trackTokensPurchaseClicked({ id: pkg.id, tokens: pkg.tokens, price_sgd: pkg.price_sgd });
     try {
       const res = await fetch("/api/tokens/purchase", {
         method: "POST",
@@ -197,7 +201,7 @@ export default function TokensPage() {
                       ? "bg-emerald-600 hover:bg-emerald-700 text-white"
                       : "bg-gray-100 hover:bg-gray-200 text-gray-700 border-0"
                   )}
-                  onClick={() => { setSuccessPkg(null); setError(null); setConfirming(pkg.id); }}
+                  onClick={() => { setSuccessPkg(null); setError(null); setConfirming(pkg.id); trackTokensPackageSelected({ id: pkg.id, tokens: pkg.tokens, price_sgd: pkg.price_sgd }); }}
                 >
                   Buy {pkg.label}
                 </Button>

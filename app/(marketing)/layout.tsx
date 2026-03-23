@@ -1,14 +1,21 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "ShowsUp — Does your brand show up in AI?",
+  title: "ShowsUp — Open Source AEO Agent",
   description:
-    "Measure your brand's visibility across ChatGPT, Claude, Gemini and more. Get your free AI visibility score with 1,000 free tokens. Instant results.",
+    "Scan AI visibility, generate fixes. llms.txt, schema, content briefs. Open source, self-host free.",
+  keywords: ["AEO", "AI visibility", "llms.txt", "schema markup", "ChatGPT visibility", "Claude visibility", "brand visibility AI"],
   openGraph: {
     type: "website",
-    title: "ShowsUp — AI Brand Visibility Platform",
-    description: "Does your brand show up when people ask AI for recommendations? Find out in 60 seconds.",
+    title: "ShowsUp — Open Source AEO Agent",
+    description: "Scan your AI visibility across ChatGPT, Claude & Gemini. Generate llms.txt, schema markup, and content briefs to fix the gaps. MIT licensed, self-host free.",
     url: "https://showsup.co",
+    siteName: "ShowsUp",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ShowsUp — Open Source AEO Agent",
+    description: "Does your brand show up in AI? Scan, diagnose, and fix your AI visibility. Open source.",
   },
 };
 

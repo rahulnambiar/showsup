@@ -305,7 +305,7 @@ export default function HomePage() {
       <MarketingNav />
 
       {/* ── HERO ── */}
-      <section id="hero" className="pt-40 pb-[120px] px-6 text-center">
+      <section id="hero" className="pt-28 md:pt-40 pb-16 md:pb-[120px] px-6 text-center">
         <div className="max-w-[800px] mx-auto space-y-8">
           {/* Open source badge */}
           <a
@@ -319,7 +319,7 @@ export default function HomePage() {
           </a>
 
           {/* Headline */}
-          <h1 className="text-5xl md:text-6xl font-semibold text-white tracking-tight leading-[1.1]">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold text-white tracking-tight leading-[1.1]">
             Does your brand<br />show up in AI?
           </h1>
 
@@ -361,7 +361,7 @@ export default function HomePage() {
       </section>
 
       {/* ── DIAGNOSE → FIX → VERIFY ── */}
-      <section id="product" className="py-[120px] px-6 bg-[#0D1117]">
+      <section id="product" className="py-16 md:py-[120px] px-6 bg-[#0D1117]">
         <div className="max-w-[1200px] mx-auto space-y-16">
           <FadeIn className="text-center space-y-4">
             <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight">
@@ -449,7 +449,7 @@ export default function HomePage() {
       </section>
 
       {/* ── FIX GENERATOR ── */}
-      <section className="py-[120px] px-6">
+      <section className="py-16 md:py-[120px] px-6">
         <div className="max-w-[1200px] mx-auto space-y-16">
           <FadeIn className="text-center space-y-4">
             <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight">
@@ -482,7 +482,7 @@ export default function HomePage() {
       </section>
 
       {/* ── THREE WAYS TO USE ── */}
-      <section id="cli" className="py-[120px] px-6 bg-[#0D1117]">
+      <section id="cli" className="py-16 md:py-[120px] px-6 bg-[#0D1117]">
         <div className="max-w-[1200px] mx-auto space-y-16">
           <FadeIn className="text-center space-y-4">
             <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight">
@@ -582,7 +582,7 @@ export default function HomePage() {
       </section>
 
       {/* ── LIVE DEMO ── */}
-      <section id="demo" className="py-[120px] px-6">
+      <section id="demo" className="py-16 md:py-[120px] px-6">
         <div className="max-w-[1200px] mx-auto space-y-12">
           <FadeIn className="text-center space-y-4">
             <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight">
@@ -652,7 +652,7 @@ export default function HomePage() {
       </section>
 
       {/* ── PRICING ── */}
-      <section id="pricing" className="py-[120px] px-6 bg-[#0D1117]">
+      <section id="pricing" className="py-16 md:py-[120px] px-6 bg-[#0D1117]">
         <div className="max-w-[1200px] mx-auto space-y-16">
           <FadeIn className="text-center space-y-4">
             <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight">
@@ -765,7 +765,7 @@ export default function HomePage() {
       </section>
 
       {/* ── COMMUNITY ── */}
-      <section className="py-[120px] px-6">
+      <section className="py-16 md:py-[120px] px-6">
         <div className="max-w-[1200px] mx-auto">
           <FadeIn>
             <div className="max-w-xl mx-auto text-center space-y-10">

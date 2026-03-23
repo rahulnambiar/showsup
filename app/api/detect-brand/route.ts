@@ -1,9 +1,17 @@
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-
 export async function POST(request: Request) {
+  if (!process.env.ANTHROPIC_API_KEY) {
+    console.log("ShowsUp: No ANTHROPIC_API_KEY — brand detection unavailable");
+    return NextResponse.json(
+      { error: "Brand detection requires ANTHROPIC_API_KEY. Add it to your .env.local." },
+      { status: 503 }
+    );
+  }
+
+  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
   try {
     const { url } = await request.json();
     if (!url) return NextResponse.json({ error: "URL required" }, { status: 400 });
