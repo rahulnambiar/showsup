@@ -1,28 +1,74 @@
 "use client";
 
-import { useState, useEffect, useId, Fragment } from "react";
+import { useState, useEffect, useRef, useId } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
-import { WaitlistModal } from "@/components/waitlist-modal";
 import { MarketingNav } from "@/components/marketing-nav";
 import {
-  BarChart3,
-  ChevronDown,
-  Globe,
-  Zap,
-  TrendingUp,
+  Search,
+  Wrench,
+  CheckCircle2,
+  Cloud,
+  Terminal,
+  Server,
+  Github,
+  Copy,
+  Check,
+  Star,
+  ArrowRight,
+  FileText,
+  Code2,
+  BookOpen,
+  Users,
+  GitFork,
 } from "lucide-react";
 import { posthog } from "@/lib/posthog";
 
-// ─── Smooth scroll helper ────────────────────────────────────────────────────
+const GITHUB_URL = "https://github.com/rahulnambiar/showsup";
 
-function scrollToId(id: string) {
-  document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+// ── Fade-in on scroll ─────────────────────────────────────────────────────────
+
+function FadeIn({
+  children,
+  className,
+  delay = 0,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  delay?: number;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting) { setVisible(true); obs.disconnect(); } },
+      { threshold: 0.08 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      className={className}
+      style={{
+        opacity: visible ? 1 : 0,
+        transform: visible ? "translateY(0)" : "translateY(18px)",
+        transition: `opacity 400ms ease ${delay}ms, transform 400ms ease ${delay}ms`,
+      }}
+    >
+      {children}
+    </div>
+  );
 }
 
-// ─── URL Input ────────────────────────────────────────────────────────────────
+// ── URL Input ─────────────────────────────────────────────────────────────────
 
 function UrlInput({ size = "default" }: { size?: "default" | "lg" }) {
   const [url, setUrl] = useState("");
@@ -33,10 +79,7 @@ function UrlInput({ size = "default" }: { size?: "default" | "lg" }) {
     e.preventDefault();
     const trimmed = url.trim();
     if (!trimmed) return;
-
-    const supabase = createClient();
-    const { data: { session } } = await supabase.auth.getSession();
-
+    const { data: { session } } = await createClient().auth.getSession();
     if (session) {
       router.push(`/app/report-builder?url=${encodeURIComponent(trimmed)}`);
     } else {
@@ -52,10 +95,10 @@ function UrlInput({ size = "default" }: { size?: "default" | "lg" }) {
         type="text"
         value={url}
         onChange={(e) => setUrl(e.target.value)}
-        placeholder="Enter your website URL..."
+        placeholder="https://yoursite.com"
         className={cn(
-          "flex-1 rounded-lg bg-[#111827] border border-white/12 text-white placeholder:text-gray-600 outline-none transition-colors",
-          "focus:border-[#10B981] focus:ring-1 focus:ring-[#10B981]/30",
+          "flex-1 rounded-lg bg-[#111827] border border-[#1F2937] text-white placeholder:text-gray-600 outline-none transition-colors",
+          "focus:border-[#10B981] focus:ring-1 focus:ring-[#10B981]/25",
           size === "lg" ? "px-4 py-3 text-base" : "px-4 py-2.5 text-sm"
         )}
       />
@@ -66,301 +109,195 @@ function UrlInput({ size = "default" }: { size?: "default" | "lg" }) {
           size === "lg" ? "px-6 py-3 text-base" : "px-4 py-2.5 text-sm"
         )}
       >
-        Check if you show up →
+        Check visibility →
       </button>
     </form>
   );
 }
 
-// ─── Dashboard Preview ────────────────────────────────────────────────────────
+// ── Terminal Block ────────────────────────────────────────────────────────────
 
-const HEATMAP = [
-  { brand: "TravelShield", chatgpt: 82, claude: 91, gemini: 67, perplexity: 78 },
-  { brand: "QuickCover",   chatgpt: 54, claude: 41, gemini: 60, perplexity: 33 },
-  { brand: "Wanderlux",    chatgpt: 18, claude: 22, gemini: 14, perplexity: 9  },
-];
+const TERMINAL_TEXT = `$ npx showsup scan https://yoursite.com
 
-function HeatCell({ score }: { score: number }) {
-  const bg =
-    score >= 70 ? "bg-[#10B981]/80 text-[#0A0E17]"
-    : score >= 40 ? "bg-[#F59E0B]/70 text-[#0A0E17]"
-    : "bg-[#EF4444]/50 text-white";
+  ShowsUp Score: 64/100 — Good presence
+  ChatGPT: 71  Claude: 58
+  Top gap: "best HR tools" (~5K AI searches/mo)
+
+$ npx showsup fix https://yoursite.com --output ./fixes/
+
+  ✓ Generated llms.txt
+  ✓ Generated FAQ schema (5 questions)
+  ✓ Generated 3 content briefs
+  ✓ Generated citation playbook`;
+
+function TerminalBlock() {
+  const [copied, setCopied] = useState(false);
+
+  async function handleCopy() {
+    await navigator.clipboard.writeText(TERMINAL_TEXT).catch(() => {});
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
   return (
-    <div className={cn("rounded text-xs font-bold flex items-center justify-center h-8 w-full", bg)}>
-      {score}
-    </div>
-  );
-}
-
-function DashboardPreview() {
-  return (
-    <div className="rounded-xl overflow-hidden border border-white/12 bg-[#0A0E17] shadow-2xl shadow-black/50">
-      {/* Browser chrome */}
-      <div className="bg-[#111827] border-b border-white/8 px-4 py-2.5 flex items-center gap-3">
-        <div className="flex gap-1.5">
-          <div className="w-3 h-3 rounded-full bg-[#EF4444]/70" />
-          <div className="w-3 h-3 rounded-full bg-[#F59E0B]/70" />
-          <div className="w-3 h-3 rounded-full bg-[#10B981]/70" />
+    <div className="bg-[#0D1117] border border-[#1F2937] rounded-xl overflow-hidden text-left">
+      {/* Chrome bar */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-[#1F2937] bg-[#0D1117]">
+        <div className="flex items-center gap-1.5">
+          <div className="w-2.5 h-2.5 rounded-full bg-[#EF4444]/50" />
+          <div className="w-2.5 h-2.5 rounded-full bg-[#F59E0B]/50" />
+          <div className="w-2.5 h-2.5 rounded-full bg-[#10B981]/50" />
         </div>
-        <div className="flex-1 bg-[#1F2937] rounded-md px-3 py-1 text-xs text-gray-500 text-center">
-          app.showsup.co/dashboard
-        </div>
-      </div>
-
-      {/* App shell */}
-      <div className="flex" style={{ height: 340 }}>
-        {/* Mini sidebar */}
-        <div className="w-36 bg-[#111827] border-r border-white/6 p-3 flex flex-col gap-1 flex-shrink-0">
-          <div className="flex items-center gap-1.5 px-2 mb-3">
-            <BarChart3 className="w-3.5 h-3.5 text-[#10B981]" />
-            <span className="text-xs font-semibold text-white">ShowsUp</span>
-          </div>
-          {["Dashboard", "New Scan", "Scores", "Trends", "Settings"].map((item, i) => (
-            <div
-              key={item}
-              className={cn(
-                "text-xs px-2 py-1.5 rounded-md",
-                i === 0 ? "bg-[#10B981]/15 text-[#10B981]" : "text-gray-500"
-              )}
-            >
-              {item}
-            </div>
-          ))}
-        </div>
-
-        {/* Main content */}
-        <div className="flex-1 p-5 overflow-hidden">
-          <p className="text-xs font-semibold text-white mb-3">Dashboard</p>
-
-          {/* Stat cards */}
-          <div className="grid grid-cols-3 gap-2 mb-4">
-            {[
-              { label: "Visibility Score", val: "73", color: "text-[#10B981]" },
-              { label: "Brands", val: "3", color: "text-white" },
-              { label: "Scans Run", val: "12", color: "text-white" },
-            ].map(({ label, val, color }) => (
-              <div key={label} className="bg-[#111827] border border-white/8 rounded-lg p-2.5">
-                <p className="text-[10px] text-gray-500 mb-1">{label}</p>
-                <p className={cn("text-xl font-bold", color)}>{val}</p>
-              </div>
-            ))}
-          </div>
-
-          {/* Heatmap */}
-          <div className="bg-[#111827] border border-white/8 rounded-lg p-3">
-            <p className="text-[10px] text-gray-500 mb-2">AI Visibility Heatmap</p>
-            <div className="grid grid-cols-[80px_1fr_1fr_1fr_1fr] gap-1.5 items-center">
-              <div />
-              {["ChatGPT", "Claude", "Gemini", "Perplexity"].map((m) => (
-                <div key={m} className="text-[9px] text-gray-500 text-center">{m}</div>
-              ))}
-              {HEATMAP.map((row) => (
-                <Fragment key={row.brand}>
-                  <div className="text-[9px] text-gray-400 truncate">{row.brand}</div>
-                  <HeatCell score={row.chatgpt} />
-                  <HeatCell score={row.claude} />
-                  <HeatCell score={row.gemini} />
-                  <HeatCell score={row.perplexity} />
-                </Fragment>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── Chat Mockup ──────────────────────────────────────────────────────────────
-
-function ChatMockup() {
-  return (
-    <div className="bg-[#111827] border border-white/10 rounded-xl overflow-hidden">
-      <div className="bg-[#1F2937] border-b border-white/8 px-4 py-3 flex items-center gap-2">
-        <div className="w-2 h-2 rounded-full bg-[#10B981]" />
-        <span className="text-xs text-gray-400 font-medium">ChatGPT</span>
-      </div>
-      <div className="p-4 space-y-3 text-sm">
-        <div className="flex justify-end">
-          <div className="bg-[#1F2937] rounded-2xl rounded-tr-sm px-3.5 py-2.5 text-gray-200 text-xs max-w-[80%]">
-            What travel insurance should I get for my trip to Japan?
-          </div>
-        </div>
-        <div className="flex gap-2.5">
-          <div className="w-6 h-6 rounded-full bg-[#10B981]/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-            <span className="text-[10px] text-[#10B981] font-bold">AI</span>
-          </div>
-          <div className="bg-[#0A0E17] border border-white/6 rounded-2xl rounded-tl-sm px-3.5 py-2.5 text-xs text-gray-300 leading-relaxed max-w-[90%]">
-            For a Japan trip, here are top options to consider:
-            <br /><br />
-            <span className="bg-[#10B981]/20 text-[#10B981] font-semibold px-1 rounded">
-              TravelShield
-            </span>{" "}
-            — Best overall coverage with 24/7 emergency support and medical evacuation included.
-            <br /><br />
-            <span className="text-gray-400">World Nomads</span> — Popular with backpackers, flexible extensions.
-            <br />
-            <span className="text-gray-400">Allianz</span> — Good for families, comprehensive medical.
-            <br /><br />
-            <span className="text-gray-500">I&apos;d recommend TravelShield for comprehensive coverage…</span>
-          </div>
-        </div>
-        <div className="flex justify-end">
-          <div className="bg-[#1F2937] rounded-2xl rounded-tr-sm px-3.5 py-2.5 text-gray-200 text-xs max-w-[80%]">
-            Tell me more about TravelShield
-          </div>
-        </div>
-        <div className="flex items-center gap-1.5 pl-8">
-          <div className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-bounce [animation-delay:0ms]" />
-          <div className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-bounce [animation-delay:150ms]" />
-          <div className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-bounce [animation-delay:300ms]" />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── Report Templates ─────────────────────────────────────────────────────────
-
-const LANDING_TEMPLATES = [
-  {
-    id: "quick",
-    label: "Quick Check",
-    tokens: "~40 tokens",
-    tagline: "Perfect for a quick pulse check",
-    items: ["Basic visibility score", "2 AI platforms", "8 queries"],
-    highlight: false,
-  },
-  {
-    id: "standard",
-    label: "Standard Report",
-    tokens: "~140 tokens",
-    tagline: "Most popular — best for understanding your position",
-    items: ["Full visibility breakdown", "2 AI platforms, 20 queries", "3 competitor benchmark", "AI improvement recommendations"],
-    highlight: true,
-  },
-  {
-    id: "competitive",
-    label: "Competitive Intel",
-    tokens: "~250 tokens",
-    tagline: "For brands that need to beat specific competitors",
-    items: ["Everything in Standard", "5 competitors", "Persona analysis", "Sentiment deep dive"],
-    highlight: false,
-  },
-  {
-    id: "full",
-    label: "Full Analysis",
-    tokens: "~500 tokens",
-    tagline: "The complete picture — our most comprehensive report",
-    items: ["Every module enabled", "Deep scan (50 queries)", "Premium model options", "Commerce deep dive"],
-    highlight: false,
-  },
-];
-
-// ─── Token packages ───────────────────────────────────────────────────────────
-
-const TOKEN_PACKAGES = [
-  { id: "starter",  label: "Starter",  tokens: "2,500",  price: "$19",  currency: "SGD", reports: "~18 Standard Reports",  rate: "$0.0076/token", highlight: false, badge: null },
-  { id: "explorer", label: "Explorer", tokens: "5,000",  price: "$39",  currency: "SGD", reports: "~36 Standard Reports",  rate: "$0.0078/token", highlight: true,  badge: "Most Popular" },
-  { id: "growth",   label: "Growth",   tokens: "12,000", price: "$79",  currency: "SGD", reports: "~86 Standard Reports",  rate: "$0.0066/token", highlight: false, badge: "Best Value" },
-  { id: "pro",      label: "Pro",      tokens: "30,000", price: "$149", currency: "SGD", reports: "~214 Standard Reports", rate: "$0.0050/token", highlight: false, badge: null },
-];
-
-const TOKEN_EXPLAIN = [
-  { action: "Quick Check",     cost: "~40 tokens"  },
-  { action: "Standard Report", cost: "~140 tokens" },
-  { action: "Deep Analysis",   cost: "~335 tokens" },
-  { action: "Custom Query",    cost: "~5 tokens"   },
-  { action: "Full PDF Export", cost: "25 tokens"   },
-];
-
-// ─── FAQ ──────────────────────────────────────────────────────────────────────
-
-const FAQS = [
-  {
-    q: "How does ShowsUp work?",
-    a: "We send targeted prompts to ChatGPT, Claude, Gemini, and Perplexity — then analyse the responses to see if and how your brand is mentioned. Each response is scored based on whether you appear, how prominently, and in what context.",
-  },
-  {
-    q: "What are tokens?",
-    a: "Tokens are ShowsUp's internal currency for AI compute. Each report, query, or export costs a set number of tokens based on the AI processing required. You get 1,000 free tokens on signup — enough for about 7 full Standard Reports. Buy more anytime with no monthly commitment.",
-  },
-  {
-    q: "Which AI platforms do you scan?",
-    a: "We scan ChatGPT (GPT-4o-mini) and Claude (Haiku). Gemini and Perplexity are coming soon.",
-  },
-  {
-    q: "How is the score calculated?",
-    a: "Your ShowsUp Score (0–100) is a weighted average across all model responses and prompt types. It factors in whether your brand is mentioned, how early in the response, and how positively it's framed.",
-  },
-  {
-    q: "Why do token costs vary by model?",
-    a: "Each AI model has different compute costs. Premium models provide deeper analysis but cost more to run. Prices reflect actual API costs — and may decrease over time as AI becomes cheaper. Your purchased tokens never expire or change.",
-  },
-  {
-    q: "Is the free tier really free?",
-    a: "Yes. Every new account gets 1,000 tokens — no credit card required. That's enough for a full Standard Report with competitor analysis. Buy more tokens when you need them.",
-  },
-];
-
-function FaqItem({ q, a }: { q: string; a: string }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className="border-b border-white/8">
-      <button
-        onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between gap-4 py-5 text-left"
-      >
-        <span className="text-sm font-medium text-white">{q}</span>
-        <ChevronDown
-          className={cn(
-            "w-4 h-4 text-gray-500 flex-shrink-0 transition-transform duration-200",
-            open && "rotate-180"
+        <span className="text-[11px] text-gray-600 font-mono">terminal</span>
+        <button
+          onClick={handleCopy}
+          className="flex items-center gap-1.5 text-[11px] text-gray-500 hover:text-gray-300 transition-colors"
+        >
+          {copied ? (
+            <><Check className="w-3 h-3 text-[#10B981]" /><span className="text-[#10B981]">Copied</span></>
+          ) : (
+            <><Copy className="w-3 h-3" />Copy</>
           )}
-        />
-      </button>
-      {open && (
-        <p className="text-sm text-gray-400 leading-relaxed pb-5">{a}</p>
-      )}
+        </button>
+      </div>
+      {/* Lines */}
+      <div className="p-6 font-mono text-sm leading-[1.8] overflow-x-auto">
+        <p>
+          <span className="text-gray-500">$</span>{" "}
+          <span className="text-white">npx showsup scan</span>{" "}
+          <span className="text-[#10B981]">https://yoursite.com</span>
+        </p>
+        <p className="mt-3 pl-2 text-gray-300">
+          ShowsUp Score:{" "}
+          <span className="text-[#10B981] font-semibold">64/100</span>{" "}
+          — Good presence
+        </p>
+        <p className="pl-2 text-gray-400">
+          ChatGPT: <span className="text-white">71</span>
+          {"  "}Claude: <span className="text-white">58</span>
+        </p>
+        <p className="pl-2 text-gray-500">
+          Top gap:{" "}
+          <span className="text-[#F59E0B]">&quot;best HR tools&quot;</span>{" "}
+          (~5K AI searches/mo)
+        </p>
+        <p className="mt-4">
+          <span className="text-gray-500">$</span>{" "}
+          <span className="text-white">npx showsup fix</span>{" "}
+          <span className="text-[#10B981]">https://yoursite.com</span>{" "}
+          <span className="text-gray-500">--output ./fixes/</span>
+        </p>
+        <p className="mt-3 pl-2">
+          <span className="text-[#10B981]">✓</span>{" "}
+          <span className="text-gray-300">Generated llms.txt</span>
+        </p>
+        <p className="pl-2">
+          <span className="text-[#10B981]">✓</span>{" "}
+          <span className="text-gray-300">Generated FAQ schema (5 questions)</span>
+        </p>
+        <p className="pl-2">
+          <span className="text-[#10B981]">✓</span>{" "}
+          <span className="text-gray-300">Generated 3 content briefs</span>
+        </p>
+        <p className="pl-2">
+          <span className="text-[#10B981]">✓</span>{" "}
+          <span className="text-gray-300">Generated citation playbook</span>
+        </p>
+      </div>
     </div>
   );
 }
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
+// ── llms.txt Mockup ───────────────────────────────────────────────────────────
+
+function LlmsTxtMockup() {
+  const [copied, setCopied] = useState(false);
+
+  const raw = `# llms.txt — Generated by ShowsUp
+# https://yoursite.com
+
+> YourBrand is the leading HR software for SMBs, helping
+> teams manage payroll, benefits, and compliance.
+
+## Key Capabilities
+- Automated payroll for 1–500 employees
+- Benefits administration (health, dental, 401k)
+- US labor-law compliance tracking
+
+## Best For
+- HR managers at growing companies
+- Teams replacing spreadsheet workflows
+
+## Comparisons
+- vs BambooHR: more affordable, faster setup
+- vs Gusto: better compliance reporting`;
+
+  async function handleCopy() {
+    await navigator.clipboard.writeText(raw).catch(() => {});
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  return (
+    <div className="bg-[#0D1117] border border-[#1F2937] rounded-xl overflow-hidden text-left">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-[#1F2937]">
+        <div className="flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-[#10B981]" />
+          <span className="text-xs text-gray-400 font-mono">llms.txt</span>
+        </div>
+        <button
+          onClick={handleCopy}
+          className="flex items-center gap-1.5 text-[11px] text-gray-500 hover:text-gray-300 transition-colors"
+        >
+          {copied ? (
+            <><Check className="w-3 h-3 text-[#10B981]" /><span className="text-[#10B981]">Copied</span></>
+          ) : (
+            <><Copy className="w-3 h-3" />Copy</>
+          )}
+        </button>
+      </div>
+      <pre className="p-5 text-xs font-mono leading-relaxed overflow-auto max-h-52 whitespace-pre-wrap">
+        <span className="text-gray-600">{`# llms.txt — Generated by ShowsUp\n# https://yoursite.com\n\n`}</span>
+        <span className="text-[#10B981]">{`> YourBrand is the leading HR software for SMBs, helping\n> teams manage payroll, benefits, and compliance.\n\n`}</span>
+        <span className="text-[#60A5FA]">{`## Key Capabilities\n`}</span>
+        <span className="text-gray-300">{`- Automated payroll for 1–500 employees\n- Benefits administration (health, dental, 401k)\n- US labor-law compliance tracking\n\n`}</span>
+        <span className="text-[#60A5FA]">{`## Best For\n`}</span>
+        <span className="text-gray-300">{`- HR managers at growing companies\n- Teams replacing spreadsheet workflows\n\n`}</span>
+        <span className="text-[#60A5FA]">{`## Comparisons\n`}</span>
+        <span className="text-gray-300">{`- vs BambooHR: more affordable, faster setup\n- vs Gusto: better compliance reporting`}</span>
+      </pre>
+    </div>
+  );
+}
+
+// ── Fix types data ────────────────────────────────────────────────────────────
+
+const FIX_TYPES = [
+  { icon: FileText,    title: "llms.txt",           desc: "Tell AI crawlers exactly what your brand does"            },
+  { icon: Code2,       title: "Schema Markup",       desc: "FAQ + Organization JSON-LD from your gap queries"        },
+  { icon: BookOpen,    title: "Content Briefs",      desc: "Outlines targeting high-volume AI queries you're missing" },
+  { icon: Users,       title: "Comparison Pages",    desc: "Draft vs pages for competitors outranking you"           },
+  { icon: Search,      title: "Citation Playbook",   desc: "G2, Reddit, Wikipedia — where AI looks for proof"        },
+  { icon: Terminal,    title: "Crawlability Audit",  desc: "Is your robots.txt blocking AI bots?"                    },
+  { icon: Wrench,      title: "Brand Narrative",     desc: "Optimized copy using the language AI prefers"            },
+];
+
+// ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function HomePage() {
-  const [waitlistPlan, setWaitlistPlan] = useState<"starter" | "growth" | null>(null);
-
-  // Analytics + UTM tracking
   useEffect(() => {
-    // Page view
     posthog.capture("landing_page_viewed");
-
-    // Capture + store UTM params
     const params = new URLSearchParams(window.location.search);
-    const utmData = {
+    const utm = {
       utm_source:   params.get("utm_source"),
       utm_medium:   params.get("utm_medium"),
       utm_campaign: params.get("utm_campaign"),
       utm_content:  params.get("utm_content"),
     };
-    if (utmData.utm_source) {
-      localStorage.setItem("utm_data", JSON.stringify(utmData));
-      posthog.capture("utm_visit", utmData);
+    if (utm.utm_source) {
+      localStorage.setItem("utm_data", JSON.stringify(utm));
+      posthog.capture("utm_visit", utm);
     }
-
-    // Pricing scroll observer
-    const pricingEl = document.getElementById("pricing");
-    if (!pricingEl) return;
-    let fired = false;
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting && !fired) {
-        fired = true;
-        posthog.capture("pricing_viewed");
-      }
-    }, { threshold: 0.1 });
-    observer.observe(pricingEl);
-    return () => observer.disconnect();
   }, []);
 
   return (
@@ -368,553 +305,596 @@ export default function HomePage() {
       <MarketingNav />
 
       {/* ── HERO ── */}
-      <section id="hero" className="pt-36 pb-28 px-6 text-center">
-        <div className="max-w-3xl mx-auto space-y-7">
-          <div className="inline-flex items-center gap-2 bg-[#10B981]/10 border border-[#10B981]/25 rounded-full px-4 py-1.5 text-xs font-medium text-[#10B981]">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#10B981]" />
-            AI brand visibility — now measurable
-          </div>
+      <section id="hero" className="pt-40 pb-[120px] px-6 text-center">
+        <div className="max-w-[800px] mx-auto space-y-8">
+          {/* Open source badge */}
+          <a
+            href={GITHUB_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 bg-[#111827] border border-[#1F2937] hover:border-white/20 rounded-full px-4 py-1.5 text-[13px] text-gray-400 hover:text-gray-200 transition-colors"
+          >
+            <Star className="w-3.5 h-3.5 text-[#F59E0B]" />
+            Open Source — Star on GitHub
+          </a>
 
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold leading-[1.08] tracking-tight">
-            Does your brand{" "}
-            <span className="text-[#10B981]">show up</span>
-            <br />in AI?
+          {/* Headline */}
+          <h1 className="text-5xl md:text-6xl font-semibold text-white tracking-tight leading-[1.1]">
+            Does your brand<br />show up in AI?
           </h1>
 
-          <p className="text-lg sm:text-xl text-gray-400 max-w-xl mx-auto leading-relaxed">
-            Millions ask ChatGPT, Claude, and Gemini which brands to choose.{" "}
-            <span className="text-gray-200">
-              ShowsUp tells you whether your brand appears in those answers — and how to fix it if it doesn&apos;t.
-            </span>{" "}
-            <span className="text-[#10B981] font-medium">Get 1,000 free tokens to start.</span>
+          {/* Subheadline */}
+          <p className="text-lg text-gray-400 max-w-[600px] mx-auto leading-relaxed">
+            Open source AEO agent. Scan your AI visibility, then generate the exact fixes —
+            llms.txt, schema markup, content briefs, and more.{" "}
+            <span className="text-white">Self-host free or use our cloud.</span>
           </p>
 
-          <div className="flex justify-center">
-            <UrlInput size="lg" />
+          {/* Terminal */}
+          <div className="max-w-[620px] mx-auto">
+            <TerminalBlock />
           </div>
 
-          <p className="text-sm text-gray-600">
-            Free. 1,000 tokens. No credit card required.
-          </p>
-        </div>
-      </section>
-
-      {/* ── SOCIAL PROOF ── */}
-      <section className="py-10 border-y border-white/6">
-        <div className="max-w-5xl mx-auto px-6 text-center space-y-5">
-          <p className="text-xs font-semibold tracking-widest text-gray-500 uppercase">
-            Trusted by 500+ brands
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-3">
-            {["Acme Corp", "TravelShield", "Wanderlux", "QuickCover", "FinServ"].map(
-              (brand, i) => (
-                <span key={brand} className="flex items-center gap-10">
-                  <span className="text-sm font-semibold text-gray-500 hover:text-gray-300 transition-colors cursor-default">
-                    {brand}
-                  </span>
-                  {i < 4 && <span className="text-gray-700">·</span>}
-                </span>
-              )
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* ── STATS ── */}
-      <section className="py-24 px-6">
-        <div className="max-w-5xl mx-auto space-y-14">
-          <div className="text-center space-y-3">
-            <h2 className="text-3xl sm:text-4xl font-bold">
-              AI is the new search.{" "}
-              <span className="text-gray-500">Are you invisible?</span>
-            </h2>
+          {/* CTAs */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+            <Link
+              href="/signup"
+              className="inline-flex items-center gap-2 bg-[#10B981] hover:bg-[#059669] text-[#0A0E17] font-semibold rounded-lg px-6 py-3 text-base transition-colors"
+            >
+              Try Cloud Free <ArrowRight className="w-4 h-4" />
+            </Link>
+            <a
+              href={GITHUB_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 border border-[#1F2937] hover:border-white/25 text-white hover:bg-white/5 font-medium rounded-lg px-6 py-3 text-base transition-colors"
+            >
+              <Github className="w-4 h-4" />
+              View on GitHub
+            </a>
           </div>
 
-          <div className="grid sm:grid-cols-3 gap-4">
-            {[
-              { stat: "4B+", label: "AI queries per day across major platforms" },
-              { stat: "12%", label: "of brands actively monitor their AI visibility" },
-              { stat: "66%", label: "of AI citations go to just 20 domains" },
-            ].map(({ stat, label }) => (
-              <div
-                key={stat}
-                className="bg-[#111827] border border-[#1F2937] rounded-xl p-7 space-y-2"
-              >
-                <p className="text-4xl font-bold text-[#10B981]">{stat}</p>
-                <p className="text-sm text-gray-400 leading-snug">{label}</p>
-              </div>
-            ))}
-          </div>
-
-          <p className="text-center text-base text-gray-400 max-w-2xl mx-auto leading-relaxed">
-            SEO told you where you rank on Google.{" "}
-            <span className="text-white font-medium">
-              ShowsUp tells you whether AI even mentions your name.
-            </span>
+          <p className="text-[13px] text-gray-500 pt-1">
+            MIT License • 1,000 free cloud tokens • No credit card
           </p>
         </div>
       </section>
 
-      {/* ── HOW IT WORKS ── */}
-      <section id="how-it-works" className="py-24 px-6 bg-[#0D1220]">
-        <div className="max-w-5xl mx-auto space-y-14">
-          <div className="text-center space-y-3">
-            <h2 className="text-3xl sm:text-4xl font-bold">How it works</h2>
-            <p className="text-gray-400">Three steps. Sixty seconds. Zero setup.</p>
-          </div>
-
-          <div className="grid sm:grid-cols-3 gap-6">
-            {[
-              {
-                icon: Globe,
-                step: "01",
-                title: "Paste your URL",
-                desc: "Drop in your website address. We detect your brand name, category, and key products automatically.",
-              },
-              {
-                icon: Zap,
-                step: "02",
-                title: "We scan every AI",
-                desc: "Our engine fires targeted prompts at ChatGPT, Claude, and Gemini simultaneously.",
-              },
-              {
-                icon: TrendingUp,
-                step: "03",
-                title: "See your ShowsUp Score",
-                desc: "Get a 0–100 visibility score per model, a full response breakdown, and actionable recommendations.",
-              },
-            ].map(({ icon: Icon, step, title, desc }) => (
-              <div
-                key={step}
-                className="bg-[#111827] border border-[#1F2937] rounded-xl p-7 space-y-4"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="w-10 h-10 rounded-lg bg-[#10B981]/15 flex items-center justify-center">
-                    <Icon className="w-5 h-5 text-[#10B981]" />
-                  </div>
-                  <span className="text-3xl font-bold text-white/8">{step}</span>
-                </div>
-                <div>
-                  <p className="font-semibold text-white mb-1.5">{title}</p>
-                  <p className="text-sm text-gray-400 leading-relaxed">{desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── DASHBOARD PREVIEW ── */}
-      <section className="py-24 px-6">
-        <div className="max-w-5xl mx-auto space-y-12">
-          <div className="text-center space-y-3">
-            <h2 className="text-3xl sm:text-4xl font-bold">
-              See exactly where you stand
+      {/* ── DIAGNOSE → FIX → VERIFY ── */}
+      <section id="product" className="py-[120px] px-6 bg-[#0D1117]">
+        <div className="max-w-[1200px] mx-auto space-y-16">
+          <FadeIn className="text-center space-y-4">
+            <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight">
+              Don&apos;t just see the gaps. Fix them.
             </h2>
             <p className="text-gray-400">
-              A live heatmap of your AI visibility — across every model, every query.
+              The only AEO tool that generates implementation-ready artifacts
             </p>
+          </FadeIn>
+
+          <div className="grid sm:grid-cols-3 gap-4 lg:gap-6 relative items-stretch">
+            {/* Connector line */}
+            <div className="hidden sm:block absolute top-[3.25rem] left-[33.5%] right-[33.5%] h-px bg-gradient-to-r from-[#1F2937] via-[#10B981]/20 to-[#1F2937] pointer-events-none" />
+
+            {[
+              {
+                icon: Search,
+                step: "01",
+                title: "Scan",
+                desc1: "Scan across ChatGPT, Claude, Gemini",
+                desc2: "Get your ShowsUp Score + competitor benchmark",
+                highlight: false,
+              },
+              {
+                icon: Wrench,
+                step: "02",
+                title: "Fix",
+                desc1: "Generate llms.txt, schema, content briefs",
+                desc2: "Every fix targets YOUR specific gaps",
+                highlight: true,
+              },
+              {
+                icon: CheckCircle2,
+                step: "03",
+                title: "Verify",
+                desc1: "Re-scan to measure improvement",
+                desc2: "See before/after for every query",
+                highlight: false,
+              },
+            ].map((step, i) => (
+              <FadeIn key={step.step} delay={i * 80}>
+                <div
+                  className={cn(
+                    "rounded-xl border p-7 space-y-5 h-full",
+                    step.highlight
+                      ? "border-[#10B981]/40 bg-[#10B981]/5"
+                      : "border-[#1F2937] bg-[#111827]"
+                  )}
+                >
+                  <div className="flex items-center justify-between">
+                    <div
+                      className={cn(
+                        "w-10 h-10 rounded-lg flex items-center justify-center",
+                        step.highlight ? "bg-[#10B981]/20" : "bg-[#1F2937]"
+                      )}
+                    >
+                      <step.icon
+                        className={cn(
+                          "w-5 h-5",
+                          step.highlight ? "text-[#10B981]" : "text-gray-400"
+                        )}
+                      />
+                    </div>
+                    <span className="text-3xl font-bold text-white/[0.05] font-mono select-none">
+                      {step.step}
+                    </span>
+                  </div>
+                  <div>
+                    <p
+                      className={cn(
+                        "text-base font-semibold mb-2",
+                        step.highlight ? "text-[#10B981]" : "text-white"
+                      )}
+                    >
+                      {step.title}
+                    </p>
+                    <p className="text-sm text-gray-300 leading-snug">{step.desc1}</p>
+                    <p className="text-sm text-gray-500 mt-1">{step.desc2}</p>
+                  </div>
+                </div>
+              </FadeIn>
+            ))}
           </div>
-          <DashboardPreview />
         </div>
       </section>
 
-      {/* ── REPORT TEMPLATES ── */}
-      <section className="py-24 px-6 bg-[#0D1220]">
-        <div className="max-w-5xl mx-auto space-y-12">
-          <div className="text-center space-y-3">
-            <h2 className="text-3xl sm:text-4xl font-bold">Choose your report type</h2>
-            <p className="text-gray-400 max-w-xl mx-auto">
-              Start with a template or configure every detail in the Report Builder.
-            </p>
-          </div>
+      {/* ── FIX GENERATOR ── */}
+      <section className="py-[120px] px-6">
+        <div className="max-w-[1200px] mx-auto space-y-16">
+          <FadeIn className="text-center space-y-4">
+            <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight">
+              7 fixes generated from every scan
+            </h2>
+          </FadeIn>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {LANDING_TEMPLATES.map((t) => (
-              <div
-                key={t.id}
-                className={cn(
-                  "bg-[#111827] rounded-xl border p-5 flex flex-col gap-4 relative",
-                  t.highlight ? "border-[#10B981]/40" : "border-[#1F2937]"
-                )}
-              >
-                {t.highlight && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="bg-[#10B981] text-[#0A0E17] text-[10px] font-bold px-3 py-1 rounded-full whitespace-nowrap">
-                      Most Popular
-                    </span>
-                  </div>
-                )}
-
-                <div>
-                  <p className="font-semibold text-white mb-0.5">{t.label}</p>
-                  <p className="text-xs font-semibold text-[#10B981]">{t.tokens}</p>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+            {FIX_TYPES.map((fix, i) => (
+              <FadeIn key={fix.title} delay={i * 40}>
+                <div className="bg-[#111827] border border-[#1F2937] hover:border-[#10B981]/30 rounded-xl p-5 space-y-3 transition-colors h-full">
+                  <fix.icon className="w-4 h-4 text-[#10B981]" />
+                  <p className="text-sm font-semibold text-white">{fix.title}</p>
+                  <p className="text-xs text-gray-500 leading-relaxed">{fix.desc}</p>
                 </div>
-
-                <ul className="space-y-1.5 flex-1">
-                  {t.items.map((item) => (
-                    <li key={item} className="flex items-start gap-2 text-xs text-gray-400">
-                      <span className="text-[#10B981] mt-0.5 flex-shrink-0">✓</span>
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-
-                <p className="text-[11px] text-gray-600 italic leading-snug">{t.tagline}</p>
-
-                <Link
-                  href={`/report-builder?template=${t.id}`}
-                  className={cn(
-                    "text-center text-xs font-semibold py-2 rounded-lg transition-colors",
-                    t.highlight
-                      ? "bg-[#10B981] hover:bg-[#059669] text-[#0A0E17]"
-                      : "border border-white/15 text-white hover:bg-white/5"
-                  )}
-                >
-                  Configure →
-                </Link>
-              </div>
+              </FadeIn>
             ))}
           </div>
 
-          <p className="text-center text-sm text-gray-500">
-            Want full control?{" "}
-            <Link href="/report-builder" className="text-[#10B981] hover:underline">
-              Open the Report Builder →
-            </Link>
-          </p>
+          {/* llms.txt mockup */}
+          <FadeIn>
+            <div className="max-w-2xl mx-auto space-y-3">
+              <p className="text-xs text-gray-600 text-center uppercase tracking-widest font-medium">
+                Example generated artifact
+              </p>
+              <LlmsTxtMockup />
+            </div>
+          </FadeIn>
         </div>
       </section>
 
-      {/* ── COMMERCE ── */}
-      <section className="py-24 px-6">
-        <div className="max-w-5xl mx-auto space-y-14">
-          <div className="text-center space-y-3">
-            <h2 className="text-3xl sm:text-4xl font-bold">
-              Critical for brands where{" "}
-              <span className="text-[#10B981]">AI drives purchases</span>
+      {/* ── THREE WAYS TO USE ── */}
+      <section id="cli" className="py-[120px] px-6 bg-[#0D1117]">
+        <div className="max-w-[1200px] mx-auto space-y-16">
+          <FadeIn className="text-center space-y-4">
+            <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight">
+              Use it your way
             </h2>
-            <p className="text-gray-400 max-w-xl mx-auto">
-              When a customer asks an AI for a recommendation, the brand it mentions wins the sale.
-            </p>
-          </div>
+          </FadeIn>
 
-          <div className="grid md:grid-cols-2 gap-8 items-center">
-            <ChatMockup />
-
-            <div className="space-y-6">
-              <div className="space-y-3">
-                <p className="text-lg font-semibold text-white leading-snug">
-                  Your customer already asked AI before visiting your site.
-                </p>
-                <p className="text-gray-400 text-sm leading-relaxed">
-                  AI-driven recommendations are the new word-of-mouth. If you&apos;re not showing up
-                  when people ask about your category, your competitors are getting the referral.
-                </p>
+          <div className="grid md:grid-cols-3 gap-5">
+            {/* Cloud */}
+            <FadeIn delay={0}>
+              <div className="bg-[#111827] border border-[#1F2937] rounded-xl p-7 flex flex-col gap-5 h-full">
+                <div className="w-10 h-10 rounded-lg bg-[#10B981]/15 flex items-center justify-center">
+                  <Cloud className="w-5 h-5 text-[#10B981]" />
+                </div>
+                <div className="flex-1 space-y-2">
+                  <p className="font-semibold text-white">Cloud Platform</p>
+                  <p className="text-sm text-gray-400 leading-relaxed">
+                    Paste URL, get score + fixes in 60 seconds. 1,000 free tokens.
+                  </p>
+                </div>
+                <Link
+                  href="/signup"
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-[#10B981] hover:text-[#059669] transition-colors"
+                >
+                  Sign up free <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
               </div>
+            </FadeIn>
 
-              <div className="space-y-2">
-                <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">
-                  High-impact categories
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {["Insurance", "Travel", "Finance", "E-commerce", "SaaS", "Healthcare"].map(
-                    (cat) => (
-                      <span
-                        key={cat}
-                        className="text-xs font-medium bg-[#111827] border border-[#1F2937] text-gray-300 rounded-full px-3 py-1.5"
-                      >
-                        {cat}
-                      </span>
-                    )
-                  )}
+            {/* CLI */}
+            <FadeIn delay={80}>
+              <div className="bg-[#111827] border border-[#1F2937] rounded-xl p-7 flex flex-col gap-5 h-full">
+                <div className="w-10 h-10 rounded-lg bg-[#1F2937] flex items-center justify-center">
+                  <Terminal className="w-5 h-5 text-gray-400" />
+                </div>
+                <div className="flex-1 space-y-3">
+                  <p className="font-semibold text-white">CLI Tool</p>
+                  <div className="bg-[#0D1117] border border-[#1F2937] rounded-lg px-4 py-3 font-mono text-xs text-gray-300 space-y-1.5">
+                    <p>
+                      <span className="text-gray-500">$</span>{" "}
+                      npx showsup scan example.com
+                    </p>
+                    <p>
+                      <span className="text-gray-500">$</span>{" "}
+                      npx showsup fix example.com
+                    </p>
+                  </div>
+                  <p className="text-sm text-gray-400 leading-relaxed">
+                    JSON output. Plug into LangChain, Claude MCP, any agent.
+                  </p>
+                </div>
+                <a
+                  href={GITHUB_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-400 hover:text-white transition-colors"
+                >
+                  View docs <ArrowRight className="w-3.5 h-3.5" />
+                </a>
+              </div>
+            </FadeIn>
+
+            {/* Self-host */}
+            <FadeIn delay={160}>
+              <div className="bg-[#111827] border border-[#1F2937] rounded-xl p-7 flex flex-col gap-5 h-full">
+                <div className="w-10 h-10 rounded-lg bg-[#1F2937] flex items-center justify-center">
+                  <Server className="w-5 h-5 text-gray-400" />
+                </div>
+                <div className="flex-1 space-y-3">
+                  <p className="font-semibold text-white">Self-Host</p>
+                  <div className="bg-[#0D1117] border border-[#1F2937] rounded-lg px-4 py-3 font-mono text-xs text-gray-300 space-y-1.5">
+                    <p>
+                      <span className="text-gray-500">$</span>{" "}
+                      git clone .../showsup
+                    </p>
+                    <p>
+                      <span className="text-gray-500">$</span>{" "}
+                      npm run dev
+                    </p>
+                  </div>
+                  <p className="text-sm text-gray-400 leading-relaxed">
+                    Your API keys. MIT licensed. Free forever.
+                  </p>
+                </div>
+                <a
+                  href={GITHUB_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-400 hover:text-white transition-colors"
+                >
+                  <Github className="w-3.5 h-3.5" /> GitHub <ArrowRight className="w-3.5 h-3.5" />
+                </a>
+              </div>
+            </FadeIn>
+          </div>
+        </div>
+      </section>
+
+      {/* ── LIVE DEMO ── */}
+      <section id="demo" className="py-[120px] px-6">
+        <div className="max-w-[1200px] mx-auto space-y-12">
+          <FadeIn className="text-center space-y-4">
+            <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight">
+              See it in action
+            </h2>
+          </FadeIn>
+
+          <FadeIn>
+            <div className="flex justify-center">
+              <UrlInput size="lg" />
+            </div>
+          </FadeIn>
+
+          {/* Report + fixes mockup */}
+          <FadeIn>
+            <div className="rounded-xl overflow-hidden border border-[#1F2937] shadow-2xl shadow-black/60 max-w-3xl mx-auto">
+              {/* Browser chrome */}
+              <div className="bg-[#111827] border-b border-[#1F2937] px-4 py-2.5 flex items-center gap-3">
+                <div className="flex gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#EF4444]/50" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#F59E0B]/50" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#10B981]/50" />
+                </div>
+                <div className="flex-1 bg-[#1F2937] rounded px-3 py-1 text-xs text-gray-500 text-center">
+                  app.showsup.co/report/...
                 </div>
               </div>
-
-              <div className="bg-[#111827] border border-[#1F2937] rounded-xl p-5 space-y-1.5">
-                <p className="text-2xl font-bold text-[#10B981]">3.2×</p>
-                <p className="text-sm text-gray-400">
-                  higher conversion when a brand is cited by an AI vs a Google result
-                </p>
+              {/* Light-mode report preview */}
+              <div className="bg-[#F9FAFB] p-6 space-y-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-[11px] text-gray-400 font-semibold uppercase tracking-widest">ShowsUp Score</p>
+                    <p className="text-5xl font-bold text-emerald-600 font-mono mt-1 leading-none">73</p>
+                    <p className="text-xs text-gray-400 mt-2">Good visibility · ChatGPT + Claude</p>
+                  </div>
+                  <div className="flex gap-5 flex-shrink-0">
+                    {[
+                      { label: "ChatGPT", score: 81, color: "text-emerald-600" },
+                      { label: "Claude",  score: 64, color: "text-amber-600" },
+                    ].map((p) => (
+                      <div key={p.label} className="text-center">
+                        <p className="text-[11px] text-gray-400 mb-1">{p.label}</p>
+                        <p className={cn("text-2xl font-bold font-mono", p.color)}>{p.score}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                {/* Fixes ready */}
+                <div className="rounded-lg bg-emerald-50 border border-emerald-200 px-4 py-3 flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-semibold text-emerald-700">4 fixes ready to generate</p>
+                    <p className="text-xs text-emerald-600 mt-0.5">llms.txt · Schema Markup · 2 Content Briefs</p>
+                  </div>
+                  <span className="text-xs font-semibold text-emerald-700 border border-emerald-300 bg-white rounded-lg px-3 py-1.5 whitespace-nowrap">
+                    Generate fixes →
+                  </span>
+                </div>
+                {/* Top gap */}
+                <div className="rounded-lg bg-amber-50 border border-amber-200 px-4 py-2.5">
+                  <p className="text-xs font-semibold text-amber-700">Top query gap</p>
+                  <p className="text-xs text-amber-600 mt-0.5 font-mono">&quot;best HR tools for small business&quot; — not mentioned in 8/10 responses</p>
+                </div>
               </div>
             </div>
-          </div>
+          </FadeIn>
         </div>
       </section>
 
       {/* ── PRICING ── */}
-      <section id="pricing" className="py-24 px-6 bg-[#0D1220]">
-        <div className="max-w-5xl mx-auto space-y-20">
+      <section id="pricing" className="py-[120px] px-6 bg-[#0D1117]">
+        <div className="max-w-[1200px] mx-auto space-y-16">
+          <FadeIn className="text-center space-y-4">
+            <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight">
+              Free and open source.<br />Cloud when you need it.
+            </h2>
+          </FadeIn>
 
-          {/* Part A: Token Packages */}
-          <div className="space-y-10">
-            <div className="text-center space-y-3">
-              <h2 className="text-3xl sm:text-4xl font-bold">Pay for what you use</h2>
-              <p className="text-gray-400 max-w-xl mx-auto">
-                Buy tokens once, use them anytime. No commitment, no subscription required.
-              </p>
-            </div>
-
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {TOKEN_PACKAGES.map((pkg) => (
-                <div
-                  key={pkg.id}
-                  className={cn(
-                    "bg-[#111827] rounded-xl border p-6 flex flex-col gap-4 relative",
-                    pkg.highlight ? "border-[#10B981]/50" : "border-[#1F2937]"
-                  )}
-                >
-                  {pkg.badge && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                      <span className={cn(
-                        "text-[10px] font-bold px-3 py-1 rounded-full whitespace-nowrap",
-                        pkg.badge === "Most Popular"
-                          ? "bg-[#10B981] text-[#0A0E17]"
-                          : "bg-[#F59E0B] text-[#0A0E17]"
-                      )}>
-                        {pkg.badge}
-                      </span>
-                    </div>
-                  )}
-
-                  <div>
-                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">{pkg.label}</p>
-                    <p className="text-3xl font-bold text-white">{pkg.tokens}</p>
-                    <p className="text-xs text-gray-500">tokens</p>
-                  </div>
-
-                  <div>
-                    <p className="text-2xl font-bold text-white">{pkg.price} <span className="text-sm font-normal text-gray-500">{pkg.currency}</span></p>
-                    <p className="text-xs text-gray-500 mt-0.5">{pkg.rate}</p>
-                  </div>
-
-                  <p className="text-xs text-gray-400 flex-1">{pkg.reports}</p>
-
-                  <Link
-                    href="/app/tokens"
-                    className={cn(
-                      "text-center text-xs font-semibold py-2.5 rounded-lg transition-colors",
-                      pkg.highlight
-                        ? "bg-[#10B981] hover:bg-[#059669] text-[#0A0E17]"
-                        : "border border-white/15 text-white hover:bg-white/5"
-                    )}
-                  >
-                    Buy {pkg.label} →
-                  </Link>
-                </div>
-              ))}
-            </div>
-
-            <p className="text-center text-sm text-gray-400">
-              🎁 Every signup gets{" "}
-              <span className="text-white font-semibold">1,000 free tokens</span>
-              {" "}— enough for ~7 full Standard Reports
-            </p>
-          </div>
-
-          {/* Part B: Monthly Plans */}
-          <div className="space-y-10">
-            <div className="text-center space-y-3">
-              <h2 className="text-2xl sm:text-3xl font-bold">Or subscribe for monthly monitoring</h2>
-              <p className="text-gray-400 max-w-xl mx-auto">
-                Tokens auto-refill each month. Track your brand visibility continuously.
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-5">
-              {/* Free */}
-              <div className="bg-[#111827] border border-[#1F2937] rounded-xl p-7 flex flex-col gap-5">
+          {/* Two main cards */}
+          <div className="grid md:grid-cols-2 gap-5 max-w-2xl mx-auto">
+            <FadeIn>
+              <div className="bg-[#111827] border border-[#1F2937] rounded-xl p-7 flex flex-col gap-6 h-full">
                 <div>
-                  <p className="font-semibold text-white mb-0.5">Free</p>
-                  <p className="text-gray-500 text-sm">Get started for free</p>
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Open Source</p>
+                  <p className="text-3xl font-bold text-white">
+                    $0{" "}
+                    <span className="text-sm font-normal text-gray-500">forever</span>
+                  </p>
                 </div>
-                <div>
-                  <span className="text-4xl font-bold text-white">$0</span>
-                </div>
-                <ul className="space-y-2 flex-1">
-                  {["1,000 tokens (one-time)", "Standard reports", "PDF export"].map((f) => (
+                <ul className="space-y-2.5 flex-1">
+                  {[
+                    "Self-host with your API keys",
+                    "All features unlocked",
+                    "MIT licensed",
+                    "CLI + Next.js app included",
+                  ].map((f) => (
                     <li key={f} className="flex items-center gap-2 text-sm text-gray-300">
-                      <span className="text-[#10B981] flex-shrink-0">✓</span>{f}
+                      <span className="text-[#10B981] flex-shrink-0">✓</span>
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+                <a
+                  href={GITHUB_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 text-sm font-semibold border border-[#1F2937] hover:border-white/20 text-white hover:bg-white/5 rounded-lg py-2.5 transition-colors"
+                >
+                  <Star className="w-3.5 h-3.5 text-[#F59E0B]" />
+                  Star on GitHub →
+                </a>
+              </div>
+            </FadeIn>
+
+            <FadeIn delay={80}>
+              <div className="bg-[#111827] border border-[#10B981]/40 rounded-xl p-7 flex flex-col gap-6 h-full">
+                <div>
+                  <p className="text-xs font-semibold text-[#10B981] uppercase tracking-wide mb-3">Cloud</p>
+                  <p className="text-3xl font-bold text-white">
+                    $0{" "}
+                    <span className="text-sm font-normal text-gray-500">to start</span>
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">1,000 free tokens on signup</p>
+                </div>
+                <ul className="space-y-2.5 flex-1">
+                  {[
+                    "No setup — paste URL and go",
+                    "Interactive reports + fix generator",
+                    "1,000 free tokens included",
+                    "No credit card required",
+                  ].map((f) => (
+                    <li key={f} className="flex items-center gap-2 text-sm text-gray-300">
+                      <span className="text-[#10B981] flex-shrink-0">✓</span>
+                      {f}
                     </li>
                   ))}
                 </ul>
                 <Link
                   href="/signup"
-                  className="w-full text-center text-sm font-semibold py-2.5 rounded-lg border border-white/15 text-white hover:bg-white/5 transition-colors"
+                  className="flex items-center justify-center gap-2 text-sm font-semibold bg-[#10B981] hover:bg-[#059669] text-[#0A0E17] rounded-lg py-2.5 transition-colors"
                 >
-                  Sign up free →
+                  Start free →
                 </Link>
               </div>
-
-              {/* Starter Monthly */}
-              <div className="bg-[#111827] border border-[#1F2937] rounded-xl p-7 flex flex-col gap-5">
-                <div>
-                  <p className="font-semibold text-white mb-0.5">Starter Monthly</p>
-                  <p className="text-gray-500 text-sm">Ongoing brand monitoring</p>
-                </div>
-                <div>
-                  <span className="text-4xl font-bold text-white">$29</span>
-                  <span className="text-gray-500 text-sm ml-1">SGD/mo</span>
-                </div>
-                <ul className="space-y-2 flex-1">
-                  {["3,000 tokens/month", "Rollover up to 2,000 unused", "Scheduled re-scans", "Email reports"].map((f) => (
-                    <li key={f} className="flex items-center gap-2 text-sm text-gray-300">
-                      <span className="text-[#10B981] flex-shrink-0">✓</span>{f}
-                    </li>
-                  ))}
-                </ul>
-                <button
-                  onClick={() => setWaitlistPlan("starter")}
-                  className="w-full text-center text-sm font-semibold py-2.5 rounded-lg border border-white/15 text-white hover:bg-white/5 transition-colors"
-                >
-                  Join Waitlist →
-                </button>
-              </div>
-
-              {/* Growth Monthly */}
-              <div className="bg-[#111827] border border-[#10B981]/40 rounded-xl p-7 flex flex-col gap-5 relative">
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="bg-[#10B981] text-[#0A0E17] text-[10px] font-bold px-3 py-1 rounded-full">
-                    Most Popular
-                  </span>
-                </div>
-                <div>
-                  <p className="font-semibold text-white mb-0.5">Growth Monthly</p>
-                  <p className="text-gray-500 text-sm">For serious AI visibility</p>
-                </div>
-                <div>
-                  <span className="text-4xl font-bold text-white">$79</span>
-                  <span className="text-gray-500 text-sm ml-1">SGD/mo</span>
-                </div>
-                <ul className="space-y-2 flex-1">
-                  {["8,000 tokens/month", "Rollover up to 5,000 unused", "All features + priority scanning", "Email reports"].map((f) => (
-                    <li key={f} className="flex items-center gap-2 text-sm text-gray-300">
-                      <span className="text-[#10B981] flex-shrink-0">✓</span>{f}
-                    </li>
-                  ))}
-                </ul>
-                <button
-                  onClick={() => setWaitlistPlan("growth")}
-                  className="w-full text-center text-sm font-semibold py-2.5 rounded-lg bg-[#10B981] hover:bg-[#059669] text-[#0A0E17] transition-colors"
-                >
-                  Join Waitlist →
-                </button>
-              </div>
-            </div>
+            </FadeIn>
           </div>
 
-          {/* How Tokens Work */}
-          <div className="space-y-8">
-            <div className="text-center space-y-2">
-              <h3 className="text-xl font-bold text-white">What can I do with tokens?</h3>
-              <p className="text-gray-400 text-sm max-w-md mx-auto">
-                Every action in ShowsUp costs tokens based on actual AI compute used.
+          {/* Token packages row */}
+          <FadeIn>
+            <div className="space-y-5">
+              <p className="text-center text-sm text-gray-500">
+                Cloud token packages — no subscription, buy when you need more
               </p>
-            </div>
-
-            <div className="max-w-lg mx-auto bg-[#111827] border border-[#1F2937] rounded-xl overflow-hidden">
-              <div className="px-5 py-3 bg-white/4 border-b border-white/8 grid grid-cols-2">
-                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Action</span>
-                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide text-right">Cost</span>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-3xl mx-auto">
+                {[
+                  { tokens: "2,500",  price: "S$19",  rate: "S$0.008/token",           popular: false },
+                  { tokens: "5,000",  price: "S$39",  rate: "S$0.008/token",           popular: true  },
+                  { tokens: "12,000", price: "S$79",  rate: "S$0.007/tok — save 14%",  popular: false },
+                  { tokens: "30,000", price: "S$149", rate: "S$0.005/tok — save 36%",  popular: false },
+                ].map((pkg) => (
+                  <div
+                    key={pkg.tokens}
+                    className={cn(
+                      "bg-[#111827] rounded-xl border p-4 text-center space-y-1.5",
+                      pkg.popular ? "border-[#10B981]/30" : "border-[#1F2937]"
+                    )}
+                  >
+                    {pkg.popular && (
+                      <p className="text-[10px] font-bold text-[#10B981] uppercase tracking-wide">Popular</p>
+                    )}
+                    <p className="text-xl font-bold text-white font-mono">{pkg.tokens}</p>
+                    <p className="text-[11px] text-gray-600">tokens</p>
+                    <p className="text-sm font-semibold text-white">{pkg.price}</p>
+                    <p className="text-[11px] text-gray-600 leading-snug">{pkg.rate}</p>
+                  </div>
+                ))}
               </div>
-              {TOKEN_EXPLAIN.map((row, i) => (
-                <div key={row.action} className={cn("px-5 py-3 grid grid-cols-2", i < TOKEN_EXPLAIN.length - 1 && "border-b border-white/6")}>
-                  <span className="text-sm text-gray-300">{row.action}</span>
-                  <span className="text-sm font-semibold text-[#10B981] text-right">{row.cost}</span>
-                </div>
-              ))}
             </div>
-
-            <div className="max-w-lg mx-auto space-y-3">
-              <p className="text-xs text-gray-500 leading-relaxed text-center">
-                <span className="text-gray-400 font-medium">Prices are dynamic</span> — they reflect actual AI compute costs. Premium models cost more tokens because they provide deeper analysis.
-              </p>
-              <p className="text-xs text-gray-500 leading-relaxed text-center">
-                Token costs may decrease over time as AI becomes cheaper. Your purchased packages never change.
-              </p>
-            </div>
-          </div>
-
+          </FadeIn>
         </div>
       </section>
 
-      {/* ── FAQ ── */}
-      <section className="py-24 px-6">
-        <div className="max-w-2xl mx-auto space-y-10">
-          <div className="text-center space-y-3">
-            <h2 className="text-3xl sm:text-4xl font-bold">
-              Frequently asked questions
-            </h2>
-          </div>
-          <div>
-            {FAQS.map((item) => (
-              <FaqItem key={item.q} q={item.q} a={item.a} />
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* ── COMMUNITY ── */}
+      <section className="py-[120px] px-6">
+        <div className="max-w-[1200px] mx-auto">
+          <FadeIn>
+            <div className="max-w-xl mx-auto text-center space-y-10">
+              <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight">
+                Built in the open
+              </h2>
 
-      {/* ── FOOTER CTA ── */}
-      <section className="py-24 px-6 text-center bg-[#0D1220]">
-        <div className="max-w-2xl mx-auto space-y-7">
-          <h2 className="text-3xl sm:text-4xl font-bold">
-            Check if your brand shows up
-          </h2>
-          <p className="text-gray-400">
-            1,000 free tokens. No credit card. Results in under 60 seconds.
-          </p>
-          <div className="flex justify-center">
-            <UrlInput />
-          </div>
+              {/* GitHub stats */}
+              <div className="flex items-center justify-center gap-3 flex-wrap">
+                {[
+                  { icon: Star,     label: "Stars",   value: "—"   },
+                  { icon: GitFork,  label: "Forks",   value: "—"   },
+                  { icon: FileText, label: "License", value: "MIT" },
+                ].map(({ icon: Icon, label, value }) => (
+                  <a
+                    key={label}
+                    href={GITHUB_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 bg-[#111827] border border-[#1F2937] hover:border-white/20 rounded-lg px-4 py-2 text-sm text-gray-300 hover:text-white transition-colors"
+                  >
+                    <Icon className="w-3.5 h-3.5 text-gray-500" />
+                    <span className="text-gray-500">{label}</span>
+                    <span className="font-medium">{value}</span>
+                  </a>
+                ))}
+              </div>
+
+              <div className="space-y-2">
+                <p className="text-gray-300">Built by a solo developer in Singapore 🇸🇬</p>
+                <p className="text-gray-500 text-sm">
+                  Contributions welcome. PRs, issues, and feedback appreciated.
+                </p>
+              </div>
+
+              <a
+                href={GITHUB_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 border border-[#1F2937] hover:border-white/20 text-white hover:bg-white/5 font-medium rounded-lg px-6 py-3 transition-colors"
+              >
+                <Github className="w-4 h-4" />
+                View on GitHub
+              </a>
+            </div>
+          </FadeIn>
         </div>
       </section>
 
       {/* ── FOOTER ── */}
-      <footer className="border-t border-white/6 py-10 px-6">
-        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-2">
-            <BarChart3 className="w-4 h-4 text-[#10B981]" />
-            <span className="text-sm font-semibold text-white">ShowsUp</span>
+      <footer className="border-t border-[#1F2937] py-14 px-6">
+        <div className="max-w-[1200px] mx-auto">
+          <div className="flex flex-col md:flex-row items-start justify-between gap-10">
+            {/* Brand */}
+            <div className="space-y-2 flex-shrink-0">
+              <p className="text-base font-semibold text-white">ShowsUp</p>
+              <p className="text-sm text-gray-500">Open source AEO agent</p>
+              <p className="text-sm text-gray-600">Made in Singapore 🇸🇬</p>
+            </div>
+
+            {/* Footer links */}
+            <div className="flex flex-wrap gap-10 text-sm">
+              <div className="space-y-3">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Product</p>
+                <div className="space-y-2">
+                  <button
+                    onClick={() => document.getElementById("product")?.scrollIntoView({ behavior: "smooth" })}
+                    className="block text-gray-400 hover:text-white transition-colors"
+                  >
+                    Features
+                  </button>
+                  <button
+                    onClick={() => document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" })}
+                    className="block text-gray-400 hover:text-white transition-colors"
+                  >
+                    Pricing
+                  </button>
+                  <Link href="/blog" className="block text-gray-400 hover:text-white transition-colors">
+                    Blog
+                  </Link>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Developers</p>
+                <div className="space-y-2">
+                  <a
+                    href={GITHUB_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block text-gray-400 hover:text-white transition-colors"
+                  >
+                    GitHub
+                  </a>
+                  <a href="#" className="block text-gray-400 hover:text-white transition-colors">CLI Docs</a>
+                  <a href="#" className="block text-gray-400 hover:text-white transition-colors">API Reference</a>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Community</p>
+                <div className="space-y-2">
+                  <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" className="block text-gray-400 hover:text-white transition-colors">Contribute</a>
+                  <a href="#" className="block text-gray-400 hover:text-white transition-colors">Issues</a>
+                  <a href="#" className="block text-gray-400 hover:text-white transition-colors">Changelog</a>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Legal</p>
+                <div className="space-y-2">
+                  <Link href="#" className="block text-gray-400 hover:text-white transition-colors">Privacy</Link>
+                  <Link href="#" className="block text-gray-400 hover:text-white transition-colors">Terms</Link>
+                  <a href={GITHUB_URL + "/blob/main/LICENSE"} target="_blank" rel="noopener noreferrer" className="block text-gray-400 hover:text-white transition-colors">MIT License</a>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 justify-center">
-            <button
-              onClick={() => scrollToId("how-it-works")}
-              className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
+          <div className="border-t border-[#1F2937] mt-10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p className="text-xs text-gray-600">© 2026 ShowsUp. MIT License.</p>
+            <a
+              href={GITHUB_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-600 hover:text-white transition-colors"
             >
-              How It Works
-            </button>
-            <Link href="/report-builder" className="text-xs text-gray-500 hover:text-gray-300 transition-colors">
-              Report Builder
-            </Link>
-            <button
-              onClick={() => scrollToId("pricing")}
-              className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
-            >
-              Pricing
-            </button>
-            <Link href="/blog" className="text-xs text-gray-500 hover:text-gray-300 transition-colors">
-              Blog
-            </Link>
-            <Link href="#" className="text-xs text-gray-500 hover:text-gray-300 transition-colors">
-              Privacy
-            </Link>
-            <Link href="#" className="text-xs text-gray-500 hover:text-gray-300 transition-colors">
-              Terms
-            </Link>
+              <Github className="w-4 h-4" />
+            </a>
           </div>
-
-          <p className="text-xs text-gray-600">© 2026 ShowsUp. All rights reserved.</p>
         </div>
       </footer>
-
-      {/* ── WAITLIST MODAL ── */}
-      {waitlistPlan && (
-        <WaitlistModal
-          plan={waitlistPlan}
-          onClose={() => setWaitlistPlan(null)}
-        />
-      )}
     </div>
   );
 }
