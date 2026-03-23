@@ -174,3 +174,75 @@
   .border-white\/20       { border-color: #D1D5DB; }
   .border-white\/25       { border-color: #D1D5DB; }
 }
+
+/* ── App shell — authenticated pages always light ────────────────────────────
+   Applied to the app/(app) layout wrapper. Overrides hardcoded dark hex
+   Tailwind classes used in report-builder, report-client, and other pages
+   that haven't been individually restyled.
+──────────────────────────────────────────────────────────────────────────── */
+.app-shell {
+  /* ── Backgrounds ── */
+  .bg-\[\#0A0E17\]               { background-color: #F9FAFB; }
+  .bg-\[\#0d1117\]               { background-color: #F9FAFB; }
+  .bg-\[\#111827\]               { background-color: #FFFFFF; }
+  .bg-\[\#1F2937\]               { background-color: #F3F4F6; }
+  .bg-\[\#374151\]               { background-color: #E5E7EB; }
+  .bg-white\/\[0\.03\]           { background-color: rgba(0,0,0,0.02); }
+  .bg-white\/\[0\.04\]           { background-color: rgba(0,0,0,0.025); }
+  .bg-white\/\[0\.06\]           { background-color: rgba(0,0,0,0.04); }
+  .bg-white\/5                   { background-color: rgba(0,0,0,0.03); }
+  .bg-white\/8                   { background-color: rgba(0,0,0,0.04); }
+  .bg-white\/10                  { background-color: rgba(0,0,0,0.05); }
+  .bg-black\/50                  { background-color: rgba(0,0,0,0.25); }
+  .bg-black\/60                  { background-color: rgba(0,0,0,0.30); }
+
+  /* ── Score/status background tints (keep them but lighter) ── */
+  .bg-\[\#064E3B\]               { background-color: #ECFDF5; }
+  .bg-\[\#78350F\]               { background-color: #FFFBEB; }
+  .bg-\[\#7F1D1D\]               { background-color: #FEF2F2; }
+
+  /* ── Text ── */
+  .text-white                    { color: #111827; }
+  .text-gray-100                 { color: #1F2937; }
+  .text-gray-200                 { color: #374151; }
+  .text-gray-300                 { color: #4B5563; }
+  .text-gray-400                 { color: #6B7280; }
+  .text-gray-500                 { color: #9CA3AF; }
+  .text-gray-600                 { color: #9CA3AF; }
+  .text-gray-700                 { color: #6B7280; }
+
+  /* Hover text */
+  .hover\:text-white:hover       { color: #111827; }
+  .hover\:text-gray-300:hover    { color: #374151; }
+
+  /* ── Borders ── */
+  .border-white\/5               { border-color: #F3F4F6; }
+  .border-white\/8               { border-color: #E5E7EB; }
+  .border-white\/10              { border-color: #E5E7EB; }
+  .border-white\/12              { border-color: #E5E7EB; }
+  .border-white\/15              { border-color: #D1D5DB; }
+  .border-white\/20              { border-color: #D1D5DB; }
+  .border-white\/25              { border-color: #D1D5DB; }
+  .border-white\/30              { border-color: #D1D5DB; }
+  .border-dashed.border-white\/10 { border-color: #D1D5DB; }
+
+  /* ── Hover backgrounds ── */
+  .hover\:bg-white\/5:hover      { background-color: rgba(0,0,0,0.03); }
+  .hover\:bg-white\/8:hover      { background-color: rgba(0,0,0,0.04); }
+  .hover\:bg-white\/10:hover     { background-color: rgba(0,0,0,0.05); }
+  .hover\:bg-white\/\[0\.02\]:hover { background-color: rgba(0,0,0,0.015); }
+  .hover\:bg-white\/\[0\.03\]:hover { background-color: rgba(0,0,0,0.02); }
+  .hover\:bg-white\/\[0\.06\]:hover { background-color: rgba(0,0,0,0.04); }
+  .hover\:border-white\/20:hover { border-color: #C7C9CE; }
+  .hover\:border-white\/30:hover { border-color: #D1D5DB; }
+
+  /* ── Inputs ── */
+  input, select, textarea {
+    &.bg-\[\#1F2937\]            { background-color: #FFFFFF; color: #111827; }
+    &.border-white\/10           { border-color: #D1D5DB; }
+  }
+
+  /* ── Dividers ── */
+  .divide-white\/5 > * + *      { border-color: #F3F4F6; }
+  .divide-white\/8 > * + *      { border-color: #E5E7EB; }
+}

@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Sidebar } from "@/components/sidebar";
+import { AppHeader } from "@/components/app-header";
 
 export default async function AppLayout({
   children,
@@ -17,20 +18,15 @@ export default async function AppLayout({
   }
 
   return (
-    <div className="flex min-h-screen" style={{ backgroundColor: "var(--bg-primary)" }}>
-      {/* Sidebar — hidden on mobile, visible on lg+ */}
-      <div className="hidden lg:block flex-shrink-0">
-        <Sidebar user={user} />
-      </div>
+    <div className="app-shell flex min-h-screen bg-gray-50">
+      <Sidebar user={user} />
 
-      {/* Mobile sidebar handled inside Sidebar component */}
-      <div className="lg:hidden">
-        <Sidebar user={user} mobile />
+      <div className="flex-1 flex flex-col min-w-0">
+        <AppHeader user={user} />
+        <main className="flex-1 overflow-auto pb-16 lg:pb-0">
+          {children}
+        </main>
       </div>
-
-      <main className="flex-1 overflow-auto min-w-0">
-        {children}
-      </main>
     </div>
   );
 }

@@ -29,10 +29,10 @@ const TYPE_LABELS: Record<TxType, string> = {
 };
 
 const FILTERS = [
-  { id: "all",       label: "All" },
-  { id: "purchase",  label: "Purchases" },
+  { id: "all",          label: "All" },
+  { id: "purchase",     label: "Purchases" },
   { id: "report_spend", label: "Scans" },
-  { id: "bonus",     label: "Bonuses" },
+  { id: "bonus",        label: "Bonuses" },
 ] as const;
 
 type FilterId = (typeof FILTERS)[number]["id"];
@@ -63,18 +63,15 @@ export default function TokenHistoryPage() {
   }, [transactions, filter]);
 
   return (
-    <div className="p-8 max-w-3xl mx-auto space-y-6">
+    <div className="p-6 md:p-8 max-w-3xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <Link
-          href="/app/tokens"
-          className="text-gray-500 hover:text-white transition-colors"
-        >
+        <Link href="/app/tokens" className="text-gray-400 hover:text-gray-600 transition-colors">
           <ArrowLeft className="w-4 h-4" />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-white">Token History</h1>
-          <p className="text-gray-400 text-sm">All your token credits and debits</p>
+          <h1 className="text-2xl font-bold text-gray-900">Token History</h1>
+          <p className="text-gray-500 text-sm">All your token credits and debits</p>
         </div>
       </div>
 
@@ -87,8 +84,8 @@ export default function TokenHistoryPage() {
             className={cn(
               "text-sm px-3 py-1.5 rounded-lg border transition-colors",
               filter === f.id
-                ? "bg-[#10B981]/15 border-[#10B981]/30 text-[#10B981]"
-                : "border-white/10 text-gray-400 hover:text-white hover:border-white/20"
+                ? "bg-emerald-50 border-emerald-200 text-emerald-700 font-medium"
+                : "border-gray-200 text-gray-500 hover:text-gray-700 hover:border-gray-300 bg-white"
             )}
           >
             {f.label}
@@ -97,22 +94,22 @@ export default function TokenHistoryPage() {
       </div>
 
       {/* Table */}
-      <Card className="bg-[#111827] border-white/10">
+      <Card className="bg-white border-gray-200 shadow-sm">
         <CardContent className="p-0">
           {loading ? (
-            <div className="p-8 text-center text-gray-500 text-sm">Loading…</div>
+            <div className="p-8 text-center text-gray-400 text-sm">Loading…</div>
           ) : filtered.length === 0 ? (
-            <div className="p-8 text-center text-gray-500 text-sm">No transactions found.</div>
+            <div className="p-8 text-center text-gray-400 text-sm">No transactions found.</div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-white/5">
-                    <th className="text-left text-xs text-gray-500 font-medium px-5 py-3">Date</th>
-                    <th className="text-left text-xs text-gray-500 font-medium px-3 py-3">Description</th>
-                    <th className="text-left text-xs text-gray-500 font-medium px-3 py-3">Type</th>
-                    <th className="text-right text-xs text-gray-500 font-medium px-3 py-3">Amount</th>
-                    <th className="text-right text-xs text-gray-500 font-medium px-5 py-3">Balance after</th>
+                  <tr className="border-b border-gray-100">
+                    <th className="text-left text-xs text-gray-400 font-medium px-5 py-3">Date</th>
+                    <th className="text-left text-xs text-gray-400 font-medium px-3 py-3">Description</th>
+                    <th className="text-left text-xs text-gray-400 font-medium px-3 py-3">Type</th>
+                    <th className="text-right text-xs text-gray-400 font-medium px-3 py-3">Amount</th>
+                    <th className="text-right text-xs text-gray-400 font-medium px-5 py-3">Balance after</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -122,22 +119,22 @@ export default function TokenHistoryPage() {
                       <tr
                         key={tx.id}
                         className={cn(
-                          "border-b border-white/5 last:border-0 hover:bg-white/[0.02] transition-colors",
-                          i % 2 === 0 ? "" : "bg-white/[0.01]"
+                          "border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors",
+                          i % 2 === 0 ? "" : "bg-gray-50/50"
                         )}
                       >
-                        <td className="px-5 py-3 text-xs text-gray-500 whitespace-nowrap">
+                        <td className="px-5 py-3 text-xs text-gray-400 whitespace-nowrap">
                           {formatDate(tx.created_at)}
                         </td>
-                        <td className="px-3 py-3 text-gray-300 max-w-[200px] truncate" title={tx.description}>
+                        <td className="px-3 py-3 text-gray-700 max-w-[200px] truncate" title={tx.description}>
                           {tx.description}
                         </td>
                         <td className="px-3 py-3">
                           <span className={cn(
                             "text-[10px] font-semibold px-2 py-0.5 rounded-full border",
                             isCredit
-                              ? "bg-[#10B981]/10 text-[#10B981] border-[#10B981]/20"
-                              : "bg-white/5 text-gray-400 border-white/10"
+                              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                              : "bg-gray-100 text-gray-500 border-gray-200"
                           )}>
                             {TYPE_LABELS[tx.type] ?? tx.type}
                           </span>
@@ -145,7 +142,7 @@ export default function TokenHistoryPage() {
                         <td className="px-3 py-3 text-right tabular-nums">
                           <span className={cn(
                             "flex items-center justify-end gap-1 font-semibold",
-                            isCredit ? "text-[#10B981]" : "text-[#EF4444]"
+                            isCredit ? "text-emerald-600" : "text-red-500"
                           )}>
                             {isCredit
                               ? <ArrowUpRight className="w-3.5 h-3.5" />
@@ -168,7 +165,7 @@ export default function TokenHistoryPage() {
       </Card>
 
       {!loading && transactions.length > 0 && (
-        <p className="text-center text-xs text-gray-600">
+        <p className="text-center text-xs text-gray-400">
           Showing {filtered.length} of {transactions.length} transactions
         </p>
       )}
