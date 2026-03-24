@@ -261,7 +261,7 @@ export function ChatPanel({
         <button
           onClick={() => setIsOpen(true)}
           aria-label="Ask AI about this report"
-          className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-[#10B981] hover:bg-[#059669] text-white shadow-lg flex items-center justify-center transition-colors group"
+          className="fixed bottom-20 right-4 lg:bottom-6 lg:right-6 z-[60] w-14 h-14 rounded-full bg-[#10B981] hover:bg-[#059669] text-white shadow-lg flex items-center justify-center transition-colors group"
         >
           <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round"
@@ -275,7 +275,7 @@ export function ChatPanel({
 
       {/* ── Slide-over panel ── */}
       {isOpen && (
-        <div className="fixed inset-y-0 right-0 z-50 w-full sm:w-[400px] flex flex-col bg-white shadow-2xl border-l border-gray-200">
+        <div className="fixed inset-y-0 right-0 z-[60] w-full sm:w-[400px] flex flex-col bg-white shadow-2xl border-l border-gray-200">
 
           {/* Header */}
           <div className="flex items-start justify-between px-4 py-3 border-b border-gray-100 flex-shrink-0">

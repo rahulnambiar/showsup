@@ -197,6 +197,16 @@ export default async function ScanDetailPage({ params }: { params: { id: string 
             competitorsData={scan.competitors_data as CompetitorsData | undefined}
           />
           <ShareButton />
+          <ChatTrigger
+            message="Give me a quick summary of this report and the top 3 things I should do."
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-[#10B981] border border-[#10B981]/30 hover:border-[#10B981] hover:bg-[#10B981]/10 rounded-lg px-3 py-2 transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round"
+                d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+            </svg>
+            Ask AI
+          </ChatTrigger>
           <Link
             href="/app/report-builder"
             className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-400 hover:text-white border border-white/15 hover:border-white/30 rounded-lg px-3 py-2 transition-colors"
