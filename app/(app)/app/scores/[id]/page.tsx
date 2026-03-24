@@ -13,6 +13,7 @@ import { CategoryBreakdown } from "@/components/category-breakdown";
 import { CompetitiveBenchmark, type CompetitorsData } from "@/components/competitive-benchmark";
 import { ReportTracker } from "./report-tracker";
 import { GeographySection } from "./geography-section";
+import { GscSection } from "./gsc-section";
 
 // Dynamic import for PDF (client only)
 const PDFDownload = dynamic(
@@ -333,6 +334,14 @@ export default async function ScanDetailPage({ params }: { params: { id: string 
           </Card>
         </div>
       )}
+
+      {/* ── Search Correlation ── */}
+      <GscSection
+        brand={scan.brand_name}
+        scanId={params.id}
+        overallScore={score}
+        aiResponses={(results ?? []).map((r) => r.response ?? "").filter(Boolean)}
+      />
 
       {/* ── Footer CTA ── */}
       <div className="pt-2 pb-4">

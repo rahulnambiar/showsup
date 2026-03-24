@@ -208,3 +208,8 @@ CREATE POLICY IF NOT EXISTS "waitlist_insert" ON waitlist
 ALTER TABLE scans ADD COLUMN IF NOT EXISTS regions text[] DEFAULT '{"global"}';
 ALTER TABLE scans ADD COLUMN IF NOT EXISTS regional_scores jsonb DEFAULT '{}';
 ALTER TABLE scans ADD COLUMN IF NOT EXISTS regional_insights jsonb DEFAULT '[]';
+
+-- ── GSC integration (added for Google Search Console feature) ────────────────
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS gsc_refresh_token text;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS gsc_connected_at timestamptz;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS gsc_site_url text;

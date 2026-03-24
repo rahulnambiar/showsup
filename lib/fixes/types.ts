@@ -24,6 +24,13 @@ export interface GeneratedFix {
   sizeBytes: number;
 }
 
+export interface GscPageHint {
+  page: string;
+  clicks: number;
+  position: number;
+  ai_cited: boolean;
+}
+
 export interface FixInput {
   brand: string;
   category: string;
@@ -34,6 +41,8 @@ export interface FixInput {
   recommendations?: Array<{ title: string; description: string; priority: string }>;
   types?: FixType[];
   region?: string; // region code e.g. 'sg', 'us' — adds regional context to generated files
+  gsc_top_pages?: GscPageHint[];       // High-traffic pages from GSC (for AI citation gap)
+  gsc_ai_queries?: Array<{ query: string; impressions: number }>; // AI-origin queries
 }
 
 export interface FixOutput {

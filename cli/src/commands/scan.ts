@@ -18,10 +18,11 @@ export function registerScan(program: Command): void {
     .option("-o, --output <format>", "Output format: table|json|markdown", "table")
     .option("--brand <name>",    "Brand name (skip auto-detection)")
     .option("--category <cat>",  "Category (skip auto-detection)")
-    .option("--region <code>",   "Single region code (e.g. sg, us, uk)")
-    .option("--regions <codes>", "Comma-separated region codes (e.g. us,uk,sg)")
-    .option("--cloud",           "Use cloud API (requires --token or SHOWSUP_TOKEN)")
-    .option("--token <token>",   "ShowsUp API token for cloud mode")
+    .option("--region <code>",         "Single region code (e.g. sg, us, uk)")
+    .option("--regions <codes>",       "Comma-separated region codes (e.g. us,uk,sg)")
+    .option("--include-search-data",   "Pull GSC data from your cloud account and include in report")
+    .option("--cloud",                 "Use cloud API (requires --token or SHOWSUP_TOKEN)")
+    .option("--token <token>",         "ShowsUp API token for cloud mode")
     .action(async (url: string, opts: {
       depth: string;
       platforms: string;
@@ -30,6 +31,7 @@ export function registerScan(program: Command): void {
       category?: string;
       region?: string;
       regions?: string;
+      includeSearchData?: boolean;
       cloud?: boolean;
       token?: string;
     }) => {
@@ -55,6 +57,11 @@ export function registerScan(program: Command): void {
         : opts.region
         ? [opts.region.trim().toLowerCase()]
         : ["global"];
+
+      // Warn if --include-search-data used without --cloud
+      if (opts.includeSearchData && !opts.cloud) {
+        console.warn(chalk.yellow("  ⚠ --include-search-data requires --cloud (GSC is linked to your ShowsUp account)."));
+      }
 
       try {
         // ── Cloud mode ──────────────────────────────────────────────────────

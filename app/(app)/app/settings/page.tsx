@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { SignOutButton } from "./sign-out-button";
+import { IntegrationsPanel } from "./integrations-panel";
 
 export const metadata: Metadata = { title: "Settings — ShowsUp" };
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between py-3.5 border-b border-gray-100 last:border-0">
+    <div className="flex items-center justify-between py-3.5 border-b border-white/5 last:border-0">
       <span className="text-sm text-gray-500">{label}</span>
-      <span className="text-sm text-gray-900 font-medium">{value}</span>
+      <span className="text-sm text-white font-medium">{value}</span>
     </div>
   );
 }
@@ -28,35 +30,42 @@ export default async function SettingsPage() {
     : "—";
 
   return (
-    <div className="p-6 md:p-8 max-w-2xl mx-auto space-y-6">
+    <div className="p-6 md:p-8 max-w-2xl mx-auto space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-        <p className="text-gray-500 text-sm mt-1">Manage your account.</p>
+        <h1 className="text-2xl font-bold text-white">Settings</h1>
+        <p className="text-gray-500 text-sm mt-1">Manage your account and integrations.</p>
       </div>
 
       {/* Account details */}
-      <div className="rounded-xl border border-gray-200 bg-white overflow-hidden shadow-sm">
-        <div className="px-5 py-4 border-b border-gray-100">
-          <p className="text-sm font-semibold text-gray-900">Account</p>
-          <p className="text-xs text-gray-500 mt-0.5">Your account information.</p>
+      <section className="space-y-3">
+        <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Account</p>
+        <div className="rounded-xl border border-white/10 bg-[#111827] overflow-hidden">
+          <div className="px-5">
+            <Row label="Email"        value={user?.email ?? "—"} />
+            <Row label="Member since" value={memberSince} />
+            <Row label="Plan"         value="Free (Early Access)" />
+            <Row label="Total scans"  value={String(totalScans ?? 0)} />
+          </div>
         </div>
-        <div className="px-5">
-          <Row label="Email"        value={user?.email ?? "—"} />
-          <Row label="Member since" value={memberSince} />
-          <Row label="Plan"         value="Free (Early Access)" />
-          <Row label="Total scans"  value={String(totalScans ?? 0)} />
-        </div>
-      </div>
+      </section>
+
+      {/* Integrations */}
+      <section className="space-y-3">
+        <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Integrations</p>
+        <Suspense fallback={<div className="h-32 rounded-xl border border-white/10 bg-[#111827] animate-pulse" />}>
+          <IntegrationsPanel />
+        </Suspense>
+      </section>
 
       {/* Session */}
-      <div className="rounded-xl border border-gray-200 bg-white overflow-hidden shadow-sm">
-        <div className="px-5 py-4 border-b border-gray-100">
-          <p className="text-sm font-semibold text-gray-900">Session</p>
+      <section className="space-y-3">
+        <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Session</p>
+        <div className="rounded-xl border border-white/10 bg-[#111827] overflow-hidden">
+          <div className="px-5 py-4">
+            <SignOutButton />
+          </div>
         </div>
-        <div className="px-5 py-4">
-          <SignOutButton />
-        </div>
-      </div>
+      </section>
     </div>
   );
 }

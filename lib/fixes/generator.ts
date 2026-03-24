@@ -121,7 +121,7 @@ Return only the JSON, no explanation or markdown fences.`;
 }
 
 async function generateContentBriefs(input: FixInput): Promise<GeneratedFix[]> {
-  const { brand, category, niche, category_scores = {}, competitors = [], region } = input;
+  const { brand, category, niche, category_scores = {}, competitors = [], region, gsc_ai_queries = [] } = input;
   const space = niche || category;
 
   // Identify the 3 weakest categories → generate briefs targeting those
@@ -148,8 +148,13 @@ async function generateContentBriefs(input: FixInput): Promise<GeneratedFix[]> {
       const targetQuery = queryMap[cat] ?? `${brand} ${space} guide`;
       const comp        = competitors[i] ?? "leading alternatives";
 
+      const topGscQuery = gsc_ai_queries[i];
+      const gscNote = topGscQuery
+        ? `\nNote: Google Search Console data shows this query gets ~${topGscQuery.impressions} Google impressions/month, indicating real search demand.`
+        : "";
+
       const prompt = `Create a detailed content brief for a blog post targeting this AI search query:
-"${targetQuery}"
+"${targetQuery}"${gscNote}
 
 Brand: ${brand} (${space})
 Target competitor to outrank: ${comp}
@@ -303,10 +308,18 @@ Return as Markdown.`;
 }
 
 async function generateCrawlabilityAudit(input: FixInput): Promise<GeneratedFix[]> {
-  const { brand, category, url, niche } = input;
+  const { brand, category, url, niche, gsc_top_pages = [] } = input;
   const space = niche || category;
 
-  const prompt = `Perform a crawlability audit for ${brand} at ${url} in the ${space} industry.
+  const pageGapSection = gsc_top_pages.length > 0
+    ? `\n\n## Google Search vs AI Gap (from real GSC data)\nThese pages get real Google traffic but AI models may not be citing them:\n${
+        gsc_top_pages.slice(0, 5).map((p) =>
+          `- ${p.page} — #${p.position} in Google, ${p.clicks} clicks/mo, AI cited: ${p.ai_cited ? "Yes" : "NO — fix this"}`
+        ).join("\n")
+      }\nFor each un-cited page: recommend adding FAQ schema, clearer headings, or a summary paragraph AI can quote.`
+    : "";
+
+  const prompt = `Perform a crawlability audit for ${brand} at ${url} in the ${space} industry.${pageGapSection}
 
 Focus on what AI models (ChatGPT, Claude, Gemini) need to understand and recommend a brand.
 
