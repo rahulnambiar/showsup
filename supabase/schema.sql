@@ -278,3 +278,24 @@ CREATE POLICY IF NOT EXISTS "webhook_deliveries_own" ON public.webhook_deliverie
   FOR ALL USING (
     webhook_id IN (SELECT id FROM public.webhooks WHERE user_id = auth.uid())
   );
+
+-- ── AI Report Chat ─────────────────────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS public.report_chats (
+  id                  uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id             uuid        NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  scan_id             uuid        NOT NULL,
+  messages            jsonb       NOT NULL DEFAULT '[]',
+  free_messages_used  integer     NOT NULL DEFAULT 0,
+  created_at          timestamptz DEFAULT now(),
+  updated_at          timestamptz DEFAULT now()
+);
+
+ALTER TABLE public.report_chats ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users see own report chats"
+  ON public.report_chats FOR ALL
+  USING (auth.uid() = user_id);
+
+CREATE INDEX IF NOT EXISTS report_chats_user_scan_idx
+  ON public.report_chats(user_id, scan_id);

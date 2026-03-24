@@ -14,10 +14,16 @@ import { CompetitiveBenchmark, type CompetitorsData } from "@/components/competi
 import { ReportTracker } from "./report-tracker";
 import { GeographySection } from "./geography-section";
 import { GscSection } from "./gsc-section";
+import { ChatTrigger } from "./chat-trigger";
+import { FREE_CHAT_MESSAGES, type ChatMessage } from "@/lib/chat/prompt";
 
-// Dynamic import for PDF (client only)
+// Dynamic imports (client only)
 const PDFDownload = dynamic(
   () => import("@/components/pdf-download").then((m) => m.PDFDownload),
+  { ssr: false }
+);
+const ChatPanel = dynamic(
+  () => import("./chat-panel").then((m) => m.ChatPanel),
   { ssr: false }
 );
 
@@ -111,9 +117,10 @@ function extractCompetitors(
 export default async function ScanDetailPage({ params }: { params: { id: string } }) {
   const supabase = await createClient();
 
-  const [{ data: scan }, { data: results }] = await Promise.all([
+  const [{ data: scan }, { data: results }, { data: chatRecord }] = await Promise.all([
     supabase.from("scans").select("*").eq("id", params.id).single(),
     supabase.from("scan_results").select("*").eq("scan_id", params.id).order("model"),
+    supabase.from("report_chats").select("messages, free_messages_used").eq("scan_id", params.id).maybeSingle(),
   ]);
 
   if (!scan) notFound();
@@ -137,6 +144,15 @@ export default async function ScanDetailPage({ params }: { params: { id: string 
   } catch { recommendations = []; }
 
   const competitors = extractCompetitors(scan.brand_name, results ?? []);
+
+  // ── Chat data ────────────────────────────────────────────────────────────────
+  const chatMessages      = (chatRecord?.messages as ChatMessage[] | null) ?? [];
+  const chatFreeUsed      = (chatRecord?.free_messages_used as number) ?? 0;
+
+  // Competitors for chat suggestions (prefer structured data over extracted)
+  const competitorNames: string[] = scan.competitors_data
+    ? ((scan.competitors_data as { competitors?: Array<{ name: string }> }).competitors?.map(c => c.name) ?? [])
+    : competitors.map(c => c.name);
 
   const modelResultsSummary = Object.entries(byModel).map(([modelId, modelResults]) => ({
     model: modelId,
@@ -236,7 +252,15 @@ export default async function ScanDetailPage({ params }: { params: { id: string 
 
       {/* ── Platform breakdown ── */}
       <div className="space-y-3">
-        <h2 className="text-sm font-medium text-gray-400">Platform breakdown</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-medium text-gray-400">Platform breakdown</h2>
+          <ChatTrigger
+            message="Explain my platform scores in detail. Where am I strongest and weakest, and why?"
+            className="text-xs text-[#10B981] hover:text-[#059669] transition-colors"
+          >
+            Ask AI →
+          </ChatTrigger>
+        </div>
         {Object.entries(byModel).map(([modelId, modelResults]) => {
           const color = MODEL_COLORS[modelId] ?? "#6B7280";
           const label = MODEL_LABELS[modelId] ?? modelId;
@@ -266,7 +290,17 @@ export default async function ScanDetailPage({ params }: { params: { id: string 
 
       {/* ── Competitive Benchmark ── */}
       {scan.competitors_data && (
-        <CompetitiveBenchmark data={scan.competitors_data as unknown as CompetitorsData} />
+        <div className="space-y-0">
+          <div className="flex items-center justify-end mb-[-8px]">
+            <ChatTrigger
+              message={`Compare me to my top competitors. Why are they outranking me in AI responses?`}
+              className="text-xs text-[#10B981] hover:text-[#059669] transition-colors"
+            >
+              Ask AI →
+            </ChatTrigger>
+          </div>
+          <CompetitiveBenchmark data={scan.competitors_data as unknown as CompetitorsData} />
+        </div>
       )}
 
       {/* ── Geography ── */}
@@ -280,7 +314,15 @@ export default async function ScanDetailPage({ params }: { params: { id: string 
       {/* ── Recommendations ── */}
       {recommendations.length > 0 && (
         <div className="space-y-3">
-          <h2 className="text-sm font-medium text-gray-400">Recommendations</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-medium text-gray-400">Recommendations</h2>
+            <ChatTrigger
+              message="Walk me through my top recommendations. Where should I start and what's the expected impact?"
+              className="text-xs text-[#10B981] hover:text-[#059669] transition-colors"
+            >
+              Ask AI →
+            </ChatTrigger>
+          </div>
           <div className="space-y-2.5">
             {recommendations.map((rec, i) => (
               <Card key={i} className="bg-[#111827] border-white/10">
@@ -352,6 +394,20 @@ export default async function ScanDetailPage({ params }: { params: { id: string 
           New analysis
         </Link>
       </div>
+
+      {/* ── AI Chat Panel ── */}
+      <ChatPanel
+        scanId={params.id}
+        brand={scan.brand_name}
+        score={score}
+        competitors={competitorNames}
+        categoryScores={scan.category_scores as Record<string, number> | null}
+        hasRegionalData={
+          !!(scan.regional_scores && Object.keys(scan.regional_scores as object).filter(k => k !== "global").length > 0)
+        }
+        initialMessages={chatMessages}
+        initialFreeUsed={chatFreeUsed}
+      />
     </div>
   );
 }

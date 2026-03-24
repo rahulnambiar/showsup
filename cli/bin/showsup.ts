@@ -14,6 +14,7 @@ import { registerFix }     from "../src/commands/fix";
 import { registerScore }   from "../src/commands/score";
 import { registerCompare } from "../src/commands/compare";
 import { registerVerify }  from "../src/commands/verify";
+import { registerChat }    from "../src/commands/chat";
 import { loadConfig, applyEnvFromConfig, saveConfig } from "../src/config";
 
 // Apply saved API keys before any command runs
@@ -34,6 +35,7 @@ registerFix(program);
 registerScore(program);
 registerCompare(program);
 registerVerify(program);
+registerChat(program);
 
 // ── Auth: save cloud token ────────────────────────────────────────────────────
 
