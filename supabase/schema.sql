@@ -213,3 +213,36 @@ ALTER TABLE scans ADD COLUMN IF NOT EXISTS regional_insights jsonb DEFAULT '[]';
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS gsc_refresh_token text;
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS gsc_connected_at timestamptz;
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS gsc_site_url text;
+
+-- ── Data Sources & Correlation ────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS public.data_sources (
+  id             uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id        uuid REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  source_type    text NOT NULL,
+  source_name    text NOT NULL,
+  config         jsonb DEFAULT '{}',
+  last_synced_at timestamptz,
+  created_at     timestamptz DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS public.data_points (
+  id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id       uuid REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  source_id     uuid REFERENCES public.data_sources(id) ON DELETE CASCADE,
+  metric_name   text NOT NULL,
+  metric_value  numeric NOT NULL,
+  date          date NOT NULL,
+  metadata      jsonb DEFAULT '{}',
+  created_at    timestamptz DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_data_points_user_date ON public.data_points(user_id, date);
+CREATE INDEX IF NOT EXISTS idx_data_points_source ON public.data_points(source_id);
+
+ALTER TABLE public.data_sources ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.data_points  ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY IF NOT EXISTS "data_sources_own" ON public.data_sources
+  FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY IF NOT EXISTS "data_points_own" ON public.data_points
+  FOR ALL USING (auth.uid() = user_id);

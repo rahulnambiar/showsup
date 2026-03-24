@@ -14,6 +14,8 @@ import {
   Coins,
   ChevronDown,
   Wand2,
+  Database,
+  LineChart,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -24,16 +26,18 @@ const navItems = [
   { href: "/app/report-builder", icon: Wand2,           label: "Analyse your Brand"  },
   { href: "/app/scores",         icon: BarChart3,       label: "Scores"              },
   { href: "/app/trends",         icon: TrendingUp,      label: "Trends"              },
+  { href: "/app/data-sources",   icon: Database,        label: "Data Sources"        },
+  { href: "/app/insights",       icon: LineChart,       label: "Insights"            },
   { href: "/app/tokens",         icon: Coins,           label: "Tokens"              },
   { href: "/app/settings",       icon: Settings,        label: "Settings"            },
 ];
 
 const mobileTabItems = [
-  { href: "/app/dashboard",      icon: LayoutDashboard, label: "Home"    },
-  { href: "/app/report-builder", icon: Wand2,           label: "Analyse" },
-  { href: "/app/scores",         icon: BarChart3,       label: "Scores"  },
-  { href: "/app/tokens",         icon: Coins,           label: "Tokens"  },
-  { href: "/app/settings",       icon: Settings,        label: "Settings"},
+  { href: "/app/dashboard",      icon: LayoutDashboard, label: "Home"     },
+  { href: "/app/report-builder", icon: Wand2,           label: "Analyse"  },
+  { href: "/app/scores",         icon: BarChart3,       label: "Scores"   },
+  { href: "/app/insights",       icon: LineChart,       label: "Insights" },
+  { href: "/app/settings",       icon: Settings,        label: "Settings" },
 ];
 
 // ── Token widget ──────────────────────────────────────────────────────────────
