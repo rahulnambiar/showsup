@@ -33,6 +33,7 @@ export interface FixInput {
   category_scores?: Record<string, number>;
   recommendations?: Array<{ title: string; description: string; priority: string }>;
   types?: FixType[];
+  region?: string; // region code e.g. 'sg', 'us' — adds regional context to generated files
 }
 
 export interface FixOutput {

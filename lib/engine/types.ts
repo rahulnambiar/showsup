@@ -132,6 +132,15 @@ export interface ScanInput {
   competitors?: string[];
   reportConfig?: ReportConfig | null;
   models?: { chatgpt?: boolean; claude?: boolean };
+  regions?: string[]; // region codes e.g. ['global','us','sg']; defaults to ['global']
+}
+
+export interface RegionalScore {
+  score: number;
+  mention_rate: number;
+  avg_position: number | null;
+  sentiment: "positive" | "neutral" | "negative" | null;
+  top_competitor: string | null;
 }
 
 export interface ScanOutput {
@@ -148,4 +157,6 @@ export interface ScanOutput {
   improvement_plan: ImprovementPlan | null;
   benchmark_data: BenchmarkData | null;
   queries: ScanQuery[];
+  regional_scores?: Record<string, RegionalScore>;
+  regional_insights?: string[];
 }

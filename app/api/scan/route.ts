@@ -24,12 +24,14 @@ interface ReportConfig {
   extra_competitors: number;
 }
 
-function calculateTokenCost(config: ReportConfig | null): number {
+function calculateTokenCost(config: ReportConfig | null, regions: string[] = ["global"]): number {
   const addons = config?.addons ?? [];
+  const extraRegions = regions.filter((r) => r !== "global").length;
   return calcDynamicCost({
     scanDepth:       (config?.type ?? "standard") as "quick_check" | "standard" | "deep",
     models:          ["gpt-4o-mini", "claude-3-haiku"],
     competitorCount: config?.extra_competitors ?? 0,
+    regionCount:     extraRegions + 1,
     modules: {
       persona:           addons.includes("persona_analysis"),
       commerce:          addons.includes("commerce_deep_dive"),
@@ -50,6 +52,7 @@ export async function POST(request: Request) {
     const body = await request.json() as {
       brand?: string; category?: string; niche?: string; url?: string; website?: string;
       report_config?: ReportConfig; competitors?: unknown[]; models?: Record<string, boolean>;
+      regions?: string[];
     };
 
     const brand:    string = (body.brand    ?? "").trim();
@@ -60,8 +63,12 @@ export async function POST(request: Request) {
 
     if (!brand) return NextResponse.json({ error: "Brand name is required" }, { status: 400 });
 
+    const regions: string[] = Array.isArray(body.regions)
+      ? body.regions.filter((r): r is string => typeof r === "string")
+      : ["global"];
+
     // Token check — skipped in self-host mode
-    const tokenCost = calculateTokenCost(reportConfig);
+    const tokenCost = calculateTokenCost(reportConfig, regions);
     if (!isSelfHost) {
       const balance = await getBalance(user.id);
       if (balance < tokenCost) {
@@ -82,6 +89,7 @@ export async function POST(request: Request) {
       competitors:  passedCompetitors,
       reportConfig: reportConfig ?? null,
       models:       body.models ?? { chatgpt: true, claude: true },
+      regions,
     };
 
     let result: ScanOutput;
@@ -101,10 +109,13 @@ export async function POST(request: Request) {
           user_id: user.id, brand_name: brand, website: url || null,
           category, status: "completed", overall_score: result.overall_score,
           category_scores: result.category_scores, competitors_data: result.competitors_data,
-          ...(result.perception_data  && { perception_data:  result.perception_data  }),
-          ...(result.citation_data    && { citation_data:    result.citation_data    }),
-          ...(result.improvement_plan && { improvement_plan: result.improvement_plan }),
-          ...(result.benchmark_data   && { benchmark_data:   result.benchmark_data   }),
+          regions: regions.length > 0 ? regions : ["global"],
+          ...(result.perception_data   && { perception_data:    result.perception_data   }),
+          ...(result.citation_data     && { citation_data:      result.citation_data     }),
+          ...(result.improvement_plan  && { improvement_plan:   result.improvement_plan  }),
+          ...(result.benchmark_data    && { benchmark_data:     result.benchmark_data    }),
+          ...(result.regional_scores   && { regional_scores:    result.regional_scores   }),
+          ...(result.regional_insights && { regional_insights:  result.regional_insights }),
         })
         .select("id").single();
 

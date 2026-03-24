@@ -19,6 +19,7 @@ export function registerFix(program: Command): void {
     .option("-t, --type <types>",  `Fix type(s): ${ALL_FIX_TYPES.join(",")}`)
     .option("--brand <name>",      "Brand name (skip auto-detection)")
     .option("--category <cat>",    "Category (skip auto-detection)")
+    .option("--region <code>",     "Region code for regional fix content (e.g. sg, us, uk)")
     .option("--cloud",             "Use cloud API")
     .option("--token <token>",     "ShowsUp API token")
     .action(async (url: string, opts: {
@@ -26,6 +27,7 @@ export function registerFix(program: Command): void {
       type?: string;
       brand?: string;
       category?: string;
+      region?: string;
       cloud?: boolean;
       token?: string;
     }) => {
@@ -124,6 +126,7 @@ export function registerFix(program: Command): void {
           category_scores,
           recommendations,
           types,
+          region: opts.region,
         });
 
         writeFixFiles(fixResult.fixes, opts.output);

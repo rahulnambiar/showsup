@@ -4,6 +4,7 @@ export interface ReportConfig {
   scanDepth: 'quick_check' | 'standard' | 'deep';
   models: string[];        // e.g. ['gpt-4o-mini', 'claude-3-haiku']
   competitorCount: number;
+  regionCount?: number;    // 1 = global only (default); >1 = multi-region, +20 tokens per extra region
   modules: {
     persona: boolean;
     commerce: boolean;
@@ -156,27 +157,41 @@ export function calculateReportCost(config: ReportConfig): CostBreakdown {
     breakdown.push({ component: 'benchmark', description: 'Category benchmarking', tokens: 0, apiCostUSD: benchCost });
   }
 
-  // Convert total API cost to tokens
-  const totalTokens = usdToTokens(totalApiCost);
+  // Convert total API cost to tokens (base cost only)
+  const baseTokens = usdToTokens(totalApiCost);
 
   // Distribute tokens proportionally across breakdown items
   for (const item of breakdown) {
     if (totalApiCost > 0) {
       item.tokens = Math.max(
         PRICING_CONFIG.MIN_TOKENS,
-        Math.ceil(Math.ceil((item.apiCostUSD / totalApiCost) * totalTokens / PRICING_CONFIG.ROUND_TO) * PRICING_CONFIG.ROUND_TO),
+        Math.ceil(Math.ceil((item.apiCostUSD / totalApiCost) * baseTokens / PRICING_CONFIG.ROUND_TO) * PRICING_CONFIG.ROUND_TO),
       );
     } else {
       item.tokens = PRICING_CONFIG.MIN_TOKENS;
     }
   }
 
-  // Adjust rounding so breakdown sums match totalTokens
+  // Adjust rounding so breakdown sums match baseTokens
   const breakdownSum = breakdown.reduce((s, b) => s + b.tokens, 0);
-  if (breakdownSum !== totalTokens && breakdown.length > 0) {
-    breakdown[0].tokens += (totalTokens - breakdownSum);
+  if (breakdownSum !== baseTokens && breakdown.length > 0) {
+    breakdown[0]!.tokens += (baseTokens - breakdownSum);
   }
 
+  // Add flat region surcharge on top (not proportional — fixed cost)
+  const extraRegionTokens = config.regionCount && config.regionCount > 1
+    ? (config.regionCount - 1) * 20
+    : 0;
+  if (extraRegionTokens > 0) {
+    breakdown.push({
+      component: 'regions',
+      description: `${config.regionCount! - 1} additional region${config.regionCount! > 2 ? 's' : ''} (+20 🪙 each)`,
+      tokens: extraRegionTokens,
+      apiCostUSD: 0,
+    });
+  }
+
+  const totalTokens = baseTokens + extraRegionTokens;
   return { totalTokens, totalApiCostUSD: totalApiCost, breakdown };
 }
 

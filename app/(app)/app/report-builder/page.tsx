@@ -15,6 +15,7 @@ import {
   getModuleDelta,
   type ReportConfig,
 } from "@/lib/pricing/cost-calculator";
+import { REGIONS } from "@/lib/engine/regions";
 import { trackReportBuilderOpened, trackScanStarted, trackScanCompleted, trackScanFailed } from "@/lib/analytics";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -111,6 +112,8 @@ function ReportBuilderPage() {
   // Report config
   const [scanDepth, setScanDepth] = useState<ScanDepth>("standard");
   const [selectedModels, setSelectedModels] = useState<string[]>(["gpt-4o-mini", "claude-3-haiku"]);
+  const [multiRegion, setMultiRegion] = useState(false);
+  const [selectedRegions, setSelectedRegions] = useState<string[]>(["global"]);
   const [modules, setModules] = useState<ReportConfig["modules"]>({
     persona: false, commerce: false, sentiment: false,
     citations: false, improvementPlan: true, categoryBenchmark: false,
@@ -161,8 +164,9 @@ function ReportBuilderPage() {
     scanDepth,
     models: selectedModels,
     competitorCount: allCompetitors.length,
+    regionCount: multiRegion ? selectedRegions.length : 1,
     modules,
-  }), [scanDepth, selectedModels, allCompetitors.length, modules]);
+  }), [scanDepth, selectedModels, allCompetitors.length, multiRegion, selectedRegions.length, modules]);
 
   const cost = useMemo(() => calculateReportCost(reportConfig), [reportConfig]);
   const totalCost = cost.totalTokens;
@@ -305,6 +309,7 @@ function ReportBuilderPage() {
             claude:  selectedModels.some((m) => MODEL_TO_PLATFORM[m] === "claude"),
           },
           competitors: allCompetitors,
+          regions: multiRegion ? selectedRegions : ["global"],
           report_config: {
             type: scanDepth,
             addons: addonKeys.map((k) => addonMap[k]),
@@ -636,7 +641,79 @@ function ReportBuilderPage() {
             </CardContent>
           </Card>
 
-          {/* Section 4: Analysis Modules */}
+          {/* Section 4: Regions */}
+          <Card className="bg-[#111827] border-white/10">
+            <CardContent className="pt-5 pb-5 space-y-3">
+              <p className="text-sm font-semibold text-white">Geography</p>
+              <div className="space-y-2">
+                <label className={cn(
+                  "flex items-start gap-3 rounded-xl border px-3.5 py-3 cursor-pointer transition-all",
+                  !multiRegion ? "border-[#10B981]/40 bg-[#10B981]/8" : "border-white/10 hover:border-white/20"
+                )}>
+                  <input
+                    type="radio"
+                    name="regionMode"
+                    checked={!multiRegion}
+                    onChange={() => { setMultiRegion(false); setSelectedRegions(["global"]); }}
+                    className="mt-0.5 accent-[#10B981]"
+                  />
+                  <div>
+                    <span className="text-sm font-medium text-white">🌍 Global</span>
+                    <p className="text-xs text-gray-500 mt-0.5">Single worldwide scan — no extra cost</p>
+                  </div>
+                </label>
+                <label className={cn(
+                  "flex items-start gap-3 rounded-xl border px-3.5 py-3 cursor-pointer transition-all",
+                  multiRegion ? "border-[#10B981]/40 bg-[#10B981]/8" : "border-white/10 hover:border-white/20"
+                )}>
+                  <input
+                    type="radio"
+                    name="regionMode"
+                    checked={multiRegion}
+                    onChange={() => setMultiRegion(true)}
+                    className="mt-0.5 accent-[#10B981]"
+                  />
+                  <div>
+                    <span className="text-sm font-medium text-white">Multi-Region</span>
+                    <p className="text-xs text-gray-500 mt-0.5">Scan multiple regions — +20 🪙 per extra region</p>
+                  </div>
+                </label>
+              </div>
+
+              {multiRegion && (
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  {REGIONS.filter((r) => r.code !== "global").map((r) => {
+                    const checked = selectedRegions.includes(r.code);
+                    return (
+                      <label
+                        key={r.code}
+                        className={cn(
+                          "flex items-center gap-2 rounded-lg border px-3 py-2 cursor-pointer transition-all text-sm",
+                          checked ? "border-[#10B981]/30 bg-[#10B981]/5 text-white" : "border-white/10 text-gray-400 hover:border-white/20"
+                        )}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={() => {
+                            setSelectedRegions((prev) =>
+                              checked
+                                ? prev.filter((c) => c !== r.code)
+                                : [...prev, r.code]
+                            );
+                          }}
+                          className="w-3.5 h-3.5 accent-[#10B981]"
+                        />
+                        <span>{r.flag} {r.name}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Section 5: Analysis Modules */}
           <Card className="bg-[#111827] border-white/10">
             <CardContent className="pt-5 pb-5 space-y-3">
               <p className="text-sm font-semibold text-white">Analysis Modules</p>

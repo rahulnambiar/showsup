@@ -7,11 +7,12 @@
  */
 
 import { generateQueries, type QueryConfig } from "@/lib/query-generator";
+import { getRegion, type Region } from "./regions";
 import type {
   AnalysisResult, BrandProfile, CompetitorProfile, CompetitorsData,
   PerceptionData, CitationData, ImprovementPlan, ImprovementPlanItem,
   BenchmarkData, Recommendation, ModelResult, ModelPromptResult,
-  ScanInput, ScanOutput, ScanQuery,
+  ScanInput, ScanOutput, ScanQuery, RegionalScore,
 } from "./types";
 
 // ── Provider availability warnings (fire once at module load) ─────────────────
@@ -460,6 +461,97 @@ Return ONLY valid JSON:
   }
 }
 
+// ── Regional scanning ─────────────────────────────────────────────────────────
+
+async function runRegionalPass(
+  brand: string,
+  category: string,
+  queries: ScanQuery[],
+  region: Region,
+  models: Array<{ id: string; call: (p: string) => Promise<string> }>
+): Promise<RegionalScore> {
+  const suffix = region.prompt_suffix;
+  const regionalQueries = queries.map((q) => ({
+    ...q,
+    text: suffix ? `${q.text} ${suffix}` : q.text,
+  }));
+
+  const allAnalyses: AnalysisResult[] = [];
+  await Promise.all(
+    models.map(async (model) => {
+      await Promise.all(
+        regionalQueries.map(async (q) => {
+          try {
+            const response = await model.call(q.text);
+            const analysis = await analyzeResponse(brand, category, q.text, q.scoreCategory, response);
+            allAnalyses.push(analysis);
+          } catch {
+            allAnalyses.push(fallbackAnalysis(brand, ""));
+          }
+        })
+      );
+    })
+  );
+
+  const score       = scoreFromAnalyses(allAnalyses);
+  const mentioned   = allAnalyses.filter((a) => a.brand_mentioned);
+  const mention_rate = Math.round((mentioned.length / Math.max(1, allAnalyses.length)) * 100);
+  const positions   = mentioned.map((a) => a.mention_position).filter((p): p is number => p !== null);
+  const avg_position = positions.length > 0
+    ? Math.round((positions.reduce((s, p) => s + p, 0) / positions.length) * 10) / 10
+    : null;
+
+  const sentCounts = { positive: 0, neutral: 0, negative: 0 };
+  for (const a of mentioned) {
+    if (a.sentiment === "positive")  sentCounts.positive++;
+    else if (a.sentiment === "neutral")  sentCounts.neutral++;
+    else if (a.sentiment === "negative") sentCounts.negative++;
+  }
+  const sentiment = (
+    sentCounts.positive >= sentCounts.neutral && sentCounts.positive >= sentCounts.negative
+      ? (sentCounts.positive > 0 ? "positive" : null)
+      : sentCounts.negative > sentCounts.neutral ? "negative"
+      : sentCounts.neutral > 0 ? "neutral"
+      : null
+  ) as RegionalScore["sentiment"];
+
+  const compCounts = new Map<string, number>();
+  const brandLower = brand.toLowerCase();
+  for (const a of allAnalyses) {
+    for (const c of a.competitors_found ?? []) {
+      if (c.name && !c.name.toLowerCase().includes(brandLower)) {
+        compCounts.set(c.name, (compCounts.get(c.name) ?? 0) + 1);
+      }
+    }
+  }
+  const top_competitor = compCounts.size > 0
+    ? Array.from(compCounts.entries()).sort((a, b) => b[1] - a[1])[0]![0]
+    : null;
+
+  return { score, mention_rate, avg_position, sentiment, top_competitor };
+}
+
+async function generateRegionalInsights(
+  brand: string,
+  regionalScores: Record<string, RegionalScore>
+): Promise<string[]> {
+  const lines = Object.entries(regionalScores)
+    .map(([code, rs]) =>
+      `${code}: score ${rs.score}, mention_rate ${rs.mention_rate}%, top_competitor ${rs.top_competitor ?? "none"}`
+    )
+    .join("\n");
+  const prompt = `Analyze AI visibility of "${brand}" across these regions:\n${lines}\nGenerate exactly 3 insights comparing regional performance (1 sentence each). Return a JSON array of strings only.`;
+  try {
+    const text  = await callAnthropicSonnet(prompt, 400);
+    const match = text.match(/\[[\s\S]*\]/);
+    if (!match) return [];
+    const parsed = JSON.parse(match[0]) as string[];
+    return Array.isArray(parsed) ? parsed.filter((s) => typeof s === "string").slice(0, 3) : [];
+  } catch {
+    return [];
+  }
+}
+
 // ── Main scan orchestration ───────────────────────────────────────────────────
 
 export async function runScan(input: ScanInput): Promise<ScanOutput> {
@@ -552,6 +644,39 @@ export async function runScan(input: ScanInput): Promise<ScanOutput> {
 
   const citationData = runCitationTracking(brand, allPromptResults);
 
+  // ── Regional scanning ───────────────────────────────────────────────────────
+  let regional_scores: Record<string, RegionalScore> | undefined;
+  let regional_insights: string[] | undefined;
+
+  const regionCodes = (input.regions ?? ["global"]).filter(Boolean);
+  const extraRegions = regionCodes.filter((c) => c !== "global");
+
+  if (extraRegions.length > 0) {
+    // Use global main result as the 'global' entry
+    const globalScore: RegionalScore = {
+      score:         finalScore,
+      mention_rate:  brandProfile.mention_rate,
+      avg_position:  brandProfile.avg_position,
+      sentiment:     brandProfile.sentiment,
+      top_competitor: competitors[0]?.name ?? null,
+    };
+    regional_scores = { global: globalScore };
+
+    // Run additional regions in parallel
+    const regionalResults = await Promise.all(
+      extraRegions.map(async (code) => {
+        const region = getRegion(code);
+        const rs = await runRegionalPass(brand, category, queries, region, models);
+        return { code, rs };
+      })
+    );
+    for (const { code, rs } of regionalResults) {
+      regional_scores[code] = rs;
+    }
+
+    regional_insights = await generateRegionalInsights(brand, regional_scores);
+  }
+
   return {
     brand,
     category,
@@ -572,5 +697,7 @@ export async function runScan(input: ScanInput): Promise<ScanOutput> {
     improvement_plan: improvementPlan,
     benchmark_data: benchmarkData ?? null,
     queries,
+    ...(regional_scores   && { regional_scores }),
+    ...(regional_insights && { regional_insights }),
   };
 }

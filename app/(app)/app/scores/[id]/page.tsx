@@ -12,6 +12,7 @@ import { PlatformCard } from "./platform-card";
 import { CategoryBreakdown } from "@/components/category-breakdown";
 import { CompetitiveBenchmark, type CompetitorsData } from "@/components/competitive-benchmark";
 import { ReportTracker } from "./report-tracker";
+import { GeographySection } from "./geography-section";
 
 // Dynamic import for PDF (client only)
 const PDFDownload = dynamic(
@@ -265,6 +266,14 @@ export default async function ScanDetailPage({ params }: { params: { id: string 
       {/* ── Competitive Benchmark ── */}
       {scan.competitors_data && (
         <CompetitiveBenchmark data={scan.competitors_data as unknown as CompetitorsData} />
+      )}
+
+      {/* ── Geography ── */}
+      {scan.regional_scores && Object.keys(scan.regional_scores as object).filter((k) => k !== "global").length > 0 && (
+        <GeographySection
+          regionalScores={scan.regional_scores as Record<string, { score: number; mention_rate: number; avg_position: number | null; sentiment: "positive" | "neutral" | "negative" | null; top_competitor: string | null }>}
+          regionalInsights={Array.isArray(scan.regional_insights) ? (scan.regional_insights as string[]) : undefined}
+        />
       )}
 
       {/* ── Recommendations ── */}

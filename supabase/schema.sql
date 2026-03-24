@@ -202,3 +202,9 @@ CREATE POLICY IF NOT EXISTS "token_transactions_own" ON token_transactions
 -- waitlist: insert only (anyone can join), no read
 CREATE POLICY IF NOT EXISTS "waitlist_insert" ON waitlist
   FOR INSERT WITH CHECK (true);
+
+
+-- ── Geography columns (added for regional scanning feature) ──────────────────
+ALTER TABLE scans ADD COLUMN IF NOT EXISTS regions text[] DEFAULT '{"global"}';
+ALTER TABLE scans ADD COLUMN IF NOT EXISTS regional_scores jsonb DEFAULT '{}';
+ALTER TABLE scans ADD COLUMN IF NOT EXISTS regional_insights jsonb DEFAULT '[]';

@@ -5,6 +5,7 @@
 
 import type { FixInput, FixOutput, GeneratedFix, FixType } from "./types";
 import { ALL_FIX_TYPES } from "./types";
+import { getRegion } from "@/lib/engine/regions";
 
 async function callAI(prompt: string, maxTokens = 1000): Promise<string> {
   // Try Anthropic first, fall back to OpenAI
@@ -32,8 +33,12 @@ async function callAI(prompt: string, maxTokens = 1000): Promise<string> {
 // ── Individual fix generators ─────────────────────────────────────────────────
 
 async function generateLlmsTxt(input: FixInput): Promise<GeneratedFix[]> {
-  const { brand, category, url, niche, competitors = [] } = input;
-  const prompt = `Generate a llms.txt file for ${brand} (${niche || category}) at ${url}.
+  const { brand, category, url, niche, competitors = [], region } = input;
+  const regionInfo = region ? getRegion(region) : null;
+  const regionContext = regionInfo && regionInfo.code !== "global"
+    ? `\n\nNote: This brand operates primarily ${regionInfo.prompt_suffix}. Include regional context where relevant.`
+    : "";
+  const prompt = `Generate a llms.txt file for ${brand} (${niche || category}) at ${url}.${regionContext}
 
 llms.txt is a plain text file at the root of a website that helps AI models understand what the site is about.
 
@@ -75,10 +80,14 @@ Keep it concise, factual, and AI-friendly. No marketing fluff. Return only the f
 }
 
 async function generateSchema(input: FixInput): Promise<GeneratedFix[]> {
-  const { brand, category, url } = input;
+  const { brand, category, url, region } = input;
+  const regionInfo = region ? getRegion(region) : null;
+  const areaServedLine = regionInfo && regionInfo.code !== "global"
+    ? `, areaServed: "${regionInfo.name}"`
+    : "";
 
   const orgPrompt = `Generate a valid JSON-LD schema.org Organization markup for ${brand} at ${url} (${category}).
-Include: @context, @type, name, url, description (1-2 sentences), foundingDate (approximate year or omit), sameAs (array of common social/review URLs for a ${category} company).
+Include: @context, @type, name, url, description (1-2 sentences), foundingDate (approximate year or omit), sameAs (array of common social/review URLs for a ${category} company)${areaServedLine}.
 Return only the JSON, no explanation or markdown fences.`;
 
   const faqPrompt = `Generate a valid JSON-LD schema.org FAQPage markup for ${brand} in the ${category} space.
@@ -112,7 +121,7 @@ Return only the JSON, no explanation or markdown fences.`;
 }
 
 async function generateContentBriefs(input: FixInput): Promise<GeneratedFix[]> {
-  const { brand, category, niche, category_scores = {}, competitors = [] } = input;
+  const { brand, category, niche, category_scores = {}, competitors = [], region } = input;
   const space = niche || category;
 
   // Identify the 3 weakest categories → generate briefs targeting those
@@ -120,13 +129,16 @@ async function generateContentBriefs(input: FixInput): Promise<GeneratedFix[]> {
   const targets = sorted.slice(0, 3).map(([cat]) => cat);
   if (targets.length === 0) targets.push("discovery", "purchase_intent", "competitive");
 
+  const regionInfo = region ? getRegion(region) : null;
+  const regionSuffix = regionInfo && regionInfo.code !== "global" ? ` in ${regionInfo.name}` : "";
+
   const queryMap: Record<string, string> = {
-    discovery:      `best ${space} tools in 2026`,
-    purchase_intent: `why choose ${brand} for ${space}`,
-    competitive:    `${brand} vs competitors in ${space}`,
+    discovery:      `best ${space} tools${regionSuffix} in 2026`,
+    purchase_intent: `why choose ${brand} for ${space}${regionSuffix}`,
+    competitive:    `${brand} vs competitors in ${space}${regionSuffix}`,
     awareness:      `what is ${brand} and what does it do`,
     reputation:     `${brand} reviews and customer success stories`,
-    alternatives:   `alternatives to ${brand} for ${space}`,
+    alternatives:   `alternatives to ${brand} for ${space}${regionSuffix}`,
   };
 
   const briefs: GeneratedFix[] = [];
