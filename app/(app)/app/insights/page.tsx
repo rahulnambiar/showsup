@@ -80,7 +80,12 @@ export default function InsightsPage() {
   useEffect(() => {
     fetch("/api/correlation")
       .then((r) => r.json())
-      .then((d: InsightsData) => {
+      .then((d: InsightsData & { error?: string }) => {
+        // Guard: API may return an error object instead of the expected shape
+        if (!d || d.error || !Array.isArray(d.timeline) || !Array.isArray(d.scan_series)) {
+          setData({ correlations: [], timeline: [], matrix: [], matrix_labels: [], scan_series: [] });
+          return;
+        }
         setData(d);
         // Activate ShowsUp Score + first metric by default
         const keys = d.timeline.length > 0
@@ -88,7 +93,9 @@ export default function InsightsPage() {
           : [];
         setActiveLines(new Set(keys.slice(0, 3)));
       })
-      .catch(() => {})
+      .catch(() => {
+        setData({ correlations: [], timeline: [], matrix: [], matrix_labels: [], scan_series: [] });
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -102,7 +109,7 @@ export default function InsightsPage() {
     );
   }
 
-  const noData = !data || (data.timeline.length === 0 && data.scan_series.length === 0);
+  const noData = !data || ((data.timeline?.length ?? 0) === 0 && (data.scan_series?.length ?? 0) === 0);
   const latestScore = data?.scan_series.at(-1)?.score ?? 0;
 
   if (noData) {
