@@ -27,7 +27,7 @@ export default function SignupPage() {
 
     const pendingUrl = localStorage.getItem("pendingUrl");
     const nextPath = pendingUrl
-      ? `/app/scan?url=${encodeURIComponent(pendingUrl)}`
+      ? `/app/report-builder?url=${encodeURIComponent(pendingUrl)}`
       : "/app/dashboard";
 
     const res = await fetch("/api/auth/signup", {
@@ -60,7 +60,7 @@ export default function SignupPage() {
 
     const pendingUrl = localStorage.getItem("pendingUrl");
     const nextPath = pendingUrl
-      ? `/app/scan?url=${encodeURIComponent(pendingUrl)}`
+      ? `/app/report-builder?url=${encodeURIComponent(pendingUrl)}`
       : "/app/dashboard";
 
     const res = await fetch("/api/auth/resend-confirmation", {
@@ -88,7 +88,7 @@ export default function SignupPage() {
     const supabase = createClient();
     const pendingUrl = localStorage.getItem("pendingUrl");
     const nextPath = pendingUrl
-      ? `/app/scan?url=${encodeURIComponent(pendingUrl)}`
+      ? `/app/report-builder?url=${encodeURIComponent(pendingUrl)}`
       : "/app/dashboard";
     if (pendingUrl) localStorage.removeItem("pendingUrl");
 

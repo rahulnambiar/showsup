@@ -22,7 +22,7 @@ export default function LoginPage() {
     const pendingUrl = localStorage.getItem("pendingUrl");
     if (pendingUrl) {
       localStorage.removeItem("pendingUrl");
-      return `/app/scan?url=${encodeURIComponent(pendingUrl)}`;
+      return `/app/report-builder?url=${encodeURIComponent(pendingUrl)}`;
     }
     return "/app/dashboard";
   }
@@ -55,7 +55,7 @@ export default function LoginPage() {
     const supabase = createClient();
     const pendingUrl = localStorage.getItem("pendingUrl");
     const nextPath = pendingUrl
-      ? `/app/scan?url=${encodeURIComponent(pendingUrl)}`
+      ? `/app/report-builder?url=${encodeURIComponent(pendingUrl)}`
       : "/app/dashboard";
     if (pendingUrl) localStorage.removeItem("pendingUrl");
 
