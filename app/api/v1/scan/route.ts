@@ -1,64 +1,55 @@
 /**
  * POST /api/v1/scan
  *
- * Cloud API endpoint for the ShowsUp CLI and third-party integrations.
- * Authenticates via X-Api-Token header.
+ * Public REST API — trigger a brand scan.
+ * Auth: Authorization: Bearer <api_token>
  *
- * Request body:
- *   { brand, url?, category?, niche?, competitors?, depth? }
+ * Request: { url, brand?, category?, depth?, regions? }
+ * Response: { scan_id, status, brand, score, ... }
  *
- * Depth: "quick" | "standard" | "deep" (default: "standard")
+ * Token costs: quick=40, standard=140, deep=335
  */
 
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
 import { runScan } from "@/lib/engine/scan";
 import type { ScanInput } from "@/lib/engine/types";
-
-function getAdmin() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { persistSession: false, autoRefreshToken: false } }
-  );
-}
+import { isSelfHost } from "@/lib/mode";
+import { authenticateApiToken, chargeTokens, getAdmin, API_TOKEN_COSTS } from "@/lib/api/auth";
+import { deliverWebhook } from "@/lib/webhooks/delivery";
 
 export async function POST(request: Request) {
   try {
-    // ── Auth via API token ──────────────────────────────────────────────────
-    const token =
-      request.headers.get("x-api-token") ??
-      request.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
-
-    if (!token) {
-      return NextResponse.json({ error: "API token required. Pass X-Api-Token header." }, { status: 401 });
+    const user = await authenticateApiToken(request);
+    if (!user) {
+      return NextResponse.json(
+        { error: "Unauthorized. Pass Authorization: Bearer <api_token>" },
+        { status: 401 }
+      );
     }
 
-    const admin = getAdmin();
-    const { data: profile } = await admin
-      .from("profiles")
-      .select("id")
-      .eq("api_token", token)
-      .maybeSingle();
-
-    if (!profile?.id) {
-      return NextResponse.json({ error: "Invalid API token." }, { status: 401 });
-    }
-
-    // ── Parse body ──────────────────────────────────────────────────────────
     const body = await request.json() as {
-      brand?: string; url?: string; category?: string; niche?: string;
-      competitors?: string[]; depth?: string; models?: Record<string, boolean>;
+      url?: string;
+      brand?: string;
+      category?: string;
+      niche?: string;
+      competitors?: string[];
+      depth?: string;
+      regions?: string[];
     };
 
-    const brand    = (body.brand ?? "").trim();
-    const url      = (body.url   ?? "").trim();
-    const category = (body.category ?? "Other").trim();
-    const niche    = (body.niche ?? "").trim();
-    const competitors: string[] = Array.isArray(body.competitors) ? body.competitors.slice(0, 8) : [];
+    const url       = (body.url      ?? "").trim();
+    const brand     = (body.brand    ?? "").trim();
+    const category  = (body.category ?? "Other").trim();
+    const niche     = (body.niche    ?? "").trim();
+    const competitors = Array.isArray(body.competitors)
+      ? body.competitors.filter((c): c is string => typeof c === "string").slice(0, 8)
+      : [];
+    const regions   = Array.isArray(body.regions)
+      ? body.regions.filter((r): r is string => typeof r === "string")
+      : ["global"];
 
-    if (!brand) {
-      return NextResponse.json({ error: "brand is required" }, { status: 400 });
+    if (!url && !brand) {
+      return NextResponse.json({ error: "url or brand is required" }, { status: 400 });
     }
 
     const depthMap: Record<string, "quick_check" | "standard" | "deep"> = {
@@ -66,15 +57,31 @@ export async function POST(request: Request) {
     };
     const scanDepth = depthMap[body.depth ?? "standard"] ?? "standard";
 
-    // ── Run scan ────────────────────────────────────────────────────────────
+    // Token check
+    if (!isSelfHost) {
+      const charge = await chargeTokens(
+        user.userId,
+        `scan.${scanDepth}`,
+        `API scan: ${brand || url} (${scanDepth})`,
+      );
+      if (!charge.ok) {
+        return NextResponse.json(
+          { error: "Insufficient tokens", required: charge.required, balance: charge.balance },
+          { status: 402 }
+        );
+      }
+    }
+
+    // Run scan
     const scanInput: ScanInput = {
-      brand,
+      brand: brand || new URL(url.startsWith("http") ? url : "https://" + url).hostname,
       category,
       niche,
       url,
       competitors,
+      regions,
       reportConfig: { type: scanDepth, addons: [], extra_competitors: competitors.length },
-      models: body.models ?? { chatgpt: true, claude: true },
+      models: { chatgpt: true, claude: true },
     };
 
     let result;
@@ -85,27 +92,65 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: msg }, { status: 503 });
     }
 
-    // Return results (no DB persistence for v1 API — stateless)
+    // Persist to scans table
+    const admin = getAdmin();
+    let scanId: string | null = null;
+    try {
+      const { data: scan } = await admin.from("scans").insert({
+        user_id:         user.userId,
+        brand_name:      result.brand,
+        website:         url || null,
+        category,
+        status:          "completed",
+        overall_score:   result.overall_score,
+        category_scores: result.category_scores,
+        competitors_data: result.competitors_data,
+        regions:         regions.length > 0 ? regions : ["global"],
+        ...(result.improvement_plan  && { improvement_plan:  result.improvement_plan  }),
+        ...(result.regional_scores   && { regional_scores:   result.regional_scores   }),
+        ...(result.regional_insights && { regional_insights: result.regional_insights }),
+      }).select("id").single();
+      scanId = (scan?.id as string) ?? null;
+    } catch { /* Non-fatal */ }
+
+    // Fire webhook (fire-and-forget)
+    void deliverWebhook(user.userId, "scan.completed", {
+      scan_id: scanId,
+      brand:   result.brand,
+      score:   result.overall_score,
+      url,
+    });
+
+    const tokenCost = API_TOKEN_COSTS[`scan.${scanDepth}`] ?? 0;
+
     return NextResponse.json({
+      scan_id:         scanId,
+      status:          "completed",
+      estimated_time:  0,
       brand:           result.brand,
-      category:        result.category,
-      url:             result.url,
+      url:             url || null,
+      category,
       overall_score:   result.overall_score,
       category_scores: result.category_scores,
+      platforms:       Object.fromEntries(
+        result.results.map((mr) => [mr.model, mr.score])
+      ),
+      scanned_at:      new Date().toISOString(),
       results:         result.results.map((mr) => ({
-        model:        mr.model,
-        label:        mr.label,
-        score:        mr.score,
-        mentioned:    mr.mentioned,
+        model:     mr.model,
+        label:     mr.label,
+        score:     mr.score,
+        mentioned: mr.mentioned,
       })),
-      recommendations: result.recommendations,
       competitors_data: {
-        brand_profile:   result.competitors_data.brand_profile,
-        competitors:     result.competitors_data.competitors,
-        share_of_voice:  result.competitors_data.share_of_voice,
-        insights:        result.competitors_data.insights,
+        brand_profile:  result.competitors_data.brand_profile,
+        competitors:    result.competitors_data.competitors,
+        share_of_voice: result.competitors_data.share_of_voice,
+        insights:       result.competitors_data.insights,
       },
-      ...(result.improvement_plan && { improvement_plan: result.improvement_plan }),
+      ...(result.improvement_plan  && { improvement_plan:  result.improvement_plan  }),
+      ...(result.regional_scores   && { regional_scores:   result.regional_scores   }),
+      tokens_used: tokenCost,
     });
   } catch (err) {
     return NextResponse.json({ error: err instanceof Error ? err.message : "Internal error" }, { status: 500 });
