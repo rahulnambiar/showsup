@@ -90,7 +90,7 @@ export async function POST(request: Request) {
     // Load scan
     const { data: scan } = await admin
       .from("scans")
-      .select("id, brand_name, category, url, website, overall_score, category_scores, competitors_data, user_id")
+      .select("id, brand_name, category, website, overall_score, category_scores, competitors_data, user_id")
       .eq("id", scan_id)
       .single();
 
@@ -114,7 +114,7 @@ export async function POST(request: Request) {
     }
 
     // Analyze website
-    const siteUrl = scan.website || scan.url || scan.brand_name;
+    const siteUrl = scan.website || scan.brand_name;
     let websiteAnalysis = null;
     let websiteJson = "Website analysis unavailable.";
     try {

@@ -28,17 +28,17 @@ export async function POST(request: Request) {
     // Load the plan item + its scan
     const { data: item } = await admin
       .from("plan_items")
-      .select("*, scans(id, url, website, user_id)")
+      .select("*, scans(id, website, user_id)")
       .eq("id", plan_item_id)
       .single();
 
     if (!item) return NextResponse.json({ error: "Plan item not found" }, { status: 404 });
 
-    const scan = item.scans as { id: string; url: string; website: string; user_id: string } | null;
+    const scan = item.scans as { id: string; website: string; user_id: string } | null;
     if (!scan || scan.user_id !== user.id)
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-    const siteUrl = scan.website || scan.url;
+    const siteUrl = scan.website;
 
     // Run verification
     const result = await verifyFix(
