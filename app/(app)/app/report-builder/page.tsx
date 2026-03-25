@@ -47,9 +47,8 @@ const MODEL_TO_PLATFORM: Record<string, string> = {
 };
 
 // Models available for actual scanning (scan API supports these)
-const SCAN_CAPABLE = new Set(["gpt-4o-mini", "claude-3-haiku"]);
-// Google provider is not yet integrated
-const COMING_SOON_PROVIDERS = new Set(["google"]);
+const SCAN_CAPABLE = new Set(["gpt-4o-mini", "claude-3-haiku", "gemini-1.5-flash"]);
+const COMING_SOON_PROVIDERS = new Set<string>([]);
 
 // ── Templates ─────────────────────────────────────────────────────────────────
 
@@ -111,7 +110,7 @@ function ReportBuilderPage() {
 
   // Report config
   const [scanDepth, setScanDepth] = useState<ScanDepth>("standard");
-  const [selectedModels, setSelectedModels] = useState<string[]>(["gpt-4o-mini", "claude-3-haiku"]);
+  const [selectedModels, setSelectedModels] = useState<string[]>(["gpt-4o-mini", "claude-3-haiku", "gemini-1.5-flash"]);
   const [multiRegion, setMultiRegion] = useState(false);
   const [selectedRegions, setSelectedRegions] = useState<string[]>(["global"]);
   const [modules, setModules] = useState<ReportConfig["modules"]>({
@@ -273,10 +272,12 @@ function ReportBuilderPage() {
     setScanning(true);
     trackScanStarted({ brand: brand.trim(), url: url.trim(), depth: scanDepth, models: selectedModels });
 
+    const useGemini = selectedModels.some((m) => MODEL_TO_PLATFORM[m] === "gemini");
     const initialSteps: StepState[] = [
       { id: "setup",   label: `Configuring report for ${brand}…`, status: "running" },
       { id: "chatgpt", label: "Querying ChatGPT…",                status: "pending" },
       { id: "claude",  label: "Querying Claude…",                 status: "pending" },
+      ...(useGemini ? [{ id: "gemini", label: "Querying Gemini…", status: "pending" as const }] : []),
       { id: "analyze", label: "Analyzing responses with AI…",     status: "pending" },
       { id: "score",   label: "Calculating ShowsUp Score…",       status: "pending" },
     ];
@@ -287,6 +288,7 @@ function ReportBuilderPage() {
     updateStep("setup", "done");
     updateStep("chatgpt", "running");
     updateStep("claude", "running");
+    if (useGemini) updateStep("gemini", "running");
 
     try {
       const addonKeys = (Object.keys(modules) as ModuleKey[]).filter((k) => modules[k]);
@@ -307,6 +309,7 @@ function ReportBuilderPage() {
           models: {
             chatgpt: selectedModels.some((m) => MODEL_TO_PLATFORM[m] === "chatgpt"),
             claude:  selectedModels.some((m) => MODEL_TO_PLATFORM[m] === "claude"),
+            gemini:  selectedModels.some((m) => MODEL_TO_PLATFORM[m] === "gemini"),
           },
           competitors: allCompetitors,
           regions: multiRegion ? selectedRegions : ["global"],
@@ -323,6 +326,7 @@ function ReportBuilderPage() {
       if (res.status === 402) {
         updateStep("chatgpt", "error");
         updateStep("claude", "error");
+        if (useGemini) updateStep("gemini", "error");
         setScanError(`Insufficient tokens. Need ${data.required ?? totalCost}, have ${data.balance ?? 0}.`);
         setScanning(false);
         return;
@@ -331,6 +335,7 @@ function ReportBuilderPage() {
       if (!res.ok) {
         updateStep("chatgpt", "error");
         updateStep("claude", "error");
+        if (useGemini) updateStep("gemini", "error");
         trackScanFailed(data.error ?? "report_generation_failed");
         setScanError(data.error ?? "Report generation failed.");
         setScanning(false);
@@ -340,6 +345,7 @@ function ReportBuilderPage() {
       trackScanCompleted({ brand: brand.trim(), score: data.overall_score ?? 0, category, depth: scanDepth });
       updateStep("chatgpt", "done");
       updateStep("claude", "done");
+      if (useGemini) updateStep("gemini", "done");
       updateStep("analyze", "running");
       await delay(700);
       updateStep("analyze", "done");
@@ -354,6 +360,7 @@ function ReportBuilderPage() {
     } catch {
       updateStep("chatgpt", "error");
       updateStep("claude", "error");
+      if (useGemini) updateStep("gemini", "error");
       setScanError("Network error. Please try again.");
       setScanning(false);
     }
