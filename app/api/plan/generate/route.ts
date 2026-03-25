@@ -119,7 +119,31 @@ export async function POST(request: Request) {
     let websiteJson = "Website analysis unavailable.";
     try {
       websiteAnalysis = await analyzeWebsite(siteUrl);
-      websiteJson = JSON.stringify(websiteAnalysis, null, 2);
+      // Build a concise summary instead of dumping the full JSON (avoids huge prompts)
+      const wa = websiteAnalysis;
+      const homePage = wa.pages[0];
+      websiteJson = [
+        `Homepage: ${wa.homepageUrl}`,
+        `SSR: ${wa.isSSR}`,
+        `Has Organization schema: ${wa.hasOrganizationSchema}`,
+        `llms.txt: exists=${wa.llmsTxt.exists}, words=${wa.llmsTxt.wordCount}`,
+        `robots.txt: blocked crawlers=[${wa.robotsTxt.blockedCrawlers.join(", ") || "none"}]`,
+        `sitemap.xml: exists=${wa.sitemapXml.exists}, urls=${wa.sitemapXml.urlCount}, hasLastmod=${wa.sitemapXml.hasLastmod}`,
+        homePage ? [
+          `Homepage title: "${homePage.title}"`,
+          `Homepage H1: "${homePage.h1}"`,
+          `Homepage meta description: ${homePage.metaDescription ? `"${homePage.metaDescription.slice(0, 100)}"` : "MISSING"}`,
+          `Homepage word count: ${homePage.wordCount}`,
+          `Homepage FAQ schema: ${homePage.hasSchemaFAQ}`,
+          `Homepage FAQ content: ${homePage.hasFAQContent}`,
+          `Homepage statistics: ${homePage.hasStatistics}`,
+          `Homepage quotes: ${homePage.hasQuotes}`,
+          `Homepage answer-first: ${homePage.answerFirst}`,
+          `Homepage schema types: [${homePage.schemaTypes.join(", ") || "none"}]`,
+          `Pages analyzed: ${wa.pages.length}`,
+          `Headings (h2/h3): ${homePage.headings.slice(0, 8).join(" | ")}`,
+        ].join("\n") : "",
+      ].filter(Boolean).join("\n");
     } catch {
       websiteJson = `Could not analyze ${siteUrl} — proceeding with scan data only.`;
     }
@@ -153,14 +177,29 @@ export async function POST(request: Request) {
     });
 
     const rawText = message.content.find((b) => b.type === "text")?.text ?? "[]";
+    console.log("[plan/generate] raw AI response:", rawText.slice(0, 500));
 
-    // Parse plan items
+    // Parse plan items — handle markdown fences, leading text, etc.
     let planItems: Record<string, unknown>[] = [];
     try {
-      const cleaned = rawText.trim().replace(/^```json\s*/i, "").replace(/```\s*$/i, "");
+      // Strip markdown fences
+      let cleaned = rawText.trim()
+        .replace(/^```(?:json)?\s*/i, "")
+        .replace(/```\s*$/i, "")
+        .trim();
+
+      // If response has leading text before the array, extract just the array
+      const arrayStart = cleaned.indexOf("[");
+      const arrayEnd = cleaned.lastIndexOf("]");
+      if (arrayStart !== -1 && arrayEnd !== -1 && arrayStart < arrayEnd) {
+        cleaned = cleaned.slice(arrayStart, arrayEnd + 1);
+      }
+
       planItems = JSON.parse(cleaned) as Record<string, unknown>[];
-    } catch {
-      return NextResponse.json({ error: "Failed to parse plan from AI response" }, { status: 500 });
+      if (!Array.isArray(planItems)) planItems = [];
+    } catch (parseErr) {
+      console.error("[plan/generate] parse error:", parseErr, "raw:", rawText.slice(0, 1000));
+      return NextResponse.json({ error: "Failed to parse plan from AI response", raw: rawText.slice(0, 500) }, { status: 500 });
     }
 
     // Priority ordering for DB insert
