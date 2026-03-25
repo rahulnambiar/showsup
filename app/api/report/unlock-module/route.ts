@@ -149,9 +149,29 @@ Be SPECIFIC — reference actual query gaps, competitor advantages, and concrete
   }
 }
 
-async function unlockBenchmark(category: string) {
-  const prompt = `For the ${category} industry, what would typical AI visibility scores look like for: a market leader, an average brand, and a new entrant?
-Return ONLY valid JSON:
+async function unlockBenchmark(
+  category: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  competitorsData: any,
+  brandScore: number,
+) {
+  const competitors: Array<{ name: string; mention_rate?: number; avg_position?: number | null; sentiment?: string | null }> =
+    competitorsData?.competitors ?? [];
+
+  const compLines = competitors.length > 0
+    ? competitors.slice(0, 6).map((c) =>
+        `- ${c.name}: mention_rate=${c.mention_rate ?? "unknown"}%, avg_position=${c.avg_position ?? "unknown"}`
+      ).join("\n")
+    : "No competitor data available";
+
+  const prompt = `You are benchmarking AI visibility scores for a brand in the "${category}" category.
+The scanned brand has an overall AI visibility score of ${brandScore}/100.
+
+The following competitors were detected in the scan:
+${compLines}
+
+Based on this actual competitive set, estimate realistic AI visibility benchmark scores.
+Return ONLY valid JSON — no explanation:
 {
   "leader":      { "score": 0-100, "mention_rate": 0-100, "avg_position": 1-10, "recommend_rate": 0-100 },
   "average":     { "score": 0-100, "mention_rate": 0-100, "avg_position": 1-10, "recommend_rate": 0-100 },
@@ -258,7 +278,11 @@ export async function POST(request: Request) {
       );
       updateField = "improvement_plan";
     } else if (module === "benchmark") {
-      moduleData = await unlockBenchmark(scan.category ?? "General");
+      moduleData = await unlockBenchmark(
+        scan.category ?? "General",
+        scan.competitors_data,
+        scan.overall_score ?? 0,
+      );
       updateField = "benchmark_data";
     }
 
