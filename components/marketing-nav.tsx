@@ -10,13 +10,13 @@ import { createClient } from "@/lib/supabase/client";
 const GITHUB_URL = "https://github.com/rahulnambiar/showsup";
 
 export function MarketingNav() {
-  const [scrolled, setScrolled] = useState(false);
-  const [loggedIn, setLoggedIn] = useState(false);
-  const [stars, setStars] = useState<number | null>(null);
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled]   = useState(false);
+  const [loggedIn, setLoggedIn]   = useState(false);
+  const [stars, setStars]         = useState<number | null>(null);
+  const [menuOpen, setMenuOpen]   = useState(false);
   const pathname = usePathname();
-  const router = useRouter();
-  const isHome = pathname === "/";
+  const router   = useRouter();
+  const isHome   = pathname === "/";
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 16);
@@ -26,9 +26,7 @@ export function MarketingNav() {
   }, []);
 
   useEffect(() => {
-    createClient().auth.getSession().then(({ data: { session } }) => {
-      setLoggedIn(!!session);
-    });
+    createClient().auth.getSession().then(({ data: { session } }) => setLoggedIn(!!session));
   }, []);
 
   useEffect(() => {
@@ -51,37 +49,36 @@ export function MarketingNav() {
       className={cn(
         "fixed top-0 inset-x-0 z-50 transition-all duration-300",
         scrolled || !isHome
-          ? "bg-[#0A0E17]/95 backdrop-blur-md border-b border-[#1F2937]"
+          ? "bg-white/90 backdrop-blur-lg border-b border-[#E5E7EB]"
           : "bg-transparent"
       )}
     >
       <div className="max-w-[1200px] mx-auto px-6 h-16 flex items-center justify-between gap-6">
+
         {/* Logo */}
-        <Link href="/" className="flex-shrink-0">
-          <span className="text-base font-semibold text-[#FFFFFF] tracking-tight">ShowsUp</span>
+        <Link href="/" className="flex-shrink-0 flex items-center gap-1.5">
+          <span style={{ fontFamily: "var(--font-inter, system-ui)" }} className="text-[20px] font-semibold text-[#111827] tracking-tight">
+            ShowsUp
+          </span>
+          <span className="text-[#10B981] text-base leading-none">●</span>
         </Link>
 
         {/* Center links — desktop */}
         <nav className="hidden md:flex items-center gap-7">
-          <button
-            onClick={() => scrollOrLink("product")}
-            className="text-sm text-[#9CA3AF] hover:text-[#FFFFFF] transition-colors"
-          >
-            Product
-          </button>
-          <button
-            onClick={() => scrollOrLink("cli")}
-            className="text-sm text-[#9CA3AF] hover:text-[#FFFFFF] transition-colors"
-          >
-            CLI
-          </button>
-          <button
-            onClick={() => scrollOrLink("pricing")}
-            className="text-sm text-[#9CA3AF] hover:text-[#FFFFFF] transition-colors"
-          >
-            Pricing
-          </button>
-          <Link href="#" className="text-sm text-[#9CA3AF] hover:text-[#FFFFFF] transition-colors">
+          {[
+            { label: "Product",      id: "product"      },
+            { label: "Integrations", id: "integrations" },
+            { label: "Pricing",      id: "pricing"      },
+          ].map(({ label, id }) => (
+            <button
+              key={id}
+              onClick={() => scrollOrLink(id)}
+              className="text-[14px] text-[#4B5563] hover:text-[#111827] transition-colors duration-200"
+            >
+              {label}
+            </button>
+          ))}
+          <Link href="#" className="text-[14px] text-[#4B5563] hover:text-[#111827] transition-colors duration-200">
             Docs
           </Link>
         </nav>
@@ -92,12 +89,12 @@ export function MarketingNav() {
             href={GITHUB_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 text-sm text-[#9CA3AF] hover:text-[#FFFFFF] border border-[#1F2937] hover:border-[rgba(255,255,255,0.2)] rounded-lg px-3 py-1.5 transition-colors"
+            className="flex items-center gap-1.5 text-[13px] text-[#4B5563] hover:text-[#111827] border border-[#E5E7EB] hover:border-[#D1D5DB] rounded-lg px-3 py-1.5 transition-all duration-200"
           >
             <Github className="w-3.5 h-3.5" />
             {stars !== null ? (
               <span className="flex items-center gap-1">
-                <Star className="w-2.5 h-2.5 text-[#F59E0B]" />
+                <Star className="w-2.5 h-2.5 text-[#F59E0B]" fill="#F59E0B" />
                 {stars.toLocaleString()}
               </span>
             ) : (
@@ -106,39 +103,35 @@ export function MarketingNav() {
           </a>
 
           {loggedIn ? (
-            <Link
-              href="/app/dashboard"
-              className="text-sm text-[#10B981] hover:text-[#059669] font-medium transition-colors"
-            >
+            <Link href="/app/dashboard" className="text-[13px] text-[#10B981] hover:text-[#059669] font-medium transition-colors duration-200">
               Dashboard →
             </Link>
           ) : (
-            <Link href="/login" className="text-sm text-[#9CA3AF] hover:text-[#FFFFFF] transition-colors">
+            <Link href="/login" className="text-[13px] text-[#4B5563] hover:text-[#111827] transition-colors duration-200">
               Sign in
             </Link>
           )}
 
           <Link
             href="/signup"
-            className="inline-flex items-center gap-1.5 text-sm font-medium bg-[#10B981] hover:bg-[#059669] text-[#0A0E17] rounded-lg px-4 py-2 transition-all"
+            className="inline-flex items-center gap-1.5 text-[13px] font-medium bg-[#10B981] hover:bg-[#059669] text-white rounded-lg px-4 py-2 transition-all duration-200 hover:scale-[1.02] shadow-sm"
           >
             Get Started <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
 
-        {/* Mobile: GitHub visible + hamburger */}
+        {/* Mobile: Get Started stays visible */}
         <div className="md:hidden flex items-center gap-2">
-          <a
-            href={GITHUB_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="p-2 text-[#9CA3AF] hover:text-[#FFFFFF] transition-colors"
+          <Link
+            href="/signup"
+            className="text-[13px] font-medium bg-[#10B981] hover:bg-[#059669] text-white rounded-lg px-3 py-1.5 transition-colors duration-200"
           >
-            <Github className="w-4 h-4" />
-          </a>
+            Get Started
+          </Link>
           <button
             onClick={() => setMenuOpen(!menuOpen)}
-            className="p-2 text-[#9CA3AF] hover:text-[#FFFFFF] transition-colors"
+            className="p-2 text-[#4B5563] hover:text-[#111827] transition-colors duration-200"
+            aria-label="Toggle menu"
           >
             {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
@@ -147,39 +140,42 @@ export function MarketingNav() {
 
       {/* Mobile menu */}
       {menuOpen && (
-        <div className="md:hidden bg-[#0A0E17] border-t border-[#1F2937] px-6 py-5 space-y-1">
+        <div className="md:hidden bg-white border-t border-[#E5E7EB] px-6 py-5 space-y-1 shadow-lg">
           {[
-            { label: "Product",  action: () => { scrollOrLink("product"); setMenuOpen(false); } },
-            { label: "CLI",      action: () => { scrollOrLink("cli");     setMenuOpen(false); } },
-            { label: "Pricing",  action: () => { scrollOrLink("pricing"); setMenuOpen(false); } },
-          ].map(({ label, action }) => (
+            { label: "Product",      id: "product"      },
+            { label: "Integrations", id: "integrations" },
+            { label: "Pricing",      id: "pricing"      },
+          ].map(({ label, id }) => (
             <button
-              key={label}
-              onClick={action}
-              className="block w-full text-left text-sm text-[#9CA3AF] hover:text-[#FFFFFF] py-2 transition-colors"
+              key={id}
+              onClick={() => { scrollOrLink(id); setMenuOpen(false); }}
+              className="block w-full text-left text-[14px] text-[#4B5563] hover:text-[#111827] py-2.5 transition-colors duration-200"
             >
               {label}
             </button>
           ))}
-          <Link href="#" className="block text-sm text-[#9CA3AF] hover:text-[#FFFFFF] py-2 transition-colors">
+          <Link href="#" className="block text-[14px] text-[#4B5563] hover:text-[#111827] py-2.5 transition-colors duration-200">
             Docs
           </Link>
-          <div className="pt-4 border-t border-[#1F2937] space-y-3">
+          <div className="pt-4 border-t border-[#E5E7EB] space-y-3">
             {loggedIn ? (
-              <Link href="/app/dashboard" className="block text-sm text-[#10B981] font-medium py-1">
+              <Link href="/app/dashboard" className="block text-[14px] text-[#10B981] font-medium py-1">
                 Dashboard →
               </Link>
             ) : (
-              <Link href="/login" className="block text-sm text-[#9CA3AF] hover:text-[#FFFFFF] py-1">
+              <Link href="/login" className="block text-[14px] text-[#4B5563] hover:text-[#111827] py-1">
                 Sign in
               </Link>
             )}
-            <Link
-              href="/signup"
-              className="block text-center text-sm font-semibold bg-[#10B981] hover:bg-[#059669] text-[#0A0E17] rounded-lg px-4 py-2.5 transition-colors"
+            <a
+              href={GITHUB_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 text-[14px] text-[#4B5563] py-1"
             >
-              Get Started →
-            </Link>
+              <Github className="w-4 h-4" />
+              GitHub {stars !== null && `· ★ ${stars.toLocaleString()}`}
+            </a>
           </div>
         </div>
       )}
