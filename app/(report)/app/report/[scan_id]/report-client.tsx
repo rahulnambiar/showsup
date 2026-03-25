@@ -1743,7 +1743,7 @@ export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: 
             <p className="text-[11px] text-[#9CA3AF]">{dateStr}</p>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
-            {tokenBalance !== null && (
+            {tokenBalance !== null && tokenBalance !== Number.MAX_SAFE_INTEGER && (
               <span className="hidden sm:flex items-center gap-1.5 text-xs text-[#6B7280] border border-[#E5E7EB] rounded-lg px-2.5 py-1.5">
                 🪙 {tokenBalance.toLocaleString()}
               </span>
