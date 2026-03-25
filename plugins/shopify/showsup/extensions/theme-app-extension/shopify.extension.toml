@@ -1,0 +1,13 @@
+api_version = "2025-01"
+
+[[extensions]]
+  type    = "theme_app_extension"
+  name    = "ShowsUp Theme Extension"
+  handle  = "showsup-theme"
+
+  [extensions.development]
+    resource = "product"
+
+  [[extensions.metafields]]
+    namespace = "showsup"
+    key       = "schema_enabled"

@@ -1,0 +1,60 @@
+{% comment %}
+  ShowsUp llms.txt Helper Block
+  ─────────────────────────────────────────────────────────────────
+  App embed block — adds a <link> tag pointing to the llms.txt
+  file served by the ShowsUp app proxy.
+
+  The actual llms.txt content is served at:
+    https://yourstore.com/a/showsup/llms.txt
+
+  This block optionally injects a <meta> tag + <link rel="llms">
+  so AI crawlers can discover the file via <head> inspection.
+
+  Most AI crawlers already check /llms.txt directly — the app proxy
+  handles that via the URL redirect configured in shopify.app.toml.
+{% endcomment %}
+
+{% if block.settings.enabled %}
+
+{%- assign proxy_base = shop.url | append: "/a/showsup" -%}
+
+{%- comment -%} Machine-readable discovery hint in <head> {%- endcomment -%}
+<link
+  rel="llms"
+  type="text/plain"
+  title="LLMs.txt — AI Visibility Index"
+  href="{{ proxy_base }}/llms.txt"
+/>
+
+<meta
+  name="llms"
+  content="{{ proxy_base }}/llms.txt"
+/>
+
+{% comment %}
+  NOTE: For /llms.txt to resolve at the root, add a URL redirect in
+  Shopify Admin → Online Store → Navigation → URL Redirects:
+
+    From: /llms.txt
+    To:   /a/showsup/llms.txt
+
+  Or configure it via the ShowsUp app settings page.
+{% endcomment %}
+
+{% endif %}
+
+{% schema %}
+{
+  "name": "ShowsUp llms.txt",
+  "target": "head",
+  "settings": [
+    {
+      "type":    "checkbox",
+      "id":      "enabled",
+      "label":   "Enable llms.txt discovery tags",
+      "default": true,
+      "info":    "Adds <link rel='llms'> and <meta name='llms'> tags for AI crawler discovery."
+    }
+  ]
+}
+{% endschema %}

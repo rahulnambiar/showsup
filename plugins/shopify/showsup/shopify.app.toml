@@ -1,0 +1,42 @@
+name = "ShowsUp — AI Visibility"
+client_id = "REPLACE_WITH_CLIENT_ID"
+application_url = "https://REPLACE_WITH_APP_URL"
+embedded = true
+
+[build]
+  automatically_update_urls_on_dev = true
+  dev_store_url = "REPLACE_WITH_DEV_STORE.myshopify.com"
+
+[access_scopes]
+  scopes = "read_products,read_product_listings,read_collections,read_content,read_themes,read_orders,read_customers,write_script_tags,read_price_rules,read_metafields,write_metafields"
+
+[auth]
+  redirect_urls = [
+    "https://REPLACE_WITH_APP_URL/auth/callback",
+    "https://REPLACE_WITH_APP_URL/auth/shopify/callback",
+    "https://REPLACE_WITH_APP_URL/api/auth/callback",
+  ]
+
+[webhooks]
+  api_version = "2025-01"
+
+  [[webhooks.subscriptions]]
+    topics = ["app/uninstalled"]
+    uri    = "/webhooks/app-uninstalled"
+
+  [[webhooks.subscriptions]]
+    topics = ["shop/update"]
+    uri    = "/webhooks/shop-update"
+
+[app_proxy]
+  url       = "https://REPLACE_WITH_APP_URL/proxy"
+  subpath   = "showsup"
+  prefix    = "a"
+
+[pos]
+  embedded = false
+
+[[extensions]]
+  type   = "theme_app_extension"
+  name   = "ShowsUp Theme Extension"
+  handle = "showsup-theme"

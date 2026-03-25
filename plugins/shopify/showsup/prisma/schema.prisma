@@ -1,0 +1,97 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Required by @shopify/shopify-app-session-storage-prisma
+model Session {
+  id            String    @id
+  shop          String
+  state         String
+  isOnline      Boolean   @default(false)
+  scope         String?
+  expires       DateTime?
+  accessToken   String
+  userId        BigInt?
+  firstName     String?
+  lastName      String?
+  email         String?
+  accountOwner  Boolean   @default(false)
+  locale        String?
+  collaborator  Boolean?  @default(false)
+  emailVerified Boolean?  @default(false)
+}
+
+model Store {
+  id               String   @id  // shop domain, e.g. mystore.myshopify.com
+  name             String?
+  email            String?
+  domain           String?       // custom domain
+  currency         String?
+  primaryLocale    String?
+  planName         String   @default("free")  // "free" | "pro"
+  billingId        String?       // Shopify subscription ID
+  apiToken         String?       // ShowsUp cloud API token (optional override)
+  cloudUrl         String?       // Self-host URL override
+  autoScanEnabled  Boolean  @default(false)
+  emailNotifications Boolean @default(true)
+  regions          String   @default("[\"global\"]") // JSON array
+  scanDepth        String   @default("standard")
+  category         String   @default("E-commerce")
+  llmstxtDeployed  Boolean  @default(false)
+  llmstxtContent   String?
+  llmstxtDeployedAt DateTime?
+  schemaEnabled    Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  scans            Scan[]
+  productScores    ProductScore[]
+}
+
+model Scan {
+  id            String   @id @default(cuid())
+  shop          String
+  status        String   @default("pending")  // pending | scanning | complete | error
+  overallScore  Int?
+  chatgptScore  Int?
+  claudeScore   Int?
+  geminiScore   Int?
+  perplexityScore Int?
+  shareOfVoice  Float?   // 0–100
+  queryCount    Int?     // total queries tested
+  queriesWon    Int?
+  queriesMissed Int?
+  errorMessage  String?
+  rawResults    String?  // JSON blob of full API response
+  createdAt     DateTime @default(now())
+  completedAt   DateTime?
+
+  store         Store    @relation(fields: [shop], references: [id], onDelete: Cascade)
+
+  @@index([shop])
+  @@index([createdAt])
+}
+
+model ProductScore {
+  id            String   @id @default(cuid())
+  shop          String
+  productId     String   // Shopify product GID
+  productTitle  String
+  productType   String?
+  handle        String?
+  score         Int?
+  queriesWon    Int?
+  queriesMissed Int?
+  topQuery      String?
+  updatedAt     DateTime @updatedAt
+
+  store         Store    @relation(fields: [shop], references: [id], onDelete: Cascade)
+
+  @@unique([shop, productId])
+  @@index([shop])
+}
