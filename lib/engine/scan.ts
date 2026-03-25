@@ -37,7 +37,7 @@ export async function callOpenAI(prompt: string): Promise<string> {
 export async function callGemini(prompt: string): Promise<string> {
   const apiKey = process.env.GOOGLE_AI_API_KEY;
   const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
