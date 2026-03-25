@@ -16,6 +16,7 @@ import {
   Wand2,
   Database,
   LineChart,
+  ClipboardList,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -25,6 +26,7 @@ const navItems = [
   { href: "/app/dashboard",      icon: LayoutDashboard, label: "Dashboard"           },
   { href: "/app/report-builder", icon: Wand2,           label: "Analyse your Brand"  },
   { href: "/app/scores",         icon: BarChart3,       label: "Scores"              },
+  { href: "/app/plan",           icon: ClipboardList,   label: "Improvement Plan"    },
   { href: "/app/trends",         icon: TrendingUp,      label: "Trends"              },
   { href: "/app/data-sources",   icon: Database,        label: "Data Sources"        },
   { href: "/app/insights",       icon: LineChart,       label: "Insights"            },

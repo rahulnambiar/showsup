@@ -4,7 +4,8 @@
       "Bash(npx shadcn@latest init --defaults 2>&1)",
       "Bash(npx shadcn@latest add input label card separator badge avatar dropdown-menu tooltip --yes 2>&1)",
       "Bash(npx tsc --noEmit 2>&1)",
-      "Bash(npm run build 2>&1 | tail -40)"
+      "Bash(npm run build 2>&1 | tail -40)",
+      "Bash(ls /Users/lucy-server/showsup/app/\\\\\\(app\\\\\\)/app/plan/ 2>/dev/null)"
     ]
   }
 }

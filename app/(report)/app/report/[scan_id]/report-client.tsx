@@ -1923,18 +1923,32 @@ export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: 
 
         {/* ── 10: Improvement Plan ── */}
         <Section id="improvement" title="AI Improvement Plan">
-          {improvementPlan ? (
-            <ImprovementPlanSection plan={improvementPlan} currentScore={score} />
-          ) : (
-            <LockedModuleCard
-              title="3-Tier Improvement Plan"
-              description="A prioritised action plan — quick wins, monthly goals, and quarterly initiatives to boost your AI visibility."
-              unlockKey="improvement_plan"
-              scanId={scan.id}
-              tokenBalance={tokenBalance}
-              onUnlocked={(data) => setImprovementPlan(data)}
-            />
-          )}
+          <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-6 space-y-4">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 rounded-full bg-emerald-500/15 flex items-center justify-center flex-shrink-0">
+                <svg className="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-white mb-1">Your personalised AEO action plan is ready</h3>
+                <p className="text-sm text-gray-400 leading-relaxed">
+                  We&apos;ve analysed your website and AI scan results across 10 AEO dimensions to generate a prioritised improvement plan — with specific fixes, effort estimates, and automated verification.
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <a
+                href={`/app/plan/${scan.id}`}
+                className="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-black font-semibold text-sm px-4 py-2 rounded-lg transition-colors"
+              >
+                View Improvement Plan
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </a>
+            </div>
+          </div>
         </Section>
 
         {/* ── 10: Benchmark ── */}

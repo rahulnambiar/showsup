@@ -305,3 +305,47 @@ ALTER TABLE scans ADD COLUMN IF NOT EXISTS benchmark_data   jsonb DEFAULT NULL;
 ALTER TABLE scans ADD COLUMN IF NOT EXISTS improvement_plan jsonb DEFAULT NULL;
 ALTER TABLE scans ADD COLUMN IF NOT EXISTS perception_data  jsonb DEFAULT NULL;
 ALTER TABLE scans ADD COLUMN IF NOT EXISTS citation_data    jsonb DEFAULT NULL;
+
+-- ── AI Improvement Plan ────────────────────────────────────────────────────────
+
+-- New columns on scans for AEO readiness scores and website analysis snapshot
+ALTER TABLE scans ADD COLUMN IF NOT EXISTS aeo_readiness    jsonb DEFAULT NULL;
+ALTER TABLE scans ADD COLUMN IF NOT EXISTS website_analysis jsonb DEFAULT NULL;
+
+-- Plan items table
+CREATE TABLE IF NOT EXISTS public.plan_items (
+  id                      uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
+  scan_id                 uuid        NOT NULL REFERENCES public.scans(id) ON DELETE CASCADE,
+  dimension               text        NOT NULL,          -- AEO layer key (e.g. crawler_readiness)
+  title                   text        NOT NULL,
+  description             text        NOT NULL,
+  priority                text        NOT NULL CHECK (priority IN ('critical','high','medium','low')),
+  priority_order          integer     NOT NULL DEFAULT 3,
+  effort                  text        NOT NULL CHECK (effort IN ('quick_win','medium','project')),
+  funnel_stage            text        NOT NULL CHECK (funnel_stage IN ('awareness','consideration','competition','conversion')),
+  current_score           integer     NOT NULL DEFAULT 0,
+  target_score            integer     NOT NULL DEFAULT 0,
+  action_items            text        NOT NULL DEFAULT '', -- plain text action steps (newline-separated)
+  why_it_matters          text        DEFAULT NULL,
+  current_state           text        DEFAULT NULL,
+  desired_state           text        DEFAULT NULL,
+  impact                  text        DEFAULT NULL,
+  verification_type       text        NOT NULL,
+  verification_page_url   text        DEFAULT NULL,
+  status                  text        NOT NULL DEFAULT 'not_started' CHECK (status IN ('not_started','in_progress','marked_fixed','verified','failed','skipped')),
+  last_verified_at        timestamptz DEFAULT NULL,
+  last_verified_passed    boolean     DEFAULT NULL,
+  last_verified_message   text        DEFAULT NULL,
+  created_at              timestamptz DEFAULT now(),
+  updated_at              timestamptz DEFAULT now()
+);
+
+ALTER TABLE public.plan_items ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users see own plan items" ON public.plan_items
+  FOR ALL USING (
+    scan_id IN (SELECT id FROM public.scans WHERE user_id = auth.uid())
+  );
+
+CREATE INDEX IF NOT EXISTS plan_items_scan_id_idx ON public.plan_items(scan_id);
+CREATE INDEX IF NOT EXISTS plan_items_priority_order_idx ON public.plan_items(scan_id, priority_order);
