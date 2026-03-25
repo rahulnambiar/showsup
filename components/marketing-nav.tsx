@@ -9,6 +9,50 @@ import { createClient } from "@/lib/supabase/client";
 
 const GITHUB_URL = "https://github.com/rahulnambiar/showsup";
 
+function ChromeBanner() {
+  const [show, setShow] = useState(false);
+
+  useEffect(() => {
+    const dismissed = localStorage.getItem("showsup_chrome_banner_dismissed");
+    if (dismissed) return;
+    const isChrome = /Chrome/.test(navigator.userAgent) && !/Edg|Edge|OPR|Opera/.test(navigator.userAgent);
+    if (isChrome) setShow(true);
+  }, []);
+
+  function dismiss() {
+    localStorage.setItem("showsup_chrome_banner_dismissed", "true");
+    setShow(false);
+  }
+
+  if (!show) return null;
+
+  return (
+    <div className="w-full bg-[#F0FDF4] border-b border-[#D1FAE5] flex items-center justify-center gap-3 px-4" style={{ height: 44 }}>
+      <span className="text-[13px] text-[#065F46] text-center hidden sm:inline">
+        🌐 ShowsUp is available as a Chrome extension — check any site&apos;s AI visibility in one click
+      </span>
+      <span className="text-[13px] text-[#065F46] text-center sm:hidden">
+        🌐 ShowsUp Chrome extension available
+      </span>
+      <a
+        href={GITHUB_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex-shrink-0 text-[12px] font-medium text-[#065F46] bg-white border border-[#D1FAE5] hover:border-[#10B981] rounded-md px-3 py-1 transition-colors duration-200"
+      >
+        Add to Chrome →
+      </a>
+      <button
+        onClick={dismiss}
+        className="flex-shrink-0 text-[#9CA3AF] hover:text-[#4B5563] transition-colors duration-200 ml-1"
+        aria-label="Dismiss"
+      >
+        <X className="w-3.5 h-3.5" />
+      </button>
+    </div>
+  );
+}
+
 export function MarketingNav() {
   const [scrolled, setScrolled]   = useState(false);
   const [loggedIn, setLoggedIn]   = useState(false);
@@ -45,14 +89,16 @@ export function MarketingNav() {
   }
 
   return (
-    <header
-      className={cn(
-        "fixed top-0 inset-x-0 z-50 transition-all duration-300",
-        scrolled || !isHome
-          ? "bg-white/90 backdrop-blur-lg border-b border-[#E5E7EB]"
-          : "bg-transparent"
-      )}
-    >
+    <header className="fixed top-0 inset-x-0 z-50 flex flex-col">
+      <ChromeBanner />
+      <div
+        className={cn(
+          "transition-all duration-300",
+          scrolled || !isHome
+            ? "bg-white/90 backdrop-blur-lg border-b border-[#E5E7EB]"
+            : "bg-transparent"
+        )}
+      >
       <div className="max-w-[1200px] mx-auto px-6 h-16 flex items-center justify-between gap-6">
 
         {/* Logo */}
@@ -179,6 +225,7 @@ export function MarketingNav() {
           </div>
         </div>
       )}
+      </div>
     </header>
   );
 }

@@ -10,7 +10,7 @@ import {
   Search, Wrench, CheckCircle2, BarChart3, Sparkles, MessageSquare,
   FileText, Code2, BookOpen, Shield, ShoppingBag, Monitor, Terminal,
   Globe, ArrowRight, Github, Copy, Check, Star, ChevronDown, Upload,
-  Scale, X,
+  Scale,
 } from "lucide-react";
 import { posthog } from "@/lib/posthog";
 
@@ -52,58 +52,6 @@ function FadeIn({
   );
 }
 
-// ── Chrome Banner ──────────────────────────────────────────────────────────────
-
-function ChromeBanner() {
-  const [show, setShow] = useState(false);
-
-  useEffect(() => {
-    const dismissed = localStorage.getItem("showsup_chrome_banner_dismissed");
-    if (dismissed) return;
-    const isChrome = /Chrome/.test(navigator.userAgent) && !/Edg|Edge|OPR|Opera/.test(navigator.userAgent);
-    if (isChrome) setShow(true);
-  }, []);
-
-  function dismiss() {
-    localStorage.setItem("showsup_chrome_banner_dismissed", "true");
-    setShow(false);
-  }
-
-  if (!show) return null;
-
-  return (
-    <div
-      className="w-full bg-[#F0FDF4] border-b border-[#E5E7EB] flex items-center justify-center gap-3 px-4"
-      style={{
-        height: 44,
-        transform: show ? "translateY(0)" : "translateY(-100%)",
-        transition: "transform 300ms ease",
-      }}
-    >
-      <span className="text-[13px] text-[#065F46] text-center hidden sm:inline">
-        🌐 ShowsUp is available as a Chrome extension — check any site&apos;s AI visibility in one click
-      </span>
-      <span className="text-[13px] text-[#065F46] text-center sm:hidden">
-        🌐 ShowsUp Chrome extension available
-      </span>
-      <a
-        href={GITHUB_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="flex-shrink-0 text-[12px] font-medium text-[#065F46] bg-white border border-[#D1FAE5] hover:border-[#10B981] rounded-md px-3 py-1 transition-colors duration-200"
-      >
-        Add to Chrome →
-      </a>
-      <button
-        onClick={dismiss}
-        className="flex-shrink-0 text-[#9CA3AF] hover:text-[#4B5563] transition-colors duration-200 ml-1"
-        aria-label="Dismiss"
-      >
-        <X className="w-3.5 h-3.5" />
-      </button>
-    </div>
-  );
-}
 
 // ── URL Input ─────────────────────────────────────────────────────────────────
 
@@ -510,7 +458,6 @@ export default function HomePage() {
 
   return (
     <div style={{ background: "#FFFFFF", color: "#111827" }}>
-      <ChromeBanner />
       <MarketingNav />
 
       {/* ── HERO ──────────────────────────────────────────────────────────── */}

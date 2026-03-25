@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { getActionCost } from "@/lib/pricing/cost-calculator";
 import {
   ChevronDown, Lock, ArrowLeft, ExternalLink, Zap, Lightbulb, CheckCircle2, Circle,
-  Download, Send, TrendingUp, FlaskConical,
+  Download, Send, TrendingUp, FlaskConical, Bot, X,
 } from "lucide-react";
 import { CompetitorHeatmap } from "./CompetitorHeatmap";
 
@@ -91,9 +91,9 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 const PRIORITY_STYLES: Record<string, string> = {
-  High:   "bg-red-500/10 text-red-400 border border-red-500/25",
-  Medium: "bg-amber-500/10 text-amber-400 border border-amber-500/25",
-  Low:    "bg-gray-500/10 text-gray-400 border border-gray-500/25",
+  High:   "bg-red-50 text-red-600 border border-red-200",
+  Medium: "bg-amber-50 text-amber-600 border border-amber-200",
+  Low:    "bg-gray-100 text-gray-500 border border-gray-200",
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -118,14 +118,14 @@ function getHighlightedHTML(text: string, brand: string, competitors: string[]):
   if (brand) {
     s = s.replace(
       new RegExp(`(${brand.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "gi"),
-      '<mark style="background:rgba(16,185,129,0.2);color:#6ee7b7;border-radius:2px;padding:0 2px">$1</mark>'
+      '<mark style="background:rgba(16,185,129,0.15);color:#065F46;border-radius:2px;padding:0 2px">$1</mark>'
     );
   }
   for (const c of competitors) {
     if (!c || c.toLowerCase() === brand.toLowerCase()) continue;
     s = s.replace(
       new RegExp(`(${c.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "gi"),
-      '<mark style="background:rgba(245,158,11,0.15);color:#fcd34d;border-radius:2px;padding:0 2px">$1</mark>'
+      '<mark style="background:rgba(245,158,11,0.15);color:#92400e;border-radius:2px;padding:0 2px">$1</mark>'
     );
   }
   return s;
@@ -158,11 +158,11 @@ function ScoreGauge({ score }: { score: number }) {
   return (
     <div className="relative flex items-center justify-center">
       <div
-        className="absolute rounded-full blur-3xl opacity-20 transition-colors duration-1000"
+        className="absolute rounded-full blur-3xl opacity-10 transition-colors duration-1000"
         style={{ width: 220, height: 220, background: color }}
       />
       <svg width="220" height="220" viewBox="0 0 220 220" className="rotate-[-90deg] relative z-10">
-        <circle cx="110" cy="110" r={r} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="14" />
+        <circle cx="110" cy="110" r={r} fill="none" stroke="rgba(0,0,0,0.08)" strokeWidth="14" />
         <circle
           cx="110" cy="110" r={r} fill="none"
           stroke={color} strokeWidth="14"
@@ -172,7 +172,7 @@ function ScoreGauge({ score }: { score: number }) {
         />
         <g style={{ transform: "rotate(90deg)", transformOrigin: "110px 110px" }}>
           <text x="110" y="100" textAnchor="middle" fill={color} fontSize="52" fontWeight="800" fontFamily="monospace">{display}</text>
-          <text x="110" y="130" textAnchor="middle" fill="rgba(255,255,255,0.3)" fontSize="16" fontWeight="500">/ 100</text>
+          <text x="110" y="130" textAnchor="middle" fill="#9CA3AF" fontSize="16" fontWeight="500">/ 100</text>
         </g>
       </svg>
     </div>
@@ -196,14 +196,14 @@ function FloatingTOC({ sections, activeId }: { sections: TocSection[]; activeId:
             onClick={() => scrollTo(s.id)}
             className={cn(
               "flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-left transition-all duration-200 group",
-              isActive ? "bg-white/6 text-white" : "text-gray-600 hover:text-gray-400 hover:bg-white/3"
+              isActive ? "bg-[#F0FDF4] text-[#10B981]" : "text-[#9CA3AF] hover:text-[#6B7280] hover:bg-[#F9FAFB]"
             )}
           >
             <span
               className={cn("w-1.5 h-1.5 rounded-full flex-shrink-0 transition-all duration-200", isActive ? "scale-125" : "opacity-50")}
               style={{ background: isActive ? "#10B981" : "currentColor" }}
             />
-            <span className={cn("text-xs font-medium whitespace-nowrap", isActive ? "text-gray-200" : "text-gray-600 group-hover:text-gray-400")}>
+            <span className={cn("text-xs font-medium whitespace-nowrap", isActive ? "text-[#10B981]" : "text-[#9CA3AF] group-hover:text-[#6B7280]")}>
               {s.label}
             </span>
           </button>
@@ -224,20 +224,20 @@ function QueryRow({ result, brand, competitorNames }: {
   const sentimentDot = sentiment === "positive" ? "#10B981" : sentiment === "negative" ? "#EF4444" : "#6B7280";
 
   return (
-    <div className="border-b border-white/5 last:border-0">
+    <div className="border-b border-[#F3F4F6] last:border-0">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/[0.02] transition-colors text-left"
+        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#F9FAFB] transition-colors text-left"
       >
-        <ChevronDown className={cn("w-3.5 h-3.5 text-gray-600 flex-shrink-0 transition-transform", open && "rotate-180")} />
-        <span className="flex-1 text-sm text-gray-300 truncate">{result.prompt}</span>
+        <ChevronDown className={cn("w-3.5 h-3.5 text-[#9CA3AF] flex-shrink-0 transition-transform", open && "rotate-180")} />
+        <span className="flex-1 text-sm text-[#374151] truncate">{result.prompt}</span>
         <div className="flex items-center gap-2 flex-shrink-0">
           <div className="w-2 h-2 rounded-full" style={{ background: sentimentDot }} />
           <span className={cn(
             "text-[11px] font-medium px-2 py-0.5 rounded-full border",
             mentioned
-              ? "bg-[#10B981]/10 text-[#10B981] border-[#10B981]/25"
-              : "bg-white/5 text-gray-500 border-white/10"
+              ? "bg-[#F0FDF4] text-[#10B981] border-[#D1FAE5]"
+              : "bg-[#F9FAFB] text-[#9CA3AF] border-[#E5E7EB]"
           )}>
             {mentioned ? "Mentioned" : "Not Found"}
           </span>
@@ -247,15 +247,15 @@ function QueryRow({ result, brand, competitorNames }: {
       {open && (
         <div className="px-4 pb-4 space-y-3">
           {result.key_context && (
-            <p className="text-xs text-gray-500 italic border-l-2 border-white/10 pl-3">{result.key_context}</p>
+            <p className="text-xs text-[#6B7280] italic border-l-2 border-[#E5E7EB] pl-3">{result.key_context}</p>
           )}
           {result.response ? (
             <div
-              className="text-sm text-gray-300 leading-relaxed bg-white/[0.02] rounded-lg p-4 max-h-80 overflow-y-auto border border-white/5"
+              className="text-sm text-[#374151] leading-relaxed bg-[#F9FAFB] rounded-lg p-4 max-h-80 overflow-y-auto border border-[#E5E7EB]"
               dangerouslySetInnerHTML={{ __html: getHighlightedHTML(result.response, brand, competitorNames) }}
             />
           ) : (
-            <p className="text-sm text-gray-600 italic">No response stored.</p>
+            <p className="text-sm text-[#9CA3AF] italic">No response stored.</p>
           )}
           {result.is_recommended && (
             <div className="flex items-center gap-1.5 text-xs text-[#10B981]">
@@ -288,35 +288,35 @@ function PlatformSection({ byModel, brand, competitorNames }: {
         const isExpanded  = expanded === modelId;
 
         return (
-          <div key={modelId} className="rounded-2xl border border-white/8 bg-[#111827] overflow-hidden">
+          <div key={modelId} className="rounded-2xl border border-[#E5E7EB] bg-white overflow-hidden shadow-sm">
             <button
               onClick={() => setExpanded(isExpanded ? null : modelId)}
-              className="w-full flex items-center gap-4 p-5 hover:bg-white/[0.02] transition-colors text-left"
+              className="w-full flex items-center gap-4 p-5 hover:bg-[#F9FAFB] transition-colors text-left"
             >
               <div className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm flex-shrink-0"
-                style={{ background: `${color}20`, color }}>
+                style={{ background: `${color}18`, color }}>
                 {icon}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-white font-semibold text-sm">{label}</p>
-                <p className="text-gray-500 text-xs mt-0.5">{mentionRate}% mention rate · {results.length} queries</p>
+                <p className="text-[#111827] font-semibold text-sm">{label}</p>
+                <p className="text-[#6B7280] text-xs mt-0.5">{mentionRate}% mention rate · {results.length} queries</p>
               </div>
               <div className="text-right flex-shrink-0">
                 <p className="text-3xl font-bold tabular-nums" style={{ color }}>{modelScore}</p>
-                <p className="text-xs text-gray-600">/100</p>
+                <p className="text-xs text-[#9CA3AF]">/100</p>
               </div>
               <span className={cn(
                 "text-xs font-medium px-2.5 py-1 rounded-full border flex-shrink-0",
-                mentionCount > 0 ? "bg-[#10B981]/10 text-[#10B981] border-[#10B981]/25" : "bg-white/5 text-gray-500 border-white/10"
+                mentionCount > 0 ? "bg-[#F0FDF4] text-[#10B981] border-[#D1FAE5]" : "bg-[#F9FAFB] text-[#9CA3AF] border-[#E5E7EB]"
               )}>
                 {mentionCount > 0 ? `Found in ${mentionCount}` : "Not Found"}
               </span>
-              <ChevronDown className={cn("w-4 h-4 text-gray-600 flex-shrink-0 transition-transform", isExpanded && "rotate-180")} />
+              <ChevronDown className={cn("w-4 h-4 text-[#9CA3AF] flex-shrink-0 transition-transform", isExpanded && "rotate-180")} />
             </button>
 
             {isExpanded && (
-              <div className="border-t border-white/5">
-                <p className="px-4 pt-3 pb-2 text-[11px] text-gray-600 uppercase tracking-wider font-medium">All {results.length} queries</p>
+              <div className="border-t border-[#F3F4F6]">
+                <p className="px-4 pt-3 pb-2 text-[11px] text-[#9CA3AF] uppercase tracking-wider font-medium">All {results.length} queries</p>
                 {results.map((r) => (
                   <QueryRow key={r.id} result={r} brand={brand} competitorNames={competitorNames} />
                 ))}
@@ -353,10 +353,10 @@ function VisibilitySection({ scores }: { scores: Record<string, number> }) {
       {items.map(({ key, label, score }) => (
         <div key={key} className="space-y-1.5">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-300 font-medium">{label}</span>
+            <span className="text-[#374151] font-medium">{label}</span>
             <span className="tabular-nums font-bold" style={{ color: scoreColor(score) }}>{score}</span>
           </div>
-          <div className="h-2.5 rounded-full bg-white/6 overflow-hidden">
+          <div className="h-2.5 rounded-full bg-[#F3F4F6] overflow-hidden">
             <div
               className={cn("h-full rounded-full transition-all duration-1000", barColor(score))}
               style={{ width: visible ? `${score}%` : "0%" }}
@@ -381,7 +381,7 @@ function ShareOfVoiceSection({ data, brand }: { data: CompetitorsData; brand: st
 
   return (
     <div className="space-y-5">
-      <p className="text-sm text-gray-400">
+      <p className="text-sm text-[#6B7280]">
         {brand} captures{" "}
         <span className="font-bold text-[#10B981]">{data.share_of_voice.find((s) => s.isBrand)?.share ?? 0}%</span>
         {" "}of AI mentions in your category.{" "}
@@ -398,17 +398,17 @@ function ShareOfVoiceSection({ data, brand }: { data: CompetitorsData; brand: st
           layout="vertical"
           margin={{ top: 0, right: 40, left: 0, bottom: 0 }}
         >
-          <XAxis type="number" domain={[0, 100]} tick={{ fill: "#4B5563", fontSize: 11 }} tickFormatter={(v) => `${v}%`} axisLine={false} tickLine={false} />
-          <YAxis type="category" dataKey="name" tick={{ fill: "#9CA3AF", fontSize: 12, fontWeight: 500 }} width={100} axisLine={false} tickLine={false} />
+          <XAxis type="number" domain={[0, 100]} tick={{ fill: "#9CA3AF", fontSize: 11 }} tickFormatter={(v) => `${v}%`} axisLine={false} tickLine={false} />
+          <YAxis type="category" dataKey="name" tick={{ fill: "#6B7280", fontSize: 12, fontWeight: 500 }} width={100} axisLine={false} tickLine={false} />
           <Tooltip
-            cursor={{ fill: "rgba(255,255,255,0.03)" }}
-            contentStyle={{ background: "#1F2937", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, fontSize: 12 }}
+            cursor={{ fill: "rgba(0,0,0,0.03)" }}
+            contentStyle={{ background: "#fff", border: "1px solid #E5E7EB", borderRadius: 8, fontSize: 12 }}
             formatter={(v) => [`${v}% share of voice`]}
-            labelStyle={{ color: "#fff", fontWeight: 600 }}
+            labelStyle={{ color: "#111827", fontWeight: 600 }}
           />
           <Bar dataKey="share" radius={[0, 6, 6, 0]} maxBarSize={28}>
             {chartData.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={entry.isBrand ? "#10B981" : "#374151"} />
+              <Cell key={`cell-${index}`} fill={entry.isBrand ? "#10B981" : "#E5E7EB"} />
             ))}
           </Bar>
         </BarChart>
@@ -417,10 +417,10 @@ function ShareOfVoiceSection({ data, brand }: { data: CompetitorsData; brand: st
       {/* Legend */}
       <div className="flex flex-wrap gap-4">
         {chartData.map((item) => (
-          <div key={item.name} className="flex items-center gap-1.5 text-xs text-gray-500">
-            <div className="w-2.5 h-2.5 rounded-sm" style={{ background: item.isBrand ? "#10B981" : "#374151" }} />
+          <div key={item.name} className="flex items-center gap-1.5 text-xs text-[#6B7280]">
+            <div className="w-2.5 h-2.5 rounded-sm" style={{ background: item.isBrand ? "#10B981" : "#E5E7EB" }} />
             <span>{item.name}</span>
-            <span className="text-gray-700">({item.share}%)</span>
+            <span className="text-[#9CA3AF]">({item.share}%)</span>
           </div>
         ))}
       </div>
@@ -435,11 +435,11 @@ function CompetitorInsightsSection({ insights }: { insights: string[] }) {
   return (
     <div className="grid grid-cols-1 gap-3">
       {insights.map((insight, i) => (
-        <div key={i} className="flex gap-3 rounded-xl border border-white/8 bg-[#111827] p-4">
-          <div className="w-8 h-8 rounded-lg bg-[#10B981]/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+        <div key={i} className="flex gap-3 rounded-xl border border-[#E5E7EB] bg-white p-4">
+          <div className="w-8 h-8 rounded-lg bg-[#F0FDF4] flex items-center justify-center flex-shrink-0 mt-0.5">
             <Lightbulb className="w-4 h-4 text-[#10B981]" />
           </div>
-          <p className="text-sm text-gray-300 leading-relaxed">{insight}</p>
+          <p className="text-sm text-[#374151] leading-relaxed">{insight}</p>
         </div>
       ))}
     </div>
@@ -457,8 +457,6 @@ function SentimentSection({
   brand?: string;
   brandProfile?: BrandProfile | null;
 }) {
-  // Prefer stored aggregate sentiment_breakdown (computed at scan time from full analysis)
-  // Fall back to per-result r.sentiment (requires DB column that may not exist)
   const hasBrandBreakdown = brandProfile?.sentiment_breakdown &&
     (brandProfile.sentiment_breakdown.positive + brandProfile.sentiment_breakdown.neutral + brandProfile.sentiment_breakdown.negative) > 0;
 
@@ -478,7 +476,6 @@ function SentimentSection({
     pct = { pos: Math.round((pos / total) * 100), neu: Math.round((neu / total) * 100), neg: Math.round((neg / total) * 100) };
   }
 
-  // Example quotes — prefer stored example_quotes, fall back to per-result key_context
   const quotes: Array<{ model: string; prompt: string; key_context: string }> =
     (brandProfile?.example_quotes && brandProfile.example_quotes.length > 0)
       ? brandProfile.example_quotes
@@ -487,7 +484,6 @@ function SentimentSection({
           .slice(0, 3)
           .map((r) => ({ model: r.model, prompt: r.prompt, key_context: r.key_context! }));
 
-  // Platform breakdown — prefer stored sentiment_by_model
   const platformSentiment = Object.entries(byModel).map(([modelId, results]) => {
     const stored = brandProfile?.sentiment_by_model?.[modelId];
     if (stored) {
@@ -506,25 +502,25 @@ function SentimentSection({
       <div className="space-y-3">
         <div className="flex rounded-xl overflow-hidden h-8 gap-0.5">
           {pct.pos > 0 && (
-            <div className="bg-[#10B981] flex items-center justify-center text-xs font-bold text-[#0A0E17]" style={{ width: `${pct.pos}%` }} title={`Positive: ${pct.pos}%`}>
+            <div className="bg-[#10B981] flex items-center justify-center text-xs font-bold text-white" style={{ width: `${pct.pos}%` }} title={`Positive: ${pct.pos}%`}>
               {pct.pos >= 10 && `${pct.pos}%`}
             </div>
           )}
           {pct.neu > 0 && (
-            <div className="bg-[#F59E0B]/60 flex items-center justify-center text-xs font-bold text-[#0A0E17]" style={{ width: `${pct.neu}%` }} title={`Neutral: ${pct.neu}%`}>
+            <div className="bg-[#F59E0B] flex items-center justify-center text-xs font-bold text-white" style={{ width: `${pct.neu}%` }} title={`Neutral: ${pct.neu}%`}>
               {pct.neu >= 10 && `${pct.neu}%`}
             </div>
           )}
           {pct.neg > 0 && (
-            <div className="bg-[#EF4444]/60 flex items-center justify-center text-xs font-bold text-white" style={{ width: `${pct.neg}%` }} title={`Negative: ${pct.neg}%`}>
+            <div className="bg-[#EF4444] flex items-center justify-center text-xs font-bold text-white" style={{ width: `${pct.neg}%` }} title={`Negative: ${pct.neg}%`}>
               {pct.neg >= 10 && `${pct.neg}%`}
             </div>
           )}
         </div>
         <div className="flex gap-5 text-xs">
-          <span className="flex items-center gap-1.5 text-gray-400"><span className="w-2.5 h-2.5 rounded-sm bg-[#10B981] inline-block" />{pct.pos}% Positive</span>
-          <span className="flex items-center gap-1.5 text-gray-400"><span className="w-2.5 h-2.5 rounded-sm bg-[#F59E0B]/60 inline-block" />{pct.neu}% Neutral</span>
-          <span className="flex items-center gap-1.5 text-gray-400"><span className="w-2.5 h-2.5 rounded-sm bg-[#EF4444]/60 inline-block" />{pct.neg}% Negative</span>
+          <span className="flex items-center gap-1.5 text-[#6B7280]"><span className="w-2.5 h-2.5 rounded-sm bg-[#10B981] inline-block" />{pct.pos}% Positive</span>
+          <span className="flex items-center gap-1.5 text-[#6B7280]"><span className="w-2.5 h-2.5 rounded-sm bg-[#F59E0B] inline-block" />{pct.neu}% Neutral</span>
+          <span className="flex items-center gap-1.5 text-[#6B7280]"><span className="w-2.5 h-2.5 rounded-sm bg-[#EF4444] inline-block" />{pct.neg}% Negative</span>
         </div>
       </div>
 
@@ -534,9 +530,9 @@ function SentimentSection({
           {platformSentiment.map(({ modelId, label, dominant }) => {
             const color = dominant === "positive" ? "#10B981" : dominant === "negative" ? "#EF4444" : "#F59E0B";
             return (
-              <div key={modelId} className="flex items-center gap-2 rounded-xl border border-white/8 bg-[#111827] px-4 py-2.5">
+              <div key={modelId} className="flex items-center gap-2 rounded-xl border border-[#E5E7EB] bg-white px-4 py-2.5">
                 <div className="w-2 h-2 rounded-full" style={{ background: color }} />
-                <span className="text-sm text-gray-300">{label} is <span className="font-semibold" style={{ color }}>{dominant}</span></span>
+                <span className="text-sm text-[#374151]">{label} is <span className="font-semibold" style={{ color }}>{dominant}</span></span>
               </div>
             );
           })}
@@ -546,11 +542,11 @@ function SentimentSection({
       {/* Example quotes */}
       {quotes.length > 0 && (
         <div className="space-y-2">
-          <p className="text-xs text-gray-600 uppercase tracking-wider font-medium">Example responses</p>
+          <p className="text-xs text-[#9CA3AF] uppercase tracking-wider font-medium">Example responses</p>
           {quotes.map((r, i) => (
-            <div key={i} className="rounded-xl border border-white/8 bg-[#111827] p-4 space-y-1.5">
-              <p className="text-xs text-gray-600 uppercase tracking-wider">{r.model} · {r.prompt.slice(0, 60)}{r.prompt.length > 60 ? "…" : ""}</p>
-              <p className="text-sm text-gray-300 leading-relaxed italic">&ldquo;{r.key_context}&rdquo;</p>
+            <div key={i} className="rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] p-4 space-y-1.5">
+              <p className="text-xs text-[#9CA3AF] uppercase tracking-wider">{r.model} · {r.prompt.slice(0, 60)}{r.prompt.length > 60 ? "…" : ""}</p>
+              <p className="text-sm text-[#374151] leading-relaxed italic">&ldquo;{r.key_context}&rdquo;</p>
             </div>
           ))}
         </div>
@@ -558,33 +554,33 @@ function SentimentSection({
 
       {/* Deep analysis (locked or unlocked) */}
       {perceptionData ? (
-        <div className="space-y-4 pt-2 border-t border-white/8">
-          <p className="text-xs text-gray-500 uppercase tracking-wider font-medium">Deep Perception Analysis</p>
-          <p className="text-gray-300 leading-relaxed">{perceptionData.summary}</p>
+        <div className="space-y-4 pt-2 border-t border-[#E5E7EB]">
+          <p className="text-xs text-[#9CA3AF] uppercase tracking-wider font-medium">Deep Perception Analysis</p>
+          <p className="text-[#374151] leading-relaxed">{perceptionData.summary}</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="rounded-xl border border-[#10B981]/15 bg-[#10B981]/5 p-4 space-y-2">
+            <div className="rounded-xl border border-[#D1FAE5] bg-[#F0FDF4] p-4 space-y-2">
               <p className="text-xs text-[#10B981] font-semibold uppercase tracking-wider">Positive descriptors</p>
               <div className="flex flex-wrap gap-2">
                 {(perceptionData.positive_descriptors ?? []).map((d: string, i: number) => (
-                  <span key={i} className="text-xs px-2.5 py-1 rounded-full bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20">{d}</span>
+                  <span key={i} className="text-xs px-2.5 py-1 rounded-full bg-white text-[#065F46] border border-[#D1FAE5]">{d}</span>
                 ))}
               </div>
             </div>
-            <div className="rounded-xl border border-amber-500/15 bg-amber-500/5 p-4 space-y-2">
-              <p className="text-xs text-amber-400 font-semibold uppercase tracking-wider">Critical descriptors</p>
+            <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 space-y-2">
+              <p className="text-xs text-amber-600 font-semibold uppercase tracking-wider">Critical descriptors</p>
               <div className="flex flex-wrap gap-2">
                 {(perceptionData.negative_descriptors ?? []).map((d: string, i: number) => (
-                  <span key={i} className="text-xs px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">{d}</span>
+                  <span key={i} className="text-xs px-2.5 py-1 rounded-full bg-white text-amber-700 border border-amber-200">{d}</span>
                 ))}
               </div>
             </div>
           </div>
           {(perceptionData.perception_mismatches ?? []).length > 0 && (
             <div className="space-y-1.5">
-              <p className="text-xs text-gray-500 uppercase tracking-wider font-medium">Perception gaps</p>
+              <p className="text-xs text-[#9CA3AF] uppercase tracking-wider font-medium">Perception gaps</p>
               {perceptionData.perception_mismatches.map((m: string, i: number) => (
-                <div key={i} className="flex gap-2 text-sm text-gray-400">
-                  <span className="text-amber-400 flex-shrink-0">!</span>
+                <div key={i} className="flex gap-2 text-sm text-[#374151]">
+                  <span className="text-amber-500 flex-shrink-0">!</span>
                   <span>{m}</span>
                 </div>
               ))}
@@ -596,7 +592,7 @@ function SentimentSection({
   );
 }
 
-// ── Citations Section (enriched) ──────────────────────────────────────────────
+// ── Citations Section ──────────────────────────────────────────────────────────
 
 function CitationsSection({ citationData }: { citationData: Json }) {
   const pages: Array<{ url: string; count: number }> = citationData.cited_pages ?? [];
@@ -604,18 +600,18 @@ function CitationsSection({ citationData }: { citationData: Json }) {
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-gray-400 leading-relaxed">{citationData.insight}</p>
+      <p className="text-sm text-[#6B7280] leading-relaxed">{citationData.insight}</p>
 
       {pages.length > 0 ? (
         <>
           <div className="space-y-2">
             {pages.map((page, i) => (
-              <div key={i} className="flex items-center gap-3 rounded-xl border bg-[#111827] px-4 py-3"
-                style={{ borderColor: i === 0 ? "rgba(16,185,129,0.2)" : "rgba(255,255,255,0.06)" }}>
-                <ExternalLink className="w-3.5 h-3.5 text-gray-600 flex-shrink-0" />
-                <span className="text-xs text-gray-300 flex-1 truncate font-mono">{page.url}</span>
+              <div key={i} className="flex items-center gap-3 rounded-xl border bg-white px-4 py-3"
+                style={{ borderColor: i === 0 ? "#D1FAE5" : "#E5E7EB" }}>
+                <ExternalLink className="w-3.5 h-3.5 text-[#9CA3AF] flex-shrink-0" />
+                <span className="text-xs text-[#374151] flex-1 truncate font-mono">{page.url}</span>
                 {i === 0 && (
-                  <span className="text-[10px] font-bold text-[#10B981] bg-[#10B981]/10 border border-[#10B981]/20 rounded-full px-2 py-0.5 flex-shrink-0">
+                  <span className="text-[10px] font-bold text-[#10B981] bg-[#F0FDF4] border border-[#D1FAE5] rounded-full px-2 py-0.5 flex-shrink-0">
                     Most cited
                   </span>
                 )}
@@ -625,10 +621,10 @@ function CitationsSection({ citationData }: { citationData: Json }) {
           </div>
 
           {mostCited && (
-            <div className="rounded-xl border border-[#10B981]/15 bg-[#10B981]/5 p-4">
+            <div className="rounded-xl border border-[#D1FAE5] bg-[#F0FDF4] p-4">
               <p className="text-xs text-[#10B981] font-semibold uppercase tracking-wider mb-1.5">Recommendation</p>
-              <p className="text-sm text-gray-300 leading-relaxed">
-                <strong className="text-white">{mostCited.url}</strong> is your most AI-cited page.
+              <p className="text-sm text-[#374151] leading-relaxed">
+                <strong className="text-[#111827]">{mostCited.url}</strong> is your most AI-cited page.
                 Ensure it stays up-to-date and includes specific, factual claims about your brand.
                 Pages not listed here are never mentioned by AI — consider adding more detailed, structured content to those sections.
               </p>
@@ -636,8 +632,8 @@ function CitationsSection({ citationData }: { citationData: Json }) {
           )}
         </>
       ) : (
-        <div className="rounded-xl border border-amber-500/15 bg-amber-500/5 p-4">
-          <p className="text-sm text-gray-300">
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+          <p className="text-sm text-[#374151]">
             No pages from your site were explicitly cited. This is common — most AI models don&apos;t cite sources in conversational answers.
             Focus on getting your brand mentioned in third-party reviews, directories, and authoritative publications instead.
           </p>
@@ -647,15 +643,15 @@ function CitationsSection({ citationData }: { citationData: Json }) {
   );
 }
 
-// ── Improvement Plan Section (with checkboxes + score simulator) ──────────────
+// ── Improvement Plan Section ───────────────────────────────────────────────────
 
 function ImprovementPlanSection({ plan, currentScore }: { plan: Json; currentScore: number }) {
   const [done, setDone] = useState<Set<string>>(new Set());
 
   const tiers = [
-    { key: "quick_wins",   label: "Quick Wins",   color: "#10B981", badge: "bg-[#10B981]/10 text-[#10B981] border-[#10B981]/20", desc: "Do this week"   },
-    { key: "this_month",   label: "This Month",   color: "#F59E0B", badge: "bg-amber-500/10 text-amber-400 border-amber-500/20",  desc: "Do this month"  },
-    { key: "this_quarter", label: "This Quarter", color: "#6366F1", badge: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",desc: "Do this quarter"},
+    { key: "quick_wins",   label: "Quick Wins",   color: "#10B981", badge: "bg-[#F0FDF4] text-[#10B981] border-[#D1FAE5]",    desc: "Do this week"   },
+    { key: "this_month",   label: "This Month",   color: "#F59E0B", badge: "bg-amber-50 text-amber-600 border-amber-200",       desc: "Do this month"  },
+    { key: "this_quarter", label: "This Quarter", color: "#6366F1", badge: "bg-indigo-50 text-indigo-600 border-indigo-200",    desc: "Do this quarter"},
   ];
 
   const allItems: Array<{ key: string; tier: string; impact: number }> = tiers.flatMap(({ key }) =>
@@ -668,7 +664,6 @@ function ImprovementPlanSection({ plan, currentScore }: { plan: Json; currentSco
   const completed = allItems.filter((x) => done.has(x.key)).length;
   const progress  = total > 0 ? Math.round((completed / total) * 100) : 0;
 
-  // Score simulator
   const projectedGain   = allItems.filter((x) => done.has(x.key)).reduce((s, x) => s + x.impact, 0);
   const projectedScore  = Math.min(100, currentScore + projectedGain);
   const hasSelections   = done.size > 0;
@@ -687,10 +682,10 @@ function ImprovementPlanSection({ plan, currentScore }: { plan: Json; currentSco
       {/* Progress bar */}
       <div className="space-y-2">
         <div className="flex items-center justify-between text-sm">
-          <span className="text-gray-400">{completed} of {total} recommendations completed</span>
+          <span className="text-[#6B7280]">{completed} of {total} recommendations completed</span>
           <span className="font-semibold text-[#10B981]">{progress}%</span>
         </div>
-        <div className="h-2 rounded-full bg-white/6 overflow-hidden">
+        <div className="h-2 rounded-full bg-[#F3F4F6] overflow-hidden">
           <div
             className="h-full rounded-full bg-[#10B981] transition-all duration-500"
             style={{ width: `${progress}%` }}
@@ -704,7 +699,7 @@ function ImprovementPlanSection({ plan, currentScore }: { plan: Json; currentSco
           <div key={key}>
             <div className="flex items-center gap-2 mb-3">
               <div className="w-2 h-2 rounded-full" style={{ background: color }} />
-              <p className="text-sm font-semibold text-white">{label}</p>
+              <p className="text-sm font-semibold text-[#111827]">{label}</p>
               <span className={cn("text-[10px] font-semibold px-2 py-0.5 rounded-full border", badge)}>{desc}</span>
             </div>
             <div className="space-y-2">
@@ -714,13 +709,13 @@ function ImprovementPlanSection({ plan, currentScore }: { plan: Json; currentSco
                 return (
                   <div
                     key={i}
-                    className={cn("rounded-xl border bg-[#111827] p-4 space-y-2 transition-opacity", isDone && "opacity-50")}
-                    style={{ borderColor: isDone ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.08)" }}
+                    className={cn("rounded-xl border bg-white p-4 space-y-2 transition-opacity shadow-sm", isDone && "opacity-50")}
+                    style={{ borderColor: isDone ? "#F3F4F6" : "#E5E7EB" }}
                   >
                     <div className="flex items-start gap-3">
                       <button
                         onClick={() => toggle(itemKey)}
-                        className="flex-shrink-0 mt-0.5 text-gray-600 hover:text-[#10B981] transition-colors"
+                        className="flex-shrink-0 mt-0.5 text-[#D1D5DB] hover:text-[#10B981] transition-colors"
                       >
                         {isDone
                           ? <CheckCircle2 className="w-4 h-4 text-[#10B981]" />
@@ -728,17 +723,17 @@ function ImprovementPlanSection({ plan, currentScore }: { plan: Json; currentSco
                       </button>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-3">
-                          <p className={cn("text-sm font-medium", isDone ? "line-through text-gray-600" : "text-white")}>{item.title}</p>
+                          <p className={cn("text-sm font-medium", isDone ? "line-through text-[#9CA3AF]" : "text-[#111827]")}>{item.title}</p>
                           <div className="flex gap-2 flex-shrink-0">
-                            <span className="text-[11px] px-2 py-0.5 rounded-full bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20">{item.impact}</span>
-                            <span className="text-[11px] px-2 py-0.5 rounded-full bg-white/5 text-gray-400 border border-white/10">{item.effort}</span>
+                            <span className="text-[11px] px-2 py-0.5 rounded-full bg-[#F0FDF4] text-[#10B981] border border-[#D1FAE5]">{item.impact}</span>
+                            <span className="text-[11px] px-2 py-0.5 rounded-full bg-[#F9FAFB] text-[#6B7280] border border-[#E5E7EB]">{item.effort}</span>
                           </div>
                         </div>
-                        <p className="text-xs text-gray-400 leading-relaxed mt-1">{item.description}</p>
+                        <p className="text-xs text-[#6B7280] leading-relaxed mt-1">{item.description}</p>
                         {Array.isArray(item.affected_categories) && item.affected_categories.length > 0 && (
                           <div className="flex flex-wrap gap-1 mt-2">
                             {item.affected_categories.map((cat: string, j: number) => (
-                              <span key={j} className="text-[10px] px-1.5 py-0.5 rounded bg-white/5 text-gray-500">{cat}</span>
+                              <span key={j} className="text-[10px] px-1.5 py-0.5 rounded bg-[#F3F4F6] text-[#9CA3AF]">{cat}</span>
                             ))}
                           </div>
                         )}
@@ -756,28 +751,28 @@ function ImprovementPlanSection({ plan, currentScore }: { plan: Json; currentSco
       <div className={cn(
         "rounded-2xl border p-5 transition-all duration-500",
         hasSelections
-          ? "border-[#10B981]/25 bg-[#10B981]/5"
-          : "border-white/8 bg-[#111827]"
+          ? "border-[#D1FAE5] bg-[#F0FDF4]"
+          : "border-[#E5E7EB] bg-[#F9FAFB]"
       )}>
         <div className="flex items-center gap-2 mb-4">
           <FlaskConical className="w-4 h-4 text-[#10B981]" />
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">What-If Score Simulator</p>
+          <p className="text-xs font-semibold text-[#9CA3AF] uppercase tracking-wider">What-If Score Simulator</p>
         </div>
-        <p className="text-xs text-gray-500 mb-4">
+        <p className="text-xs text-[#9CA3AF] mb-4">
           Check recommendations above to project your score improvement.
         </p>
         <div className="flex items-center gap-4">
           {/* Current score */}
           <div className="text-center">
-            <p className="text-3xl font-bold tabular-nums text-gray-400">{currentScore}</p>
-            <p className="text-[10px] text-gray-600 mt-0.5 uppercase tracking-wider">Current</p>
+            <p className="text-3xl font-bold tabular-nums text-[#9CA3AF]">{currentScore}</p>
+            <p className="text-[10px] text-[#9CA3AF] mt-0.5 uppercase tracking-wider">Current</p>
           </div>
           {/* Arrow + gain */}
           <div className="flex-1 flex flex-col items-center gap-1">
             <div className="flex items-center gap-2 w-full">
-              <div className="flex-1 h-0.5 bg-white/8" />
-              <TrendingUp className={cn("w-4 h-4 flex-shrink-0 transition-colors", hasSelections ? "text-[#10B981]" : "text-gray-700")} />
-              <div className="flex-1 h-0.5 bg-white/8" />
+              <div className="flex-1 h-0.5 bg-[#E5E7EB]" />
+              <TrendingUp className={cn("w-4 h-4 flex-shrink-0 transition-colors", hasSelections ? "text-[#10B981]" : "text-[#D1D5DB]")} />
+              <div className="flex-1 h-0.5 bg-[#E5E7EB]" />
             </div>
             {hasSelections && (
               <span className="text-xs font-bold text-[#10B981]">+{projectedGain} pts from {done.size} action{done.size !== 1 ? "s" : ""}</span>
@@ -787,15 +782,15 @@ function ImprovementPlanSection({ plan, currentScore }: { plan: Json; currentSco
           <div className="text-center">
             <p
               className="text-3xl font-bold tabular-nums transition-all duration-500"
-              style={{ color: hasSelections ? scoreColor(projectedScore) : "#374151" }}
+              style={{ color: hasSelections ? scoreColor(projectedScore) : "#D1D5DB" }}
             >
               {hasSelections ? projectedScore : "—"}
             </p>
-            <p className="text-[10px] text-gray-600 mt-0.5 uppercase tracking-wider">Projected</p>
+            <p className="text-[10px] text-[#9CA3AF] mt-0.5 uppercase tracking-wider">Projected</p>
           </div>
         </div>
         {hasSelections && projectedScore !== currentScore && (
-          <div className="mt-4 h-2 rounded-full bg-white/6 overflow-hidden">
+          <div className="mt-4 h-2 rounded-full bg-[#E5E7EB] overflow-hidden">
             <div
               className="h-full rounded-full transition-all duration-700"
               style={{ width: `${projectedScore}%`, background: scoreColor(projectedScore) }}
@@ -807,13 +802,13 @@ function ImprovementPlanSection({ plan, currentScore }: { plan: Json; currentSco
   );
 }
 
-// ── Benchmark Section ─────────────────────────────────────────────────────────
+// ── Benchmark Section ──────────────────────────────────────────────────────────
 
 function BenchmarkSection({ data, actualScore }: { data: Json; actualScore: number }) {
   const tiers = [
     { key: "leader",      label: "Market Leader", color: "#10B981" },
     { key: "average",     label: "Average Brand",  color: "#F59E0B" },
-    { key: "new_entrant", label: "New Entrant",    color: "#6B7280" },
+    { key: "new_entrant", label: "New Entrant",    color: "#9CA3AF" },
   ];
 
   return (
@@ -821,8 +816,8 @@ function BenchmarkSection({ data, actualScore }: { data: Json; actualScore: numb
       <div className="space-y-3">
         <div className="flex items-center gap-3">
           <span className="text-sm text-[#10B981] font-semibold w-28 flex-shrink-0">Your Brand</span>
-          <div className="flex-1 h-7 rounded-lg bg-white/5 overflow-hidden relative">
-            <div className="h-full rounded-lg bg-[#10B981]/50" style={{ width: `${actualScore}%` }} />
+          <div className="flex-1 h-7 rounded-lg bg-[#F3F4F6] overflow-hidden relative">
+            <div className="h-full rounded-lg bg-[#10B981]/30" style={{ width: `${actualScore}%` }} />
             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-bold text-[#10B981]">{actualScore}</span>
           </div>
         </div>
@@ -830,8 +825,8 @@ function BenchmarkSection({ data, actualScore }: { data: Json; actualScore: numb
           const s = data[key]?.score ?? 0;
           return (
             <div key={key} className="flex items-center gap-3">
-              <span className="text-sm text-gray-400 w-28 flex-shrink-0">{label}</span>
-              <div className="flex-1 h-7 rounded-lg bg-white/5 overflow-hidden relative">
+              <span className="text-sm text-[#6B7280] w-28 flex-shrink-0">{label}</span>
+              <div className="flex-1 h-7 rounded-lg bg-[#F3F4F6] overflow-hidden relative">
                 <div className="h-full rounded-lg" style={{ width: `${s}%`, background: `${color}30` }} />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-semibold" style={{ color }}>{s}</span>
               </div>
@@ -839,7 +834,7 @@ function BenchmarkSection({ data, actualScore }: { data: Json; actualScore: numb
           );
         })}
       </div>
-      <p className="text-xs text-gray-600 italic">Benchmark values are AI-generated estimates for your industry category.</p>
+      <p className="text-xs text-[#9CA3AF] italic">Benchmark values are AI-generated estimates for your industry category.</p>
     </div>
   );
 }
@@ -883,70 +878,67 @@ function LockedModuleCard({
   }
 
   return (
-    <div className="relative rounded-2xl border border-white/8 bg-[#111827] overflow-hidden min-h-[220px]">
+    <div className="relative rounded-2xl border border-[#E5E7EB] bg-white overflow-hidden min-h-[220px]">
       {/* Blurred preview */}
-      <div className="p-6 blur-sm select-none pointer-events-none opacity-30 space-y-3">
+      <div className="p-6 blur-sm select-none pointer-events-none opacity-20 space-y-3">
         {[75, 50, 90, 60, 40, 70].map((w, i) => (
           <div key={i} className="flex gap-3 items-center">
-            <div className="h-3 rounded-full bg-white/15" style={{ width: `${w}%` }} />
-            <div className="h-3 rounded-full bg-white/6 flex-1" />
+            <div className="h-3 rounded-full bg-[#E5E7EB]" style={{ width: `${w}%` }} />
+            <div className="h-3 rounded-full bg-[#F3F4F6] flex-1" />
           </div>
         ))}
       </div>
 
       {/* Overlay */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#0A0E17]/80 backdrop-blur-[2px] p-6 text-center space-y-4">
-        <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
-          <Lock className="w-5 h-5 text-gray-400" />
+      <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/85 backdrop-blur-[2px] p-6 text-center space-y-4">
+        <div className="w-12 h-12 rounded-full bg-[#F9FAFB] border border-[#E5E7EB] flex items-center justify-center">
+          <Lock className="w-5 h-5 text-[#9CA3AF]" />
         </div>
         <div>
-          <p className="text-white font-semibold">{title}</p>
-          <p className="text-gray-500 text-sm mt-1 max-w-sm">{description}</p>
+          <p className="text-[#111827] font-semibold">{title}</p>
+          <p className="text-[#6B7280] text-sm mt-1 max-w-sm">{description}</p>
         </div>
 
         {error && (
-          <p className="text-xs text-[#EF4444] bg-[#EF4444]/10 border border-[#EF4444]/20 rounded-lg px-3 py-2">{error}</p>
+          <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>
         )}
 
-        {/* Loading state */}
         {!balanceLoaded && (
-          <div className="w-8 h-8 border-2 border-white/10 border-t-[#10B981] rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-[#E5E7EB] border-t-[#10B981] rounded-full animate-spin" />
         )}
 
-        {/* Insufficient balance */}
         {balanceLoaded && !hasBalance && !confirming && (
           <div className="space-y-2 text-center">
-            <p className="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2">
+            <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
               Need {cost - (tokenBalance ?? 0)} more tokens to unlock
             </p>
             <Link
               href="/app/tokens"
-              className="inline-flex items-center gap-2 px-5 py-2 text-sm font-semibold bg-[#10B981] hover:bg-[#059669] text-[#0A0E17] rounded-xl transition-colors"
+              className="inline-flex items-center gap-2 px-5 py-2 text-sm font-semibold bg-[#10B981] hover:bg-[#059669] text-white rounded-xl transition-colors"
             >
               Buy tokens
             </Link>
           </div>
         )}
 
-        {/* Has balance */}
         {balanceLoaded && hasBalance && (confirming ? (
           <div className="space-y-3 w-full max-w-xs">
-            <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-gray-300">
-              This will deduct <span className="font-bold text-white">{cost} tokens</span> from your balance.
+            <div className="rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] px-4 py-3 text-sm text-[#374151]">
+              This will deduct <span className="font-bold text-[#111827]">{cost} tokens</span> from your balance.
             </div>
             <div className="flex gap-2">
               <button
                 onClick={() => setConfirming(false)}
-                className="flex-1 px-4 py-2 text-sm text-gray-400 hover:text-white border border-white/15 rounded-lg transition-colors"
+                className="flex-1 px-4 py-2 text-sm text-[#6B7280] hover:text-[#111827] border border-[#E5E7EB] rounded-lg transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleUnlock}
                 disabled={loading}
-                className="flex-1 px-5 py-2 text-sm font-semibold bg-[#10B981] hover:bg-[#059669] text-[#0A0E17] rounded-lg transition-colors flex items-center justify-center gap-2"
+                className="flex-1 px-5 py-2 text-sm font-semibold bg-[#10B981] hover:bg-[#059669] text-white rounded-lg transition-colors flex items-center justify-center gap-2"
               >
-                {loading && <span className="w-4 h-4 border-2 border-[#0A0E17]/30 border-t-[#0A0E17] rounded-full animate-spin" />}
+                {loading && <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
                 {loading ? "Unlocking…" : "Confirm unlock"}
               </button>
             </div>
@@ -954,9 +946,9 @@ function LockedModuleCard({
         ) : (
           <button
             onClick={() => setConfirming(true)}
-            className="px-6 py-2.5 text-sm font-semibold bg-white/8 hover:bg-white/12 text-white border border-white/15 rounded-xl transition-all hover:border-white/25 flex items-center gap-2.5"
+            className="px-6 py-2.5 text-sm font-semibold bg-[#F9FAFB] hover:bg-[#F3F4F6] text-[#111827] border border-[#E5E7EB] rounded-xl transition-all hover:border-[#D1D5DB] flex items-center gap-2.5"
           >
-            <Lock className="w-3.5 h-3.5 text-gray-400" />
+            <Lock className="w-3.5 h-3.5 text-[#9CA3AF]" />
             Unlock for {cost} tokens
           </button>
         ))}
@@ -974,23 +966,23 @@ function UpgradeBanner({ queryCount }: { queryCount: number }) {
   if ((!isQuick && !isStandard) || dismissed) return null;
 
   return (
-    <div className="rounded-2xl border border-[#10B981]/20 bg-[#10B981]/5 p-5 flex items-center gap-4">
+    <div className="rounded-2xl border border-[#D1FAE5] bg-[#F0FDF4] p-5 flex items-center gap-4">
       <div className="w-10 h-10 rounded-xl bg-[#10B981]/10 flex items-center justify-center flex-shrink-0">
         <Zap className="w-5 h-5 text-[#10B981]" />
       </div>
       <div className="flex-1">
-        <p className="text-sm font-semibold text-white">
+        <p className="text-sm font-semibold text-[#111827]">
           {isQuick ? "Running a Quick Check?" : "Want deeper insights?"}
         </p>
-        <p className="text-xs text-gray-400 mt-0.5">
+        <p className="text-xs text-[#6B7280] mt-0.5">
           {isQuick
             ? "Upgrade to Standard for 20 queries, competitor analysis, and full recommendations."
             : "Upgrade to Deep Analysis for 50 queries, persona insights, and comprehensive scoring."}
         </p>
       </div>
       <div className="flex items-center gap-2 flex-shrink-0">
-        <button onClick={() => setDismissed(true)} className="text-xs text-gray-600 hover:text-gray-400 px-2 py-1">Dismiss</button>
-        <Link href="/app/report-builder" className="text-xs font-semibold bg-[#10B981] hover:bg-[#059669] text-[#0A0E17] rounded-lg px-3 py-2 transition-colors">
+        <button onClick={() => setDismissed(true)} className="text-xs text-[#9CA3AF] hover:text-[#6B7280] px-2 py-1">Dismiss</button>
+        <Link href="/app/report-builder" className="text-xs font-semibold bg-[#10B981] hover:bg-[#059669] text-white rounded-lg px-3 py-2 transition-colors">
           Upgrade →
         </Link>
       </div>
@@ -998,7 +990,7 @@ function UpgradeBanner({ queryCount }: { queryCount: number }) {
   );
 }
 
-// ── Query Explorer Section ────────────────────────────────────────────────────
+// ── Query Explorer Section ─────────────────────────────────────────────────────
 
 const MODEL_OPTIONS = [
   { id: "chatgpt", label: "ChatGPT", color: "#10B981" },
@@ -1068,13 +1060,13 @@ function QueryExplorerSection({
 
   return (
     <div className="space-y-5">
-      <p className="text-sm text-gray-400">
+      <p className="text-sm text-[#6B7280]">
         Test any query live against ChatGPT or Claude — see if {brand} gets mentioned and how.
-        Each query costs <span className="font-semibold text-white">5 🪙</span>.
+        Each query costs <span className="font-semibold text-[#111827]">5 🪙</span>.
       </p>
 
       {/* Input area */}
-      <div className="rounded-2xl border border-white/8 bg-[#111827] p-4 space-y-4">
+      <div className="rounded-2xl border border-[#E5E7EB] bg-white p-4 space-y-4 shadow-sm">
         {/* Platform toggle */}
         <div className="flex gap-2">
           {MODEL_OPTIONS.map((m) => (
@@ -1084,8 +1076,8 @@ function QueryExplorerSection({
               className={cn(
                 "flex-1 py-2 rounded-lg text-sm font-medium transition-all border",
                 model === m.id
-                  ? "border-transparent text-[#0A0E17]"
-                  : "border-white/10 text-gray-500 bg-transparent hover:text-gray-300"
+                  ? "border-transparent text-white"
+                  : "border-[#E5E7EB] text-[#6B7280] bg-transparent hover:text-[#374151] hover:bg-[#F9FAFB]"
               )}
               style={model === m.id ? { background: m.color } : {}}
             >
@@ -1101,16 +1093,16 @@ function QueryExplorerSection({
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKey}
           placeholder="Type any question about your brand or category..."
-          className="w-full bg-[#0A0E17] border border-white/8 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-[#10B981]/40 transition-colors"
+          className="w-full bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl px-4 py-3 text-sm text-[#111827] placeholder-[#9CA3AF] focus:outline-none focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/10 transition-all"
           disabled={loading || history.length >= MAX_QUERIES}
         />
 
         {error && (
-          <p className="text-xs text-[#EF4444] bg-[#EF4444]/10 border border-[#EF4444]/20 rounded-lg px-3 py-2">{error}</p>
+          <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>
         )}
 
         <div className="flex items-center justify-between">
-          <span className="text-xs text-gray-600">
+          <span className="text-xs text-[#9CA3AF]">
             {history.length}/{MAX_QUERIES} queries used this session
           </span>
           <button
@@ -1119,8 +1111,8 @@ function QueryExplorerSection({
             className={cn(
               "flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all",
               canSubmit && !insufficientBalance
-                ? "bg-[#10B981] hover:bg-[#059669] text-[#0A0E17]"
-                : "bg-white/5 text-gray-600 cursor-not-allowed"
+                ? "bg-[#10B981] hover:bg-[#059669] text-white"
+                : "bg-[#F3F4F6] text-[#9CA3AF] cursor-not-allowed"
             )}
           >
             {loading ? (
@@ -1155,22 +1147,22 @@ function QueryResultCard({ item, brand, competitorNames }: {
   const sentColor  = analysis.sentiment === "positive" ? "#10B981" : analysis.sentiment === "negative" ? "#EF4444" : "#F59E0B";
 
   return (
-    <div className="rounded-2xl border border-white/8 bg-[#111827] overflow-hidden">
+    <div className="rounded-2xl border border-[#E5E7EB] bg-white overflow-hidden shadow-sm">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center gap-3 p-4 hover:bg-white/[0.02] transition-colors text-left"
+        className="w-full flex items-center gap-3 p-4 hover:bg-[#F9FAFB] transition-colors text-left"
       >
-        <ChevronDown className={cn("w-4 h-4 text-gray-600 flex-shrink-0 transition-transform", open && "rotate-180")} />
+        <ChevronDown className={cn("w-4 h-4 text-[#9CA3AF] flex-shrink-0 transition-transform", open && "rotate-180")} />
         <div className="flex-1 min-w-0">
-          <p className="text-sm text-gray-200 truncate">{item.query}</p>
+          <p className="text-sm text-[#374151] truncate">{item.query}</p>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
-          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: `${modelColor}20`, color: modelColor }}>{modelLabel}</span>
+          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: `${modelColor}18`, color: modelColor }}>{modelLabel}</span>
           <span className={cn(
             "text-[11px] font-medium px-2 py-0.5 rounded-full border",
             analysis.brand_mentioned
-              ? "bg-[#10B981]/10 text-[#10B981] border-[#10B981]/25"
-              : "bg-white/5 text-gray-500 border-white/10"
+              ? "bg-[#F0FDF4] text-[#10B981] border-[#D1FAE5]"
+              : "bg-[#F9FAFB] text-[#9CA3AF] border-[#E5E7EB]"
           )}>
             {analysis.brand_mentioned ? "✓ Mentioned" : "✗ Not found"}
           </span>
@@ -1181,28 +1173,26 @@ function QueryResultCard({ item, brand, competitorNames }: {
       </button>
 
       {open && (
-        <div className="border-t border-white/5 p-4 space-y-4">
-          {/* Analysis badges */}
+        <div className="border-t border-[#F3F4F6] p-4 space-y-4">
           <div className="flex flex-wrap gap-2">
             {analysis.brand_mentioned && analysis.mention_position !== null && (
-              <span className="text-xs bg-white/5 text-gray-400 border border-white/10 rounded-full px-3 py-1">
+              <span className="text-xs bg-[#F9FAFB] text-[#6B7280] border border-[#E5E7EB] rounded-full px-3 py-1">
                 Position #{analysis.mention_position}
               </span>
             )}
             {analysis.competitors_found.length > 0 && (
-              <span className="text-xs bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-full px-3 py-1">
+              <span className="text-xs bg-amber-50 text-amber-600 border border-amber-200 rounded-full px-3 py-1">
                 Competitors: {analysis.competitors_found.slice(0, 3).join(", ")}
               </span>
             )}
             {analysis.key_context && (
-              <span className="text-xs bg-white/5 text-gray-400 border border-white/10 rounded-full px-3 py-1 italic">
+              <span className="text-xs bg-[#F9FAFB] text-[#6B7280] border border-[#E5E7EB] rounded-full px-3 py-1 italic">
                 {analysis.key_context}
               </span>
             )}
           </div>
-          {/* Full response */}
           <div
-            className="text-sm text-gray-300 leading-relaxed bg-[#0A0E17] rounded-xl p-4 max-h-72 overflow-y-auto border border-white/5"
+            className="text-sm text-[#374151] leading-relaxed bg-[#F9FAFB] rounded-xl p-4 max-h-72 overflow-y-auto border border-[#E5E7EB]"
             dangerouslySetInnerHTML={{ __html: getHighlightedHTML(item.response, brand, competitorNames) }}
           />
         </div>
@@ -1211,7 +1201,7 @@ function QueryResultCard({ item, brand, competitorNames }: {
   );
 }
 
-// ── Share Button ──────────────────────────────────────────────────────────────
+// ── Share Button ───────────────────────────────────────────────────────────────
 
 function ShareButton({ targetRef, label }: { targetRef: React.RefObject<HTMLElement | null>; label: string }) {
   const [state, setState] = useState<"idle" | "capturing" | "done">("idle");
@@ -1222,7 +1212,7 @@ function ShareButton({ targetRef, label }: { targetRef: React.RefObject<HTMLElem
     try {
       const { toPng } = await import("html-to-image");
       const dataUrl = await toPng(targetRef.current, {
-        backgroundColor: "#0A0E17",
+        backgroundColor: "#FFFFFF",
         pixelRatio: 2,
         style: { borderRadius: "0px" },
       });
@@ -1243,8 +1233,8 @@ function ShareButton({ targetRef, label }: { targetRef: React.RefObject<HTMLElem
       className={cn(
         "flex items-center gap-1.5 text-[10px] font-medium px-2 py-1 rounded-lg border transition-all",
         state === "done"
-          ? "border-[#10B981]/30 text-[#10B981] bg-[#10B981]/5"
-          : "border-white/8 text-gray-600 hover:text-gray-400 hover:border-white/15 bg-transparent"
+          ? "border-[#D1FAE5] text-[#10B981] bg-[#F0FDF4]"
+          : "border-[#E5E7EB] text-[#9CA3AF] hover:text-[#6B7280] hover:border-[#D1D5DB] bg-transparent"
       )}
       title="Download as image"
     >
@@ -1260,7 +1250,7 @@ function ShareButton({ targetRef, label }: { targetRef: React.RefObject<HTMLElem
   );
 }
 
-// ── Section Wrapper ───────────────────────────────────────────────────────────
+// ── Section Wrapper ────────────────────────────────────────────────────────────
 
 function Section({ id, title, children, className, shareable }: {
   id: string; title: string; children: React.ReactNode; className?: string; shareable?: boolean;
@@ -1269,7 +1259,7 @@ function Section({ id, title, children, className, shareable }: {
   return (
     <section ref={ref} id={id} className={cn("scroll-mt-20", className)}>
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-widest">{title}</h2>
+        <h2 className="text-xs font-semibold text-[#9CA3AF] uppercase tracking-widest">{title}</h2>
         {shareable && <ShareButton targetRef={ref} label={title} />}
       </div>
       {children}
@@ -1277,7 +1267,201 @@ function Section({ id, title, children, className, shareable }: {
   );
 }
 
-// ── Main Report Page ──────────────────────────────────────────────────────────
+// ── Floating AI Assistant ──────────────────────────────────────────────────────
+
+interface ChatMessage {
+  id: number;
+  role: "user" | "assistant";
+  text: string;
+  loading?: boolean;
+}
+
+function FloatingAIAssistant({ scan, brand, tokenBalance }: {
+  scan: ScanRow; brand: string; tokenBalance: number | null;
+}) {
+  const [open, setOpen]       = useState(false);
+  const [input, setInput]     = useState("");
+  const [messages, setMessages] = useState<ChatMessage[]>([
+    {
+      id: 0,
+      role: "assistant",
+      text: `Hi! I'm your AI visibility assistant. Ask me anything about ${brand}'s AI presence — why scores are high or low, what to improve, or how specific platforms see your brand.`,
+    },
+  ]);
+  const [loading, setLoading] = useState(false);
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const inputRef  = useRef<HTMLInputElement>(null);
+
+  const COST = 5;
+  const insufficientBalance = tokenBalance !== null && tokenBalance < COST;
+
+  useEffect(() => {
+    if (open) {
+      setTimeout(() => inputRef.current?.focus(), 100);
+    }
+  }, [open]);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  async function sendMessage() {
+    const text = input.trim();
+    if (!text || loading || insufficientBalance) return;
+
+    const userMsg: ChatMessage = { id: Date.now(), role: "user", text };
+    const loadingMsg: ChatMessage = { id: Date.now() + 1, role: "assistant", text: "", loading: true };
+
+    setMessages((prev) => [...prev, userMsg, loadingMsg]);
+    setInput("");
+    setLoading(true);
+
+    try {
+      const res = await fetch("/api/report/query-test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ scan_id: scan.id, model: "chatgpt", query: text }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Query failed");
+      window.dispatchEvent(new Event("tokenBalanceChanged"));
+
+      const reply = data.response ?? "I couldn't get a response. Please try again.";
+      const mentioned = data.analysis?.brand_mentioned;
+      const suffix = mentioned !== undefined
+        ? `\n\n*${brand} was ${mentioned ? "✓ mentioned" : "✗ not mentioned"} in this response.*`
+        : "";
+
+      setMessages((prev) => prev.map((m) =>
+        m.loading ? { ...m, loading: false, text: reply + suffix } : m
+      ));
+    } catch (err) {
+      const errText = err instanceof Error ? err.message : "Something went wrong";
+      setMessages((prev) => prev.map((m) =>
+        m.loading ? { ...m, loading: false, text: `Sorry, ${errText}. Please try again.` } : m
+      ));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function handleKey(e: React.KeyboardEvent) {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+  }
+
+  return (
+    <>
+      {/* Floating button */}
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className={cn(
+          "fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-200",
+          open
+            ? "bg-[#374151] hover:bg-[#1F2937] scale-95"
+            : "bg-[#10B981] hover:bg-[#059669] hover:scale-110"
+        )}
+        aria-label="AI Assistant"
+      >
+        {open ? <X className="w-5 h-5 text-white" /> : <Bot className="w-6 h-6 text-white" />}
+      </button>
+
+      {/* Chat panel */}
+      {open && (
+        <div className="fixed bottom-24 right-6 z-50 w-[360px] max-w-[calc(100vw-24px)] rounded-2xl border border-[#E5E7EB] bg-white shadow-2xl flex flex-col overflow-hidden"
+          style={{ height: 480 }}>
+          {/* Header */}
+          <div className="flex items-center gap-3 px-4 py-3 border-b border-[#E5E7EB] bg-[#F9FAFB] flex-shrink-0">
+            <div className="w-8 h-8 rounded-full bg-[#10B981] flex items-center justify-center flex-shrink-0">
+              <Bot className="w-4 h-4 text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-[#111827]">AI Visibility Assistant</p>
+              <p className="text-xs text-[#9CA3AF] truncate">Ask about {brand}&apos;s AI presence</p>
+            </div>
+            <div className="flex items-center gap-1.5 text-xs text-[#9CA3AF]">
+              <span>5 🪙 / query</span>
+            </div>
+          </div>
+
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+            {messages.map((msg) => (
+              <div
+                key={msg.id}
+                className={cn(
+                  "flex",
+                  msg.role === "user" ? "justify-end" : "justify-start"
+                )}
+              >
+                <div className={cn(
+                  "max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed",
+                  msg.role === "user"
+                    ? "bg-[#10B981] text-white rounded-tr-sm"
+                    : "bg-[#F3F4F6] text-[#374151] rounded-tl-sm"
+                )}>
+                  {msg.loading ? (
+                    <span className="flex gap-1 py-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#9CA3AF] animate-bounce" style={{ animationDelay: "0ms" }} />
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#9CA3AF] animate-bounce" style={{ animationDelay: "150ms" }} />
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#9CA3AF] animate-bounce" style={{ animationDelay: "300ms" }} />
+                    </span>
+                  ) : (
+                    msg.text
+                  )}
+                </div>
+              </div>
+            ))}
+            <div ref={bottomRef} />
+          </div>
+
+          {/* Input */}
+          <div className="px-4 py-3 border-t border-[#E5E7EB] flex-shrink-0">
+            {insufficientBalance ? (
+              <div className="text-center space-y-2">
+                <p className="text-xs text-amber-600">Not enough tokens to query</p>
+                <Link href="/app/tokens" className="inline-flex items-center gap-1.5 text-xs font-semibold bg-[#10B981] hover:bg-[#059669] text-white rounded-lg px-3 py-1.5 transition-colors">
+                  Buy tokens
+                </Link>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <input
+                  ref={inputRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleKey}
+                  placeholder="Ask about your AI visibility…"
+                  className="flex-1 bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl px-3 py-2 text-sm text-[#111827] placeholder-[#9CA3AF] focus:outline-none focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/10 transition-all"
+                  disabled={loading}
+                />
+                <button
+                  onClick={sendMessage}
+                  disabled={!input.trim() || loading}
+                  className={cn(
+                    "w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-all",
+                    input.trim() && !loading
+                      ? "bg-[#10B981] hover:bg-[#059669] text-white"
+                      : "bg-[#F3F4F6] text-[#D1D5DB] cursor-not-allowed"
+                  )}
+                >
+                  {loading
+                    ? <span className="w-3.5 h-3.5 border border-current border-t-transparent rounded-full animate-spin" />
+                    : <Send className="w-3.5 h-3.5" />
+                  }
+                </button>
+              </div>
+            )}
+            <p className="text-[10px] text-[#9CA3AF] mt-1.5 text-center">
+              Queries run live against AI · {tokenBalance !== null ? `${tokenBalance} tokens remaining` : "Loading balance…"}
+            </p>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+// ── Main Report Page ───────────────────────────────────────────────────────────
 
 export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: ScanResultRow[] }) {
   const [tokenBalance,   setTokenBalance]   = useState<number | null>(null);
@@ -1309,7 +1493,6 @@ export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: 
   );
 
   const recommendations: Recommendation[] = useMemo(() => {
-    // Stored inside competitors_data.recommendations (no dedicated column on scans)
     const fromCompetitors = (scan.competitors_data as Json)?.recommendations;
     const fromScan = (scan as Json).recommendations;
     const src = Array.isArray(fromCompetitors) ? fromCompetitors : Array.isArray(fromScan) ? fromScan : [];
@@ -1329,7 +1512,6 @@ export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: 
     [byModel]
   );
 
-  // byModel summary for heatmap (mention count + total per model)
   const byModelSummary = useMemo(() =>
     Object.fromEntries(
       Object.entries(byModel).map(([modelId, results]) => [
@@ -1373,7 +1555,6 @@ export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: 
   // ── Scroll tracking ───────────────────────────────────────────────────────
   useEffect(() => {
     function onScroll() {
-      // Active section
       const threshold = window.innerHeight * 0.4;
       let best: string | null = null;
       for (const { id } of tocSections) {
@@ -1382,7 +1563,6 @@ export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: 
         if (el.getBoundingClientRect().top <= threshold) best = id;
       }
       if (best) setActiveSection(best);
-      // Scroll progress
       const scrollTop = window.scrollY;
       const docHeight = document.documentElement.scrollHeight - window.innerHeight;
       setScrollProgress(docHeight > 0 ? Math.min(100, Math.round((scrollTop / docHeight) * 100)) : 0);
@@ -1393,12 +1573,12 @@ export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: 
   }, [tocSections]);
 
   return (
-    <div className="min-h-screen bg-[#0A0E17]">
+    <div className="min-h-screen bg-[#F9FAFB]">
 
       {/* ── Sticky Header ── */}
-      <header className="sticky top-0 z-50 bg-[#0A0E17]/90 backdrop-blur-xl border-b border-white/6">
+      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-xl border-b border-[#E5E7EB]">
         {/* Progress bar */}
-        <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-white/4">
+        <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#F3F4F6]">
           <div
             className="h-full bg-[#10B981] transition-all duration-150"
             style={{ width: `${scrollProgress}%` }}
@@ -1406,24 +1586,24 @@ export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: 
         </div>
         <div className="max-w-4xl mx-auto px-6 h-14 flex items-center gap-4">
           <div className="flex items-center gap-3 min-w-0 flex-1">
-            <Link href="/app/scores" className="text-gray-500 hover:text-white transition-colors flex-shrink-0">
+            <Link href="/app/scores" className="text-[#9CA3AF] hover:text-[#374151] transition-colors flex-shrink-0">
               <ArrowLeft className="w-4 h-4" />
             </Link>
-            <div className="w-7 h-7 rounded-lg bg-[#10B981]/15 flex items-center justify-center flex-shrink-0 text-[#10B981] text-xs font-bold">
+            <div className="w-7 h-7 rounded-lg bg-[#F0FDF4] flex items-center justify-center flex-shrink-0 text-[#10B981] text-xs font-bold">
               {brand[0]?.toUpperCase()}
             </div>
             <div className="min-w-0">
-              <span className="text-sm font-semibold text-white truncate block">{brand}</span>
-              {siteUrl && <span className="text-[11px] text-gray-600 truncate block">{siteUrl}</span>}
+              <span className="text-sm font-semibold text-[#111827] truncate block">{brand}</span>
+              {siteUrl && <span className="text-[11px] text-[#9CA3AF] truncate block">{siteUrl}</span>}
             </div>
           </div>
           <div className="hidden md:block text-center flex-shrink-0">
-            <p className="text-xs text-gray-500 font-medium">AI Visibility Report</p>
-            <p className="text-[11px] text-gray-700">{dateStr}</p>
+            <p className="text-xs text-[#6B7280] font-medium">AI Visibility Report</p>
+            <p className="text-[11px] text-[#9CA3AF]">{dateStr}</p>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
             {tokenBalance !== null && (
-              <span className="hidden sm:flex items-center gap-1.5 text-xs text-gray-500 border border-white/8 rounded-lg px-2.5 py-1.5">
+              <span className="hidden sm:flex items-center gap-1.5 text-xs text-[#6B7280] border border-[#E5E7EB] rounded-lg px-2.5 py-1.5">
                 🪙 {tokenBalance.toLocaleString()}
               </span>
             )}
@@ -1461,15 +1641,15 @@ export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: 
         <section id="score" className="scroll-mt-20 text-center space-y-6">
           <ScoreGauge score={score} />
           <div className="space-y-2">
-            <h1 className="text-4xl font-bold text-white">{scoreVerdict(score)}</h1>
-            <p className="text-gray-400 text-lg">
+            <h1 className="text-4xl font-bold text-[#111827]">{scoreVerdict(score)}</h1>
+            <p className="text-[#6B7280] text-lg">
               {brand} appears in{" "}
               <span className="font-semibold" style={{ color: scoreColor(score) }}>
                 {competitorsData?.brand_profile?.mention_rate ?? Math.round((scanResults.filter((r) => r.brand_mentioned).length / Math.max(1, scanResults.length)) * 100)}%
               </span>{" "}
               of AI queries about {scan.category ?? "your category"}
             </p>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-[#9CA3AF]">
               Scanned across {Object.keys(byModel).length} AI platform{Object.keys(byModel).length !== 1 ? "s" : ""} · {totalQueries} queries analysed · {dateStr}
             </p>
           </div>
@@ -1478,8 +1658,8 @@ export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: 
               const ms = Math.round(results.reduce((s, r) => s + (r.score ?? 0), 0) / Math.max(1, results.length));
               return (
                 <div key={modelId} className="text-center">
-                  <p className="text-2xl font-bold tabular-nums" style={{ color: MODEL_COLORS[modelId] ?? "#fff" }}>{ms}</p>
-                  <p className="text-xs text-gray-600 mt-0.5">{MODEL_LABELS[modelId] ?? modelId}</p>
+                  <p className="text-2xl font-bold tabular-nums" style={{ color: MODEL_COLORS[modelId] ?? "#111827" }}>{ms}</p>
+                  <p className="text-xs text-[#9CA3AF] mt-0.5">{MODEL_LABELS[modelId] ?? modelId}</p>
                 </div>
               );
             })}
@@ -1525,7 +1705,7 @@ export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: 
             <ShareOfVoiceSection data={competitorsData} brand={brand} />
             {(competitorsData.insights?.length ?? 0) > 0 && (
               <div className="mt-8">
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-4">Competitive Insights</p>
+                <p className="text-xs font-semibold text-[#9CA3AF] uppercase tracking-widest mb-4">Competitive Insights</p>
                 <CompetitorInsightsSection insights={competitorsData.insights} />
               </div>
             )}
@@ -1537,13 +1717,13 @@ export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: 
           <Section id="actions" title="Recommended Actions">
             <div className="space-y-3">
               {recommendations.map((rec, i) => (
-                <div key={i} className="rounded-xl border border-white/8 bg-[#111827] p-4 flex items-start gap-3">
+                <div key={i} className="rounded-xl border border-[#E5E7EB] bg-white p-4 flex items-start gap-3 shadow-sm">
                   <span className={cn("text-[11px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0 mt-0.5", PRIORITY_STYLES[rec.priority] ?? PRIORITY_STYLES["Low"])}>
                     {rec.priority}
                   </span>
                   <div>
-                    <p className="text-sm font-medium text-white">{rec.title}</p>
-                    <p className="text-sm text-gray-400 mt-1 leading-relaxed">{rec.description}</p>
+                    <p className="text-sm font-medium text-[#111827]">{rec.title}</p>
+                    <p className="text-sm text-[#6B7280] mt-1 leading-relaxed">{rec.description}</p>
                   </div>
                 </div>
               ))}
@@ -1633,17 +1813,24 @@ export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: 
         </Section>
 
         {/* ── Footer ── */}
-        <div className="pt-8 pb-4 border-t border-white/5 flex items-center justify-between flex-wrap gap-4">
-          <Link href="/app/report-builder" className="inline-flex items-center gap-2 bg-[#10B981] hover:bg-[#059669] text-[#0A0E17] font-semibold rounded-xl px-5 py-2.5 text-sm transition-colors">
+        <div className="pt-8 pb-4 border-t border-[#E5E7EB] flex items-center justify-between flex-wrap gap-4">
+          <Link href="/app/report-builder" className="inline-flex items-center gap-2 bg-[#10B981] hover:bg-[#059669] text-white font-semibold rounded-xl px-5 py-2.5 text-sm transition-colors">
             <Zap className="w-4 h-4" />
             Run Another Report
           </Link>
-          <Link href="/app/scores" className="text-sm text-gray-500 hover:text-gray-300 transition-colors">
+          <Link href="/app/scores" className="text-sm text-[#9CA3AF] hover:text-[#374151] transition-colors">
             View all reports →
           </Link>
         </div>
 
       </main>
+
+      {/* ── Floating AI Assistant ── */}
+      <FloatingAIAssistant
+        scan={scan}
+        brand={brand}
+        tokenBalance={tokenBalance}
+      />
     </div>
   );
 }
