@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdmin } from "@supabase/supabase-js";
 import { PlanClient } from "./plan-client";
@@ -47,70 +47,60 @@ export default async function PlanPage({
 }: {
   params: Promise<{ scan_id: string }>;
 }) {
+  const { scan_id } = await params;
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const admin = getAdmin();
+
+  const { data: scan, error: scanError } = await admin
+    .from("scans")
+    .select("id, brand_name, category, website, overall_score, created_at")
+    .eq("id", scan_id)
+    .eq("user_id", user.id)
+    .single();
+
+  if (scanError || !scan) notFound();
+
+  let aeoReadiness: Record<string, number> | null = null;
   try {
-    const { scan_id } = await params;
+    const { data } = await admin.from("scans").select("aeo_readiness").eq("id", scan_id).single();
+    aeoReadiness = (data?.aeo_readiness as Record<string, number>) ?? null;
+  } catch { /* column may not exist on older DBs */ }
 
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) redirect("/login");
+  let planRows: DbRow[] = [];
+  try {
+    const { data } = await admin
+      .from("plan_items")
+      .select("*")
+      .eq("scan_id", scan_id)
+      .order("priority_order", { ascending: true });
+    planRows = data ?? [];
+  } catch { /* table may not exist on older DBs */ }
 
-    const admin = getAdmin();
+  const initialItems = planRows.map(dbRowToPlanItem);
 
-    const { data: scan, error: scanError } = await admin
-      .from("scans")
-      .select("id, brand_name, category, website, overall_score, created_at")
-      .eq("id", scan_id)
-      .eq("user_id", user.id)
-      .single();
+  const aeoScores = aeoReadiness
+    ? Object.fromEntries(Object.entries(aeoReadiness).map(([k, v]) => [k, { score: v, summary: "" }]))
+    : null;
 
-    if (scanError) {
-      return <div style={{color:"red",padding:20}}>Scan error: {scanError.message}</div>;
-    }
-    if (!scan) {
-      return <div style={{color:"red",padding:20}}>Scan not found for id: {scan_id}</div>;
-    }
-
-    let aeoReadiness: Record<string, number> | null = null;
-    try {
-      const { data } = await admin.from("scans").select("aeo_readiness").eq("id", scan_id).single();
-      aeoReadiness = (data?.aeo_readiness as Record<string, number>) ?? null;
-    } catch { /* column may not exist */ }
-
-    let planRows: DbRow[] = [];
-    try {
-      const { data } = await admin.from("plan_items").select("*").eq("scan_id", scan_id).order("priority_order", { ascending: true });
-      planRows = data ?? [];
-    } catch { /* table may not exist */ }
-
-    const initialItems = planRows.map(dbRowToPlanItem);
-
-    const aeoScores = aeoReadiness
-      ? Object.fromEntries(Object.entries(aeoReadiness).map(([k, v]) => [k, { score: v, summary: "" }]))
-      : null;
-
-    return (
-      <PlanClient
-        scanId={scan.id as string}
-        brand={scan.brand_name as string}
-        scanDate={scan.created_at as string}
-        overallScore={(scan.overall_score as number) ?? 0}
-        websiteUrl={(scan.website as string) ?? null}
-        initialItems={initialItems}
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        aeoScores={aeoScores as any}
-        overallAeoReadiness={
-          aeoReadiness
-            ? Math.round(Object.values(aeoReadiness).reduce((a, b) => a + b, 0) / Math.max(1, Object.values(aeoReadiness).length))
-            : null
-        }
-      />
-    );
-  } catch (err) {
-    return (
-      <div style={{color:"red",padding:20,fontFamily:"monospace"}}>
-        <strong>Page error:</strong><br/>
-        {err instanceof Error ? err.message : String(err)}
-      </div>
-    );
-  }
+  return (
+    <PlanClient
+      scanId={scan.id as string}
+      brand={scan.brand_name as string}
+      scanDate={scan.created_at as string}
+      overallScore={(scan.overall_score as number) ?? 0}
+      websiteUrl={(scan.website as string) ?? null}
+      initialItems={initialItems}
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      aeoScores={aeoScores as any}
+      overallAeoReadiness={
+        aeoReadiness
+          ? Math.round(Object.values(aeoReadiness).reduce((a, b) => a + b, 0) / Math.max(1, Object.values(aeoReadiness).length))
+          : null
+      }
+    />
+  );
 }
