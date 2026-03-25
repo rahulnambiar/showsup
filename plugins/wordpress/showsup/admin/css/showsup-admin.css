@@ -1,0 +1,414 @@
+/* ShowsUp Admin Styles */
+
+:root {
+	--su-green:  #10B981;
+	--su-amber:  #F59E0B;
+	--su-red:    #EF4444;
+	--su-gray:   #6B7280;
+	--su-border: #e2e8f0;
+}
+
+/* ── Layout ──────────────────────────────────────────────────────────────── */
+
+.showsup-wrap {
+	max-width: 1000px;
+}
+
+.showsup-header {
+	display: flex;
+	align-items: center;
+	gap: 24px;
+	margin: 16px 0 0;
+	padding: 20px 24px;
+	background: #fff;
+	border: 1px solid var(--su-border);
+	border-radius: 8px;
+}
+
+.showsup-logo {
+	font-size: 22px;
+	font-weight: 700;
+	color: var(--su-green);
+}
+
+.showsup-tagline {
+	font-size: 14px;
+	color: var(--su-gray);
+	font-weight: 400;
+}
+
+.showsup-header-score {
+	margin-left: auto;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+}
+
+.showsup-score-label {
+	font-size: 11px;
+	color: var(--su-gray);
+	margin-top: 2px;
+}
+
+/* Nav tabs fix */
+.showsup-nav-tab-wrapper {
+	margin-bottom: 0 !important;
+}
+
+/* ── Cards ───────────────────────────────────────────────────────────────── */
+
+.showsup-card {
+	background: #fff;
+	border: 1px solid var(--su-border);
+	border-radius: 8px;
+	padding: 20px 24px;
+	margin-top: 16px;
+}
+
+.showsup-card h2,
+.showsup-card h3 {
+	margin-top: 0;
+	font-size: 15px;
+	font-weight: 600;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.showsup-card--empty {
+	text-align: center;
+	color: var(--su-gray);
+	padding: 40px;
+}
+
+.showsup-card--scan .showsup-card__body {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 24px;
+	flex-wrap: wrap;
+}
+
+/* ── Score Badges ─────────────────────────────────────────────────────────── */
+
+.showsup-big-score-wrap {
+	display: flex;
+	align-items: baseline;
+	gap: 4px;
+}
+
+.showsup-big-score {
+	font-size: 56px;
+	font-weight: 800;
+	line-height: 1;
+}
+
+.showsup-out-of {
+	font-size: 24px;
+	color: var(--su-gray);
+}
+
+.showsup-score,
+.showsup-big-score {
+	font-weight: 700;
+}
+
+.showsup-score--green  { color: var(--su-green); }
+.showsup-score--amber  { color: var(--su-amber); }
+.showsup-score--red    { color: var(--su-red); }
+
+/* ── Status Badges ────────────────────────────────────────────────────────── */
+
+.showsup-badge {
+	display: inline-flex;
+	align-items: center;
+	padding: 2px 8px;
+	border-radius: 9999px;
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+}
+
+.showsup-badge--green { background: #d1fae5; color: #065f46; }
+.showsup-badge--amber { background: #fef3c7; color: #92400e; }
+.showsup-badge--red   { background: #fee2e2; color: #991b1b; }
+.showsup-badge--gray  { background: #f3f4f6; color: #374151; }
+
+/* ── Progress Bars ────────────────────────────────────────────────────────── */
+
+.showsup-platforms {
+	display: grid;
+	gap: 12px;
+}
+
+.showsup-platform {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.showsup-platform__name {
+	width: 90px;
+	font-size: 13px;
+	font-weight: 500;
+	flex-shrink: 0;
+}
+
+.showsup-bar-wrap {
+	flex: 1;
+	height: 8px;
+	background: #f3f4f6;
+	border-radius: 4px;
+	overflow: hidden;
+}
+
+.showsup-bar {
+	height: 100%;
+	border-radius: 4px;
+	transition: width 0.6s ease;
+}
+
+.showsup-bar--green { background: var(--su-green); }
+.showsup-bar--amber { background: var(--su-amber); }
+.showsup-bar--red   { background: var(--su-red); }
+
+.showsup-platform__score {
+	font-size: 13px;
+	font-weight: 600;
+	width: 52px;
+	text-align: right;
+	flex-shrink: 0;
+}
+
+/* ── llms.txt ─────────────────────────────────────────────────────────────── */
+
+.showsup-llmstxt-status {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 16px;
+	flex-wrap: wrap;
+}
+
+.showsup-llmstxt-meta {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.showsup-llmstxt-url a {
+	font-size: 13px;
+	color: var(--su-green);
+}
+
+.showsup-llmstxt-time {
+	font-size: 12px;
+	color: var(--su-gray);
+}
+
+.showsup-llmstxt-preview {
+	margin-top: 12px;
+	border-top: 1px solid var(--su-border);
+	padding-top: 12px;
+}
+
+.showsup-llmstxt-preview summary {
+	cursor: pointer;
+	font-size: 13px;
+	color: var(--su-gray);
+}
+
+.showsup-llmstxt-preview pre {
+	margin-top: 8px;
+	background: #f8fafc;
+	padding: 12px;
+	border-radius: 6px;
+	font-size: 12px;
+	overflow: auto;
+	max-height: 300px;
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+
+/* ── Recommendations ─────────────────────────────────────────────────────── */
+
+.showsup-see-all {
+	font-size: 12px;
+	font-weight: 400;
+	color: var(--su-green);
+	text-decoration: none;
+}
+
+.showsup-recs-list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	display: grid;
+	gap: 8px;
+}
+
+.showsup-rec-item {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	padding: 8px 12px;
+	background: #f8fafc;
+	border-radius: 6px;
+}
+
+.showsup-rec__title {
+	font-size: 13px;
+}
+
+/* ── Fixes Tab ────────────────────────────────────────────────────────────── */
+
+.showsup-fixes-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.showsup-quick-fixes {
+	margin-top: 16px;
+	border-top: 1px solid var(--su-border);
+	padding-top: 16px;
+}
+
+.showsup-quick-fix-row {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 12px;
+}
+
+.showsup-quick-fix {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 12px;
+	border: 1px solid var(--su-border);
+	border-radius: 6px;
+}
+
+.showsup-quick-fix__info strong {
+	display: block;
+	font-size: 13px;
+}
+
+.showsup-quick-fix__info p {
+	margin: 4px 0 0;
+	font-size: 12px;
+	color: var(--su-gray);
+}
+
+.showsup-fixes-table .showsup-fix-text {
+	font-size: 12px;
+	color: #374151;
+	max-width: 300px;
+}
+
+.showsup-queries-grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 24px;
+}
+
+.showsup-queries-col ul {
+	margin: 8px 0 0;
+	padding-left: 18px;
+	font-size: 13px;
+	line-height: 1.8;
+}
+
+.showsup-queries-won  { color: var(--su-green); }
+.showsup-queries-missed { color: var(--su-red); }
+
+/* ── Settings ─────────────────────────────────────────────────────────────── */
+
+.showsup-settings .form-table th {
+	width: 200px;
+	font-weight: 500;
+}
+
+.showsup-settings-status {
+	margin-left: 12px;
+	font-size: 13px;
+	color: var(--su-green);
+}
+
+/* ── Scan Status ─────────────────────────────────────────────────────────── */
+
+.showsup-scan-status {
+	font-size: 13px;
+	color: var(--su-gray);
+	margin-left: 8px;
+}
+
+.showsup-last-scan-time {
+	font-size: 13px;
+	color: var(--su-gray);
+	margin: 4px 0 0;
+}
+
+/* ── Notices ─────────────────────────────────────────────────────────────── */
+
+.showsup-notice {
+	padding: 12px 16px;
+	border-radius: 6px;
+	margin-top: 12px;
+	font-size: 13px;
+}
+
+.showsup-notice--warning {
+	background: #fffbeb;
+	border-left: 4px solid var(--su-amber);
+	color: #92400e;
+}
+
+/* ── Dashboard Widget ────────────────────────────────────────────────────── */
+
+.showsup-widget .showsup-big-score-wrap {
+	align-items: baseline;
+}
+
+.showsup-widget .showsup-big-score {
+	font-size: 48px;
+}
+
+.showsup-widget .showsup-recs {
+	font-size: 13px;
+	color: #374151;
+}
+
+.showsup-widget .showsup-last-scan {
+	font-size: 12px;
+	color: var(--su-gray);
+	margin: 4px 0 8px;
+}
+
+/* ── Spinner ─────────────────────────────────────────────────────────────── */
+
+.showsup-spinner {
+	display: inline-block;
+	width: 14px;
+	height: 14px;
+	border: 2px solid #e5e7eb;
+	border-top-color: var(--su-green);
+	border-radius: 50%;
+	animation: showsup-spin 0.7s linear infinite;
+	vertical-align: middle;
+	margin-right: 6px;
+}
+
+@keyframes showsup-spin {
+	to { transform: rotate(360deg); }
+}
+
+@media (max-width: 640px) {
+	.showsup-quick-fix-row,
+	.showsup-queries-grid {
+		grid-template-columns: 1fr;
+	}
+}
