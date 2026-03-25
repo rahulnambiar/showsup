@@ -63,7 +63,7 @@ Return ONLY a valid JSON array. Each item must match this exact schema:
 }
 
 Rules:
-- Generate 8-12 items covering the most impactful improvements
+- Generate exactly 6-8 items covering the most impactful improvements
 - Base findings on the actual website analysis data, not generic advice
 - Mark items "critical" only if they actively prevent AI from indexing content
 - Quick wins = fixes achievable in 1-2 hours; Projects = multi-week efforts
@@ -172,7 +172,7 @@ export async function POST(request: Request) {
 
     const message = await anthropic.messages.create({
       model: "claude-sonnet-4-6",
-      max_tokens: 4096,
+      max_tokens: 8192,
       messages: [{ role: "user", content: prompt }],
     });
 
