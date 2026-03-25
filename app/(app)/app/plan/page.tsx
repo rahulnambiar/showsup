@@ -26,7 +26,7 @@ export default async function PlanIndexPage() {
     .not("overall_score", "is", null)
     .order("created_at", { ascending: false })
     .limit(1)
-    .single();
+    .maybeSingle();
 
   if (latestScan) {
     redirect(`/app/plan/${latestScan.id}`);

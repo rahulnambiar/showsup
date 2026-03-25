@@ -55,27 +55,44 @@ export default async function PlanPage({
 
   const admin = getAdmin();
 
-  const { data: scan } = await admin
+  // Fetch scan — only select columns that definitely exist
+  const { data: scan, error: scanError } = await admin
     .from("scans")
-    .select(
-      "id, brand_name, category, url, website, overall_score, aeo_readiness, created_at"
-    )
+    .select("id, brand_name, category, url, website, overall_score, created_at")
     .eq("id", scan_id)
     .eq("user_id", user.id)
     .single();
 
-  if (!scan) notFound();
+  if (scanError || !scan) notFound();
 
-  const { data: planRows } = await admin
-    .from("plan_items")
-    .select("*")
-    .eq("scan_id", scan_id)
-    .order("priority_order", { ascending: true });
+  // Fetch aeo_readiness separately — column may not exist yet on older DBs
+  let aeoReadiness: Record<string, number> | null = null;
+  try {
+    const { data } = await admin
+      .from("scans")
+      .select("aeo_readiness")
+      .eq("id", scan_id)
+      .single();
+    aeoReadiness = (data?.aeo_readiness as Record<string, number>) ?? null;
+  } catch {
+    // column doesn't exist yet — fine, proceed without it
+  }
 
-  const initialItems = (planRows ?? []).map(dbRowToPlanItem);
+  // Fetch plan items — table may not exist yet on older DBs
+  let planRows: DbRow[] = [];
+  try {
+    const { data } = await admin
+      .from("plan_items")
+      .select("*")
+      .eq("scan_id", scan_id)
+      .order("priority_order", { ascending: true });
+    planRows = data ?? [];
+  } catch {
+    // table doesn't exist yet — fine, empty state will trigger generate flow
+  }
 
-  // Build aeoScores for radar — aeo_readiness stores { dimension_key: score }
-  const aeoReadiness = scan.aeo_readiness as Record<string, number> | null;
+  const initialItems = planRows.map(dbRowToPlanItem);
+
   const aeoScores = aeoReadiness
     ? Object.fromEntries(
         Object.entries(aeoReadiness).map(([k, v]) => [k, { score: v, summary: "" }])
@@ -87,7 +104,7 @@ export default async function PlanPage({
       scanId={scan.id as string}
       brand={scan.brand_name as string}
       scanDate={scan.created_at as string}
-      overallScore={scan.overall_score as number}
+      overallScore={(scan.overall_score as number) ?? 0}
       websiteUrl={(scan.website as string) ?? (scan.url as string) ?? null}
       initialItems={initialItems}
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
