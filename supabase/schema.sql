@@ -94,7 +94,7 @@ CREATE TABLE IF NOT EXISTS audit_results (
   response_text         TEXT,
   brand_mentioned       BOOLEAN DEFAULT false,
   mention_position      INTEGER,
-  sentiment             TEXT CHECK (sentiment IN ('positive', 'neutral', 'negative')),
+  sentiment             TEXT CHECK (sentiment IN ('positive', 'neutral', 'negative', 'mixed', 'unknown')),
   is_recommended        BOOLEAN DEFAULT false,
   competitors_mentioned TEXT[],
   created_at            TIMESTAMPTZ DEFAULT now()
