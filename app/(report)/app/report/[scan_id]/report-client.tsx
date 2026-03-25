@@ -645,8 +645,9 @@ function CitationsSection({ citationData }: { citationData: Json }) {
   );
 }
 
-// ── Improvement Plan Section ───────────────────────────────────────────────────
+// ── Improvement Plan Section (legacy — replaced by /app/plan) ─────────────────
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function ImprovementPlanSection({ plan, currentScore }: { plan: Json; currentScore: number }) {
   const [done, setDone] = useState<Set<string>>(new Set());
 
@@ -1598,7 +1599,8 @@ export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: 
   const [tokenBalance,   setTokenBalance]   = useState<number | null>(null);
   const [activeSection,  setActiveSection]  = useState<string>("score");
   const [scrollProgress, setScrollProgress] = useState(0);
-  const [improvementPlan,setImprovementPlan]= useState<Json>(scan.improvement_plan ?? null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [improvementPlan, setImprovementPlan] = useState<Json>(scan.improvement_plan ?? null);
   const [benchmarkData,  setBenchmarkData]  = useState<Json>(scan.benchmark_data   ?? null);
   const [perceptionData, setPerceptionData] = useState<Json>(scan.perception_data  ?? null);
   const [citationData,   setCitationData]   = useState<Json>(scan.citation_data    ?? null);

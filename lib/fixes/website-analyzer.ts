@@ -210,7 +210,6 @@ export async function analyzeWebsite(rawUrl: string): Promise<WebsiteAnalysis> {
 
       // Check SSR: does the raw HTML contain meaningful text content?
       const textLen = extractText(html).length;
-      homepage.fetchError; // already analyzed above
 
       // Check org schema on homepage
       const schemaTypes = extractSchemaTypes(html);
