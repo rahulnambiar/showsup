@@ -804,6 +804,50 @@ function ImprovementPlanSection({ plan, currentScore }: { plan: Json; currentSco
   );
 }
 
+// ── Regenerate Button ─────────────────────────────────────────────────────────
+
+function RegenerateButton({ scanId, module, onRegenerated }: {
+  scanId: string; module: string; onRegenerated: (data: Json) => void;
+}) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError]     = useState<string | null>(null);
+
+  async function handleRegenerate() {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/report/unlock-module", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ scan_id: scanId, module, force: true }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setError(data.error ?? "Failed"); setLoading(false); return; }
+      onRegenerated(data.data);
+    } catch {
+      setError("Network error");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="flex items-center gap-3">
+      <button
+        onClick={handleRegenerate}
+        disabled={loading}
+        className="flex items-center gap-1.5 text-xs text-[#9CA3AF] hover:text-[#6B7280] border border-[#E5E7EB] hover:border-[#D1D5DB] rounded-lg px-3 py-1.5 transition-all disabled:opacity-50"
+      >
+        {loading
+          ? <span className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin" />
+          : <TrendingUp className="w-3 h-3" />}
+        {loading ? "Regenerating…" : "Regenerate with latest competitors"}
+      </button>
+      {error && <span className="text-xs text-red-500">{error}</span>}
+    </div>
+  );
+}
+
 // ── Benchmark Section ──────────────────────────────────────────────────────────
 
 function BenchmarkSection({ data, actualScore }: { data: Json; actualScore: number }) {
@@ -1896,11 +1940,18 @@ export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: 
         {/* ── 10: Benchmark ── */}
         <Section id="benchmark" title="Industry Benchmark" shareable>
           {benchmarkData ? (
-            <BenchmarkSection data={benchmarkData} actualScore={score} />
+            <div className="space-y-4">
+              <BenchmarkSection data={benchmarkData} actualScore={score} />
+              <RegenerateButton
+                scanId={scan.id}
+                module="benchmark"
+                onRegenerated={(data) => setBenchmarkData(data)}
+              />
+            </div>
           ) : (
             <LockedModuleCard
               title="Category Benchmarking"
-              description="Compare your scores against typical market leaders, average brands, and new entrants in your category."
+              description="Compare your scores against your actual competitors detected in this scan."
               unlockKey="benchmark"
               scanId={scan.id}
               tokenBalance={tokenBalance}

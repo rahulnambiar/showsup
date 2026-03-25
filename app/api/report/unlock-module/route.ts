@@ -197,7 +197,7 @@ export async function POST(request: Request) {
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = await request.json();
-    const { scan_id, module } = body as { scan_id: string; module: string };
+    const { scan_id, module, force } = body as { scan_id: string; module: string; force?: boolean };
 
     const validModules = ["sentiment", "citations", "improvement_plan", "benchmark"];
     if (!scan_id || !module || !validModules.includes(module)) {
@@ -227,7 +227,7 @@ export async function POST(request: Request) {
       return false;
     })();
 
-    if (alreadyUnlocked) {
+    if (alreadyUnlocked && !force) {
       // Return existing data without charging
       const data = (() => {
         if (module === "sentiment")        return scan.perception_data;
