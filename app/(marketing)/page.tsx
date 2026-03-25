@@ -479,7 +479,7 @@ export default function HomePage() {
             className="text-[36px] sm:text-[48px] md:text-[56px] font-semibold text-[#111827] tracking-tight"
             style={{ fontFamily: "var(--font-inter, system-ui)", lineHeight: 1.1 }}
           >
-            The open source AEO agent
+            Is your brand visible to AI?
           </h1>
 
           {/* Subheadline */}
@@ -487,9 +487,7 @@ export default function HomePage() {
             className="text-[18px] text-[#4B5563] max-w-[640px] mx-auto"
             style={{ lineHeight: 1.7 }}
           >
-            Scan how your brand appears across ChatGPT, Claude, and Gemini.
-            Generate the exact fixes — llms.txt, schema markup, content briefs.
-            Correlate with search and revenue data.
+            Scan how your brand appears across ChatGPT, Claude, and Gemini — then generate the exact fixes to improve it. Open source, self-host free, or use our cloud.
           </p>
 
           {/* Terminal */}
