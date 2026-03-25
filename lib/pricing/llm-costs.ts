@@ -46,21 +46,13 @@ export const LLM_PRICING: Record<string, Record<string, {
     },
   },
   google: {
-    'gemini-1.5-flash': {
-      input_per_1m: 0.075,
-      output_per_1m: 0.30,
+    'gemini-2.5-flash': {
+      input_per_1m: 0.15,
+      output_per_1m: 0.60,
       avg_input_tokens: 150,
       avg_output_tokens: 500,
       tier: 'free',
-      label: 'Gemini (Flash)',
-    },
-    'gemini-1.5-pro': {
-      input_per_1m: 1.25,
-      output_per_1m: 5.00,
-      avg_input_tokens: 150,
-      avg_output_tokens: 500,
-      tier: 'paid',
-      label: 'Gemini (Pro)',
+      label: 'Gemini 2.5 Flash',
     },
   },
 };

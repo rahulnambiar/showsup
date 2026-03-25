@@ -36,12 +36,11 @@ const MODEL_TO_PLATFORM: Record<string, string> = {
   "gpt-4o":           "chatgpt",
   "claude-3-haiku":   "claude",
   "claude-sonnet":    "claude",
-  "gemini-1.5-flash": "gemini",
-  "gemini-1.5-pro":   "gemini",
+  "gemini-2.5-flash": "gemini",
 };
 
-const SCAN_CAPABLE = new Set(["gpt-4o-mini", "claude-3-haiku"]);
-const COMING_SOON_PROVIDERS = new Set(["google"]);
+const SCAN_CAPABLE = new Set(["gpt-4o-mini", "claude-3-haiku", "gemini-2.5-flash"]);
+const COMING_SOON_PROVIDERS = new Set<string>([]);
 
 // ── Templates ─────────────────────────────────────────────────────────────────
 

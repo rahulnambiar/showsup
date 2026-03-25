@@ -42,12 +42,11 @@ const MODEL_TO_PLATFORM: Record<string, string> = {
   "gpt-4o":           "chatgpt",
   "claude-3-haiku":   "claude",
   "claude-sonnet":    "claude",
-  "gemini-1.5-flash": "gemini",
-  "gemini-1.5-pro":   "gemini",
+  "gemini-2.5-flash": "gemini",
 };
 
 // Models available for actual scanning (scan API supports these)
-const SCAN_CAPABLE = new Set(["gpt-4o-mini", "claude-3-haiku", "gemini-1.5-flash"]);
+const SCAN_CAPABLE = new Set(["gpt-4o-mini", "claude-3-haiku", "gemini-2.5-flash"]);
 const COMING_SOON_PROVIDERS = new Set<string>([]);
 
 // ── Templates ─────────────────────────────────────────────────────────────────
@@ -110,7 +109,7 @@ function ReportBuilderPage() {
 
   // Report config
   const [scanDepth, setScanDepth] = useState<ScanDepth>("standard");
-  const [selectedModels, setSelectedModels] = useState<string[]>(["gpt-4o-mini", "claude-3-haiku", "gemini-1.5-flash"]);
+  const [selectedModels, setSelectedModels] = useState<string[]>(["gpt-4o-mini", "claude-3-haiku", "gemini-2.5-flash"]);
   const [multiRegion, setMultiRegion] = useState(false);
   const [selectedRegions, setSelectedRegions] = useState<string[]>(["global"]);
   const [modules, setModules] = useState<ReportConfig["modules"]>({

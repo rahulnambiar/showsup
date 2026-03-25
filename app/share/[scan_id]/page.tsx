@@ -99,7 +99,7 @@ export default async function SharePage({ params }: { params: Promise<{ scan_id:
     if (r.brand_mentioned) byModel[r.model]!.mentioned++;
   }
 
-  const MODEL_LABELS: Record<string, string> = { chatgpt: "ChatGPT", claude: "Claude", gemini: "Gemini" };
+  const MODEL_LABELS: Record<string, string> = { chatgpt: "ChatGPT", claude: "Claude", gemini: "Gemini 2.5 Flash" };
   const MODEL_COLORS: Record<string, string> = { chatgpt: "#10B981", claude: "#C084FC", gemini: "#60A5FA" };
 
   const modelResults: ModelResult[] = Object.entries(byModel).map(([model, d]) => ({

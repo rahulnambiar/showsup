@@ -263,7 +263,7 @@ answer = showsup.ask("example.com", "What should I fix?")`;
 const FAQ_ITEMS = [
   {
     q: "What AI platforms does ShowsUp scan?",
-    a: "Currently ChatGPT (GPT-4o), Claude (Haiku/Sonnet), and Gemini (Flash/Pro). Perplexity support is coming soon.",
+    a: "Currently ChatGPT (GPT-4o mini), Claude (Haiku), and Gemini (2.5 Flash). Perplexity support is coming soon.",
   },
   {
     q: "What are tokens?",

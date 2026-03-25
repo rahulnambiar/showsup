@@ -62,7 +62,7 @@ const MODEL_COLORS: Record<string, string> = {
 const MODEL_LABELS: Record<string, string> = {
   chatgpt: "ChatGPT",
   claude: "Claude",
-  gemini: "Gemini",
+  gemini: "Gemini 2.5 Flash",
 };
 
 const PRIORITY_COLORS: Record<string, string> = {
