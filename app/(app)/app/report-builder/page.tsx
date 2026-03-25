@@ -461,11 +461,11 @@ function ReportBuilderPage() {
                 <Button
                   type="button"
                   variant="outline"
-                  className="border-white/20 text-gray-300 hover:text-white whitespace-nowrap"
+                  className="border-white/20 bg-white/10 text-white hover:bg-white/15 whitespace-nowrap"
                   onClick={() => { setDetectedFrom(null); detectFromUrl(url); }}
                   disabled={detecting || !url.trim()}
                 >
-                  {detecting ? <span className="w-4 h-4 border-2 border-gray-400 border-t-white rounded-full animate-spin" /> : "Detect"}
+                  {detecting ? <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : "Detect"}
                 </Button>
               </div>
 
@@ -534,7 +534,7 @@ function ReportBuilderPage() {
                   <Button
                     type="button"
                     variant="outline"
-                    className="border-white/20 text-gray-300 hover:text-white text-sm"
+                    className="border-white/20 bg-white/10 text-white hover:bg-white/15 text-sm"
                     onClick={addExtraCompetitor}
                     disabled={!competitorInput.trim()}
                   >
