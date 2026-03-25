@@ -1,0 +1,88 @@
+{
+  "manifest_version": 3,
+  "name": "ShowsUp — AI Visibility",
+  "version": "1.0.0",
+  "description": "See your AI visibility score on any site. Monitor brand mentions in ChatGPT, Claude, Gemini & Perplexity in real time.",
+
+  "icons": {
+    "16":  "icons/icon-16.png",
+    "48":  "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16":  "icons/icon-16.png",
+      "48":  "icons/icon-48.png",
+      "128": "icons/icon-128.png"
+    },
+    "default_title": "ShowsUp AI Visibility"
+  },
+
+  "background": {
+    "service_worker": "src/background.ts",
+    "type": "module"
+  },
+
+  "content_scripts": [
+    {
+      "matches": [
+        "https://chat.openai.com/*",
+        "https://chatgpt.com/*",
+        "https://claude.ai/*",
+        "https://gemini.google.com/*",
+        "https://www.perplexity.ai/*",
+        "https://perplexity.ai/*",
+        "https://copilot.microsoft.com/*"
+      ],
+      "js": ["src/content/monitor.ts"],
+      "run_at": "document_idle",
+      "all_frames": false
+    },
+    {
+      "matches": ["<all_urls>"],
+      "js": ["src/content/index.ts"],
+      "run_at": "document_idle",
+      "all_frames": false,
+      "exclude_matches": [
+        "https://chat.openai.com/*",
+        "https://chatgpt.com/*",
+        "https://claude.ai/*",
+        "https://gemini.google.com/*",
+        "https://www.perplexity.ai/*",
+        "https://copilot.microsoft.com/*"
+      ]
+    }
+  ],
+
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting",
+    "alarms",
+    "notifications",
+    "tabs"
+  ],
+
+  "host_permissions": [
+    "https://showsup.co/*",
+    "<all_urls>"
+  ],
+
+  "web_accessible_resources": [
+    {
+      "resources": ["icons/*", "src/content/*"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+
+  "options_page": "options.html",
+
+  "commands": {
+    "toggle-monitor": {
+      "suggested_key": { "default": "Alt+Shift+S" },
+      "description": "Toggle ShowsUp AI monitor panel"
+    }
+  }
+}
