@@ -354,13 +354,13 @@ function ScanPageInner() {
   const [niche, setNiche] = useState("");
   const [competitors, setCompetitors] = useState<string[]>([]);
   const [competitorInput, setCompetitorInput] = useState("");
-  const [models, setModels] = useState({ chatgpt: true, claude: true });
+  const [models, setModels] = useState({ chatgpt: true, claude: true, gemini: true });
 
   const [scanning, setScanning] = useState(false);
   const [steps, setSteps] = useState<StepState[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [scanResult, setScanResult] = useState<ScanResult | null>(null);
-  const [modelConfig, setModelConfig] = useState<{ chatgpt: boolean; claude: boolean } | null>(null);
+  const [modelConfig, setModelConfig] = useState<{ chatgpt: boolean; claude: boolean; gemini: boolean } | null>(null);
   const [tokenBalance, setTokenBalance] = useState<number | null>(null);
 
   const stepsRef = useRef<StepState[]>([]);
@@ -461,6 +461,7 @@ function ScanPageInner() {
       { id: "queries",      label: `Generating ${promptCount} targeted queries…`,   status: "pending", visible: false },
       ...(models.chatgpt ? [{ id: "chatgpt", label: "Scanning ChatGPT…", status: "pending" as const, visible: false }] : []),
       ...(models.claude  ? [{ id: "claude",  label: "Scanning Claude…",  status: "pending" as const, visible: false }] : []),
+      ...(models.gemini  ? [{ id: "gemini",  label: "Scanning Gemini…",  status: "pending" as const, visible: false }] : []),
       { id: "analyze",      label: "Analyzing responses with AI…",                  status: "pending", visible: false },
       { id: "score",        label: "Calculating ShowsUp Score…",                    status: "pending", visible: false },
     ];
@@ -492,6 +493,7 @@ function ScanPageInner() {
     // Start AI query steps
     if (models.chatgpt) updateStep("chatgpt", "running");
     if (models.claude)  updateStep("claude", "running");
+    if (models.gemini)  updateStep("gemini",  "running");
 
     try {
       const res = await fetch("/api/scan", {
@@ -512,6 +514,7 @@ function ScanPageInner() {
       if (res.status === 402) {
         updateStep("chatgpt", "error");
         updateStep("claude", "error");
+        updateStep("gemini", "error");
         const needed = (data.required ?? 150) - (data.balance ?? 0);
         setError(`Insufficient tokens. You need ${needed} more tokens to run this scan.`);
         setScanning(false);
@@ -521,6 +524,7 @@ function ScanPageInner() {
       if (!res.ok) {
         updateStep("chatgpt", "error");
         updateStep("claude", "error");
+        updateStep("gemini", "error");
         trackScanFailed(data.error ?? "scan_failed");
         setError(data.error ?? "Scan failed. Please try again.");
         setScanning(false);
@@ -529,6 +533,7 @@ function ScanPageInner() {
 
       if (models.chatgpt) updateStep("chatgpt", "done");
       if (models.claude)  updateStep("claude", "done");
+      if (models.gemini)  updateStep("gemini",  "done");
 
       updateStep("analyze", "running");
       await delay(600);
@@ -552,6 +557,7 @@ function ScanPageInner() {
     } catch {
       if (models.chatgpt) updateStep("chatgpt", "error");
       if (models.claude)  updateStep("claude", "error");
+      if (models.gemini)  updateStep("gemini",  "error");
       setError("Network error. Check your connection and try again.");
       setScanning(false);
     }
@@ -578,7 +584,7 @@ function ScanPageInner() {
         <CardHeader className="pb-4">
           <CardTitle className="text-base text-white">Brand details</CardTitle>
           <CardDescription className="text-gray-500">
-            We query ChatGPT and Claude with targeted prompts and score the responses.
+            We query ChatGPT, Claude, and Gemini with targeted prompts and score the responses.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -698,8 +704,9 @@ function ScanPageInner() {
             <div className="space-y-2">
               <Label className="text-gray-300">AI Models</Label>
               <div className="flex gap-4 flex-wrap">
-                {(["chatgpt", "claude"] as const).map((id) => {
+                {(["chatgpt", "claude", "gemini"] as const).map((id) => {
                   const configured = !modelConfig || modelConfig[id];
+                  const label = id === "chatgpt" ? "ChatGPT" : id === "claude" ? "Claude" : "Gemini";
                   return (
                     <label key={id} className="flex items-center gap-2 cursor-pointer">
                       <input
@@ -710,7 +717,7 @@ function ScanPageInner() {
                         className="w-4 h-4 rounded accent-[#10B981] disabled:opacity-40"
                       />
                       <span className={cn("text-sm", configured ? "text-gray-300" : "text-gray-600")}>
-                        {id === "chatgpt" ? "ChatGPT" : "Claude"}
+                        {label}
                       </span>
                       {!configured && (
                         <span className="text-[10px] text-gray-600 border border-white/10 rounded px-1.5 py-0.5">
@@ -757,7 +764,7 @@ function ScanPageInner() {
               disabled={
                 !url.trim() ||
                 !brand.trim() ||
-                (!models.chatgpt && !models.claude) ||
+                (!models.chatgpt && !models.claude && !models.gemini) ||
                 (tokenBalance !== null && tokenBalance < 150)
               }
             >

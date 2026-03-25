@@ -131,7 +131,7 @@ export interface ScanInput {
   url?: string;
   competitors?: string[];
   reportConfig?: ReportConfig | null;
-  models?: { chatgpt?: boolean; claude?: boolean };
+  models?: { chatgpt?: boolean; claude?: boolean; gemini?: boolean };
   regions?: string[]; // region codes e.g. ['global','us','sg']; defaults to ['global']
 }
 

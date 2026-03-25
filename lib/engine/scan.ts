@@ -19,6 +19,7 @@ import type {
 
 if (!process.env.OPENAI_API_KEY)    console.log("ShowsUp: No OPENAI_API_KEY — ChatGPT disabled");
 if (!process.env.ANTHROPIC_API_KEY) console.log("ShowsUp: No ANTHROPIC_API_KEY — Claude disabled, analysis uses text fallback");
+if (!process.env.GOOGLE_AI_API_KEY) console.log("ShowsUp: No GOOGLE_AI_API_KEY — Gemini disabled");
 
 // ── Model callers ─────────────────────────────────────────────────────────────
 
@@ -31,6 +32,27 @@ export async function callOpenAI(prompt: string): Promise<string> {
   const data = await res.json() as { error?: { message?: string }; choices?: Array<{ message?: { content?: string } }> };
   if (!res.ok) throw new Error(data.error?.message ?? "OpenAI error");
   return data.choices?.[0]?.message?.content ?? "";
+}
+
+export async function callGemini(prompt: string): Promise<string> {
+  const apiKey = process.env.GOOGLE_AI_API_KEY;
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { maxOutputTokens: 400 },
+      }),
+    }
+  );
+  const data = await res.json() as {
+    error?: { message?: string };
+    candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+  };
+  if (!res.ok) throw new Error(data.error?.message ?? "Gemini error");
+  return data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
 }
 
 export async function callAnthropic(prompt: string, maxTokens = 400): Promise<string> {
@@ -581,6 +603,7 @@ export async function runScan(input: ScanInput): Promise<ScanOutput> {
   const allModels = [
     ...(process.env.OPENAI_API_KEY    ? [{ id: "chatgpt", label: "ChatGPT", call: callOpenAI }]                    : []),
     ...(process.env.ANTHROPIC_API_KEY ? [{ id: "claude",  label: "Claude",  call: (p: string) => callAnthropic(p) }] : []),
+    ...(process.env.GOOGLE_AI_API_KEY ? [{ id: "gemini",  label: "Gemini",  call: callGemini }]                    : []),
   ];
   const models = allModels.filter((m) => (enabledModels as Record<string, boolean>)[m.id] !== false);
   if (models.length === 0) {

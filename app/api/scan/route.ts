@@ -88,7 +88,7 @@ export async function POST(request: Request) {
       url,
       competitors:  passedCompetitors,
       reportConfig: reportConfig ?? null,
-      models:       body.models ?? { chatgpt: true, claude: true },
+      models:       body.models ?? { chatgpt: true, claude: true, gemini: true },
       regions,
     };
 
