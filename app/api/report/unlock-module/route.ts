@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdmin } from "@supabase/supabase-js";
 import { getBalance, deductTokens } from "@/lib/tokens";
 import { getActionCost } from "@/lib/pricing/cost-calculator";
+import { isSelfHost } from "@/lib/mode";
 
 function getAdminClient() {
   return createAdmin(
@@ -217,14 +218,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ data });
     }
 
-    // Token check
+    // Token check (skipped in self-host mode)
     const cost = getActionCost(`unlock_${module}`);
-    const balance = await getBalance(user.id);
-    if (balance < cost) {
-      return NextResponse.json(
-        { error: "Insufficient tokens", required: cost, balance },
-        { status: 402 }
-      );
+    if (!isSelfHost) {
+      const balance = await getBalance(user.id);
+      if (balance < cost) {
+        return NextResponse.json(
+          { error: "Insufficient tokens", required: cost, balance },
+          { status: 402 }
+        );
+      }
     }
 
     // Fetch scan results for re-analysis modules
@@ -266,24 +269,28 @@ export async function POST(request: Request) {
       );
     }
 
-    // Deduct tokens
-    const deduction = await deductTokens(
-      user.id,
-      cost,
-      `Unlock ${module.replace(/_/g, " ")} for scan ${scan_id}`,
-      scan_id
-    );
-    if (!deduction.success) {
-      return NextResponse.json({ error: deduction.error }, { status: 402 });
-    }
-
     // Persist module data to scan row
     await admin
       .from("scans")
       .update({ [updateField]: moduleData })
       .eq("id", scan_id);
 
-    return NextResponse.json({ data: moduleData, balance: deduction.balance });
+    // Deduct tokens (skipped in self-host mode)
+    if (!isSelfHost) {
+      const deduction = await deductTokens(
+        user.id,
+        cost,
+        `Unlock ${module.replace(/_/g, " ")} for scan ${scan_id}`,
+        scan_id
+      );
+      if (!deduction.success) {
+        // Data already saved — log but don't fail
+        console.error("[unlock-module] token deduction failed:", deduction.error);
+      }
+      return NextResponse.json({ data: moduleData, balance: deduction.balance });
+    }
+
+    return NextResponse.json({ data: moduleData });
   } catch (err) {
     console.error("[unlock-module]", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

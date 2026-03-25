@@ -299,3 +299,9 @@ CREATE POLICY "Users see own report chats"
 
 CREATE INDEX IF NOT EXISTS report_chats_user_scan_idx
   ON public.report_chats(user_id, scan_id);
+
+-- ── Locked module columns (added post-initial deploy) ─────────────────────────
+ALTER TABLE scans ADD COLUMN IF NOT EXISTS benchmark_data   jsonb DEFAULT NULL;
+ALTER TABLE scans ADD COLUMN IF NOT EXISTS improvement_plan jsonb DEFAULT NULL;
+ALTER TABLE scans ADD COLUMN IF NOT EXISTS perception_data  jsonb DEFAULT NULL;
+ALTER TABLE scans ADD COLUMN IF NOT EXISTS citation_data    jsonb DEFAULT NULL;

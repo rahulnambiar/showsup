@@ -38,6 +38,8 @@ interface ScanRow {
   citation_data: Json;
   improvement_plan: Json;
   benchmark_data: Json;
+  regional_scores: Json;
+  regional_insights: Json;
   created_at: string;
 }
 
@@ -839,6 +841,96 @@ function BenchmarkSection({ data, actualScore }: { data: Json; actualScore: numb
   );
 }
 
+// ── Geography Section ─────────────────────────────────────────────────────────
+
+const REGION_INFO: Record<string, { name: string; flag: string }> = {
+  us:     { name: "United States",  flag: "🇺🇸" },
+  uk:     { name: "United Kingdom", flag: "🇬🇧" },
+  eu:     { name: "Europe",         flag: "🇪🇺" },
+  sg:     { name: "Singapore",      flag: "🇸🇬" },
+  sea:    { name: "Southeast Asia", flag: "🌏"  },
+  au:     { name: "Australia",      flag: "🇦🇺" },
+  in:     { name: "India",          flag: "🇮🇳" },
+  me:     { name: "Middle East",    flag: "🇦🇪" },
+  latam:  { name: "Latin America",  flag: "🌎"  },
+};
+
+function GeographySection({ regionalScores, regionalInsights }: {
+  regionalScores: Json; regionalInsights: Json;
+}) {
+  const [expanded, setExpanded] = useState<string | null>(null);
+
+  const scores = (regionalScores ?? {}) as Record<string, {
+    score: number; mention_rate?: number; avg_position?: number | null; sentiment?: string | null;
+  }>;
+  const insights: Array<{ region: string; insight: string }> = Array.isArray(regionalInsights) ? regionalInsights : [];
+  const entries = Object.entries(scores)
+    .filter(([code]) => code !== "global")
+    .sort(([, a], [, b]) => b.score - a.score);
+
+  if (entries.length === 0) return null;
+
+  return (
+    <div className="space-y-3">
+      {entries.map(([code, data]) => {
+        const info = REGION_INFO[code] ?? { name: code.toUpperCase(), flag: "🌐" };
+        const isExpanded = expanded === code;
+        const regionInsight = insights.find((i) =>
+          (i.region ?? "").toLowerCase() === code.toLowerCase()
+        );
+        const sentColor = data.sentiment === "positive" ? "#10B981" : data.sentiment === "negative" ? "#EF4444" : "#F59E0B";
+
+        return (
+          <div key={code} className="rounded-xl border border-[#E5E7EB] bg-white overflow-hidden shadow-sm">
+            <button
+              onClick={() => setExpanded(isExpanded ? null : code)}
+              className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-[#F9FAFB] transition-colors text-left"
+            >
+              <span className="text-lg flex-shrink-0 w-7 text-center">{info.flag}</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-[#111827]">{info.name}</p>
+                {data.mention_rate !== undefined && (
+                  <p className="text-xs text-[#9CA3AF] mt-0.5">{data.mention_rate}% mention rate</p>
+                )}
+              </div>
+              <div className="flex items-center gap-3 flex-shrink-0">
+                <div className="w-20 h-2 bg-[#F3F4F6] rounded-full overflow-hidden">
+                  <div
+                    className="h-full rounded-full"
+                    style={{ width: `${data.score}%`, background: scoreColor(data.score) }}
+                  />
+                </div>
+                <div className="text-right w-10">
+                  <p className="text-sm font-bold tabular-nums" style={{ color: scoreColor(data.score) }}>{data.score}</p>
+                </div>
+                <ChevronDown className={cn("w-4 h-4 text-[#9CA3AF] transition-transform flex-shrink-0", isExpanded && "rotate-180")} />
+              </div>
+            </button>
+
+            {isExpanded && (
+              <div className="border-t border-[#F3F4F6] px-4 py-3 space-y-2">
+                <div className="flex flex-wrap gap-4 text-xs text-[#6B7280]">
+                  {data.avg_position !== null && data.avg_position !== undefined && (
+                    <span>Average position: <span className="font-medium text-[#374151]">#{data.avg_position}</span></span>
+                  )}
+                  {data.sentiment && (
+                    <span>Sentiment: <span className="font-medium" style={{ color: sentColor }}>{data.sentiment}</span></span>
+                  )}
+                </div>
+                {regionInsight && (
+                  <p className="text-xs text-[#374151] leading-relaxed bg-[#F9FAFB] rounded-lg p-3 border border-[#E5E7EB]">
+                    {regionInsight.insight}
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 // ── Locked Module Card ─────────────────────────────────────────────────────────
 
 function LockedModuleCard({
@@ -1269,36 +1361,31 @@ function Section({ id, title, children, className, shareable }: {
 
 // ── Floating AI Assistant ──────────────────────────────────────────────────────
 
-interface ChatMessage {
+interface DisplayMessage {
   id: number;
   role: "user" | "assistant";
   text: string;
   loading?: boolean;
 }
+type ApiChatMessage = { role: "user" | "assistant"; content: string };
 
-function FloatingAIAssistant({ scan, brand, tokenBalance }: {
-  scan: ScanRow; brand: string; tokenBalance: number | null;
+function FloatingAIAssistant({ scan, brand }: {
+  scan: ScanRow; brand: string;
 }) {
-  const [open, setOpen]       = useState(false);
-  const [input, setInput]     = useState("");
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: 0,
-      role: "assistant",
-      text: `Hi! I'm your AI visibility assistant. Ask me anything about ${brand}'s AI presence — why scores are high or low, what to improve, or how specific platforms see your brand.`,
-    },
-  ]);
-  const [loading, setLoading] = useState(false);
+  const [open, setOpen]         = useState(false);
+  const [input, setInput]       = useState("");
+  const [messages, setMessages] = useState<DisplayMessage[]>([{
+    id: 0, role: "assistant",
+    text: `Hi! I'm your AI visibility analyst for ${brand}. Ask me about your scores, what's driving them, competitor gaps, or how to improve — I have full access to your report data.`,
+  }]);
+  const [apiHistory, setApiHistory] = useState<ApiChatMessage[]>([]);
+  const [loading, setLoading]   = useState(false);
+  const [freeRemaining, setFreeRemaining] = useState<number | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef  = useRef<HTMLInputElement>(null);
 
-  const COST = 5;
-  const insufficientBalance = tokenBalance !== null && tokenBalance < COST;
-
   useEffect(() => {
-    if (open) {
-      setTimeout(() => inputRef.current?.focus(), 100);
-    }
+    if (open) setTimeout(() => inputRef.current?.focus(), 100);
   }, [open]);
 
   useEffect(() => {
@@ -1307,38 +1394,56 @@ function FloatingAIAssistant({ scan, brand, tokenBalance }: {
 
   async function sendMessage() {
     const text = input.trim();
-    if (!text || loading || insufficientBalance) return;
+    if (!text || loading) return;
 
-    const userMsg: ChatMessage = { id: Date.now(), role: "user", text };
-    const loadingMsg: ChatMessage = { id: Date.now() + 1, role: "assistant", text: "", loading: true };
+    const userMsg: DisplayMessage    = { id: Date.now(),     role: "user",      text };
+    const loadingMsg: DisplayMessage = { id: Date.now() + 1, role: "assistant", text: "", loading: true };
 
     setMessages((prev) => [...prev, userMsg, loadingMsg]);
     setInput("");
     setLoading(true);
 
+    const newHistory: ApiChatMessage[] = [...apiHistory, { role: "user", content: text }];
+
     try {
-      const res = await fetch("/api/report/query-test", {
+      const res = await fetch("/api/chat/report", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ scan_id: scan.id, model: "chatgpt", query: text }),
+        body: JSON.stringify({ scanId: scan.id, messages: newHistory }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Query failed");
-      window.dispatchEvent(new Event("tokenBalanceChanged"));
 
-      const reply = data.response ?? "I couldn't get a response. Please try again.";
-      const mentioned = data.analysis?.brand_mentioned;
-      const suffix = mentioned !== undefined
-        ? `\n\n*${brand} was ${mentioned ? "✓ mentioned" : "✗ not mentioned"} in this response.*`
-        : "";
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({})) as { error?: string };
+        throw new Error(err.error ?? `Request failed (${res.status})`);
+      }
+
+      const remaining = res.headers.get("X-Free-Remaining");
+      if (remaining !== null) setFreeRemaining(parseInt(remaining, 10));
+
+      const reader = res.body?.getReader();
+      const decoder = new TextDecoder();
+      let fullText = "";
+
+      if (reader) {
+        for (;;) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          fullText += decoder.decode(value, { stream: true });
+          setMessages((prev) => prev.map((m) =>
+            m.loading ? { ...m, text: fullText } : m
+          ));
+        }
+      }
 
       setMessages((prev) => prev.map((m) =>
-        m.loading ? { ...m, loading: false, text: reply + suffix } : m
+        m.loading ? { ...m, loading: false, text: fullText || "I couldn't get a response. Please try again." } : m
       ));
+      setApiHistory([...newHistory, { role: "assistant", content: fullText }]);
+      window.dispatchEvent(new Event("tokenBalanceChanged"));
     } catch (err) {
       const errText = err instanceof Error ? err.message : "Something went wrong";
       setMessages((prev) => prev.map((m) =>
-        m.loading ? { ...m, loading: false, text: `Sorry, ${errText}. Please try again.` } : m
+        m.loading ? { ...m, loading: false, text: `Sorry — ${errText}. Please try again.` } : m
       ));
     } finally {
       setLoading(false);
@@ -1367,47 +1472,41 @@ function FloatingAIAssistant({ scan, brand, tokenBalance }: {
 
       {/* Chat panel */}
       {open && (
-        <div className="fixed bottom-24 right-6 z-50 w-[360px] max-w-[calc(100vw-24px)] rounded-2xl border border-[#E5E7EB] bg-white shadow-2xl flex flex-col overflow-hidden"
-          style={{ height: 480 }}>
+        <div
+          className="fixed bottom-24 right-6 z-50 w-[380px] max-w-[calc(100vw-24px)] rounded-2xl border border-[#E5E7EB] bg-white shadow-2xl flex flex-col overflow-hidden"
+          style={{ height: 520 }}
+        >
           {/* Header */}
           <div className="flex items-center gap-3 px-4 py-3 border-b border-[#E5E7EB] bg-[#F9FAFB] flex-shrink-0">
             <div className="w-8 h-8 rounded-full bg-[#10B981] flex items-center justify-center flex-shrink-0">
               <Bot className="w-4 h-4 text-white" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-[#111827]">AI Visibility Assistant</p>
-              <p className="text-xs text-[#9CA3AF] truncate">Ask about {brand}&apos;s AI presence</p>
+              <p className="text-sm font-semibold text-[#111827]">AI Visibility Analyst</p>
+              <p className="text-xs text-[#9CA3AF] truncate">Answers grounded in your report</p>
             </div>
-            <div className="flex items-center gap-1.5 text-xs text-[#9CA3AF]">
-              <span>5 🪙 / query</span>
-            </div>
+            {freeRemaining !== null && (
+              <span className="text-[11px] text-[#9CA3AF] flex-shrink-0">{freeRemaining} free left</span>
+            )}
           </div>
 
           {/* Messages */}
           <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
             {messages.map((msg) => (
-              <div
-                key={msg.id}
-                className={cn(
-                  "flex",
-                  msg.role === "user" ? "justify-end" : "justify-start"
-                )}
-              >
+              <div key={msg.id} className={cn("flex", msg.role === "user" ? "justify-end" : "justify-start")}>
                 <div className={cn(
-                  "max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed",
+                  "max-w-[87%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap",
                   msg.role === "user"
                     ? "bg-[#10B981] text-white rounded-tr-sm"
                     : "bg-[#F3F4F6] text-[#374151] rounded-tl-sm"
                 )}>
-                  {msg.loading ? (
+                  {msg.loading && msg.text === "" ? (
                     <span className="flex gap-1 py-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#9CA3AF] animate-bounce" style={{ animationDelay: "0ms" }} />
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#9CA3AF] animate-bounce" style={{ animationDelay: "0ms"   }} />
                       <span className="w-1.5 h-1.5 rounded-full bg-[#9CA3AF] animate-bounce" style={{ animationDelay: "150ms" }} />
                       <span className="w-1.5 h-1.5 rounded-full bg-[#9CA3AF] animate-bounce" style={{ animationDelay: "300ms" }} />
                     </span>
-                  ) : (
-                    msg.text
-                  )}
+                  ) : msg.text}
                 </div>
               </div>
             ))}
@@ -1416,44 +1515,32 @@ function FloatingAIAssistant({ scan, brand, tokenBalance }: {
 
           {/* Input */}
           <div className="px-4 py-3 border-t border-[#E5E7EB] flex-shrink-0">
-            {insufficientBalance ? (
-              <div className="text-center space-y-2">
-                <p className="text-xs text-amber-600">Not enough tokens to query</p>
-                <Link href="/app/tokens" className="inline-flex items-center gap-1.5 text-xs font-semibold bg-[#10B981] hover:bg-[#059669] text-white rounded-lg px-3 py-1.5 transition-colors">
-                  Buy tokens
-                </Link>
-              </div>
-            ) : (
-              <div className="flex gap-2">
-                <input
-                  ref={inputRef}
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={handleKey}
-                  placeholder="Ask about your AI visibility…"
-                  className="flex-1 bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl px-3 py-2 text-sm text-[#111827] placeholder-[#9CA3AF] focus:outline-none focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/10 transition-all"
-                  disabled={loading}
-                />
-                <button
-                  onClick={sendMessage}
-                  disabled={!input.trim() || loading}
-                  className={cn(
-                    "w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-all",
-                    input.trim() && !loading
-                      ? "bg-[#10B981] hover:bg-[#059669] text-white"
-                      : "bg-[#F3F4F6] text-[#D1D5DB] cursor-not-allowed"
-                  )}
-                >
-                  {loading
-                    ? <span className="w-3.5 h-3.5 border border-current border-t-transparent rounded-full animate-spin" />
-                    : <Send className="w-3.5 h-3.5" />
-                  }
-                </button>
-              </div>
-            )}
-            <p className="text-[10px] text-[#9CA3AF] mt-1.5 text-center">
-              Queries run live against AI · {tokenBalance !== null ? `${tokenBalance} tokens remaining` : "Loading balance…"}
-            </p>
+            <div className="flex gap-2">
+              <input
+                ref={inputRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKey}
+                placeholder="Ask about your report…"
+                className="flex-1 bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl px-3 py-2 text-sm text-[#111827] placeholder-[#9CA3AF] focus:outline-none focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/10 transition-all"
+                disabled={loading}
+              />
+              <button
+                onClick={sendMessage}
+                disabled={!input.trim() || loading}
+                className={cn(
+                  "w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-all",
+                  input.trim() && !loading
+                    ? "bg-[#10B981] hover:bg-[#059669] text-white"
+                    : "bg-[#F3F4F6] text-[#D1D5DB] cursor-not-allowed"
+                )}
+              >
+                {loading
+                  ? <span className="w-3.5 h-3.5 border border-current border-t-transparent rounded-full animate-spin" />
+                  : <Send className="w-3.5 h-3.5" />}
+              </button>
+            </div>
+            <p className="text-[10px] text-[#9CA3AF] mt-1.5 text-center">Analysis grounded in your report data only</p>
           </div>
         </div>
       )}
@@ -1525,7 +1612,13 @@ export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: 
   // ── Token balance ─────────────────────────────────────────────────────────
   useEffect(() => {
     function load() {
-      fetch("/api/tokens/balance").then((r) => r.json()).then((d) => setTokenBalance(d.balance ?? null)).catch(() => {});
+      fetch("/api/tokens/balance")
+        .then((r) => r.json())
+        .then((d) => {
+          if (d.selfHost) setTokenBalance(Number.MAX_SAFE_INTEGER);
+          else setTokenBalance(d.balance ?? null);
+        })
+        .catch(() => {});
     }
     load();
     window.addEventListener("tokenBalanceChanged", load);
@@ -1534,6 +1627,9 @@ export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: 
 
   // ── Build TOC ─────────────────────────────────────────────────────────────
   const hasCompetitors = !!(competitorsData?.brand_profile && (competitorsData?.competitors?.length ?? 0) > 0);
+
+  const regionalScores = scan.regional_scores as Record<string, { score: number }> | null;
+  const hasRegions = !!(regionalScores && Object.keys(regionalScores).filter((k) => k !== "global").length > 0);
 
   const tocSections: TocSection[] = useMemo(() => {
     const s: TocSection[] = [
@@ -1545,12 +1641,13 @@ export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: 
     if (hasCompetitors)         s.push({ id: "share",       label: "Share"       });
     if (recommendations.length) s.push({ id: "actions",     label: "Actions"     });
     s.push({ id: "sentiment",      label: "Sentiment"   });
+    if (hasRegions)             s.push({ id: "geography",   label: "Geography"   });
     s.push({ id: "citations",      label: "Citations"   });
     s.push({ id: "improvement",    label: "Improvement" });
     s.push({ id: "benchmark",      label: "Benchmark"   });
     s.push({ id: "query-explorer", label: "Try Query"   });
     return s;
-  }, [categoryScores, hasCompetitors, recommendations.length]);
+  }, [categoryScores, hasCompetitors, hasRegions, recommendations.length]);
 
   // ── Scroll tracking ───────────────────────────────────────────────────────
   useEffect(() => {
@@ -1754,7 +1851,17 @@ export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: 
           )}
         </Section>
 
-        {/* ── 8: Citations ── */}
+        {/* ── 8: Geography ── */}
+        {hasRegions && (
+          <Section id="geography" title="Geographic Performance" shareable>
+            <GeographySection
+              regionalScores={scan.regional_scores}
+              regionalInsights={scan.regional_insights}
+            />
+          </Section>
+        )}
+
+        {/* ── 9: Citations ── */}
         <Section id="citations" title="Citation Tracking">
           {citationData ? (
             <CitationsSection citationData={citationData} />
@@ -1770,7 +1877,7 @@ export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: 
           )}
         </Section>
 
-        {/* ── 9: Improvement Plan ── */}
+        {/* ── 10: Improvement Plan ── */}
         <Section id="improvement" title="AI Improvement Plan">
           {improvementPlan ? (
             <ImprovementPlanSection plan={improvementPlan} currentScore={score} />
@@ -1826,11 +1933,7 @@ export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: 
       </main>
 
       {/* ── Floating AI Assistant ── */}
-      <FloatingAIAssistant
-        scan={scan}
-        brand={brand}
-        tokenBalance={tokenBalance}
-      />
+      <FloatingAIAssistant scan={scan} brand={brand} />
     </div>
   );
 }
