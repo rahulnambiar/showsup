@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { MarketingNav } from "@/components/marketing-nav";
+import { MarketingFooter } from "@/components/marketing-footer";
 
 export const metadata: Metadata = {
   title: "AEO Methodology — How ShowsUp Measures AI Brand Visibility",
@@ -1266,6 +1267,7 @@ export default function MethodologyPage() {
         </main>
       </div>
     </div>
+    <MarketingFooter />
     </div>
   );
 }

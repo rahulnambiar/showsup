@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Github, Menu, X, ArrowRight, Star } from "lucide-react";
+import { Github, Menu, X, ArrowRight, Star, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 
@@ -89,6 +89,7 @@ export function MarketingNav() {
   }
 
   return (
+    <>
     <header className="fixed top-0 inset-x-0 z-50 flex flex-col">
       <ChromeBanner />
       <div
@@ -102,30 +103,43 @@ export function MarketingNav() {
       <div className="max-w-[1200px] mx-auto px-6 h-16 flex items-center justify-between gap-6">
 
         {/* Logo */}
-        <Link href="/" className="flex-shrink-0 flex items-center gap-1.5">
+        <Link href="/" className="flex-shrink-0 flex items-center gap-2">
+          <BarChart3 className="w-5 h-5 text-[#10B981] flex-shrink-0" />
           <span style={{ fontFamily: "var(--font-inter, system-ui)" }} className="text-[20px] font-semibold text-[#111827] tracking-tight">
             ShowsUp
           </span>
-          <span className="text-[#10B981] text-base leading-none">●</span>
         </Link>
 
         {/* Center links — desktop */}
         <nav className="hidden md:flex items-center gap-7">
           <button
             onClick={() => scrollOrLink("product")}
-            className="text-[14px] text-[#4B5563] hover:text-[#111827] transition-colors duration-200"
+            className={cn(
+              "text-[14px] transition-colors duration-200",
+              isHome ? "text-[#111827] font-medium" : "text-[#4B5563] hover:text-[#111827]"
+            )}
           >
             Product
           </button>
-          <Link href="/methodology" className="text-[14px] text-[#4B5563] hover:text-[#111827] transition-colors duration-200">
-            Methodology
-          </Link>
-          <Link href="/blog" className="text-[14px] text-[#4B5563] hover:text-[#111827] transition-colors duration-200">
-            Blog
-          </Link>
-          <Link href="/about" className="text-[14px] text-[#4B5563] hover:text-[#111827] transition-colors duration-200">
-            About
-          </Link>
+          {[
+            { label: "Methodology", href: "/methodology" },
+            { label: "Blog",        href: "/blog"        },
+            { label: "About",       href: "/about"       },
+          ].map(({ label, href }) => {
+            const active = pathname === href || pathname.startsWith(href + "/");
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={cn(
+                  "text-[14px] transition-colors duration-200",
+                  active ? "text-[#111827] font-medium" : "text-[#4B5563] hover:text-[#111827]"
+                )}
+              >
+                {label}
+              </Link>
+            );
+          })}
         </nav>
 
         {/* Right — desktop */}
@@ -196,15 +210,26 @@ export function MarketingNav() {
           >
             Product
           </button>
-          <Link href="/methodology" onClick={() => setMenuOpen(false)} className="block text-[14px] text-[#4B5563] hover:text-[#111827] py-2.5 transition-colors duration-200">
-            Methodology
-          </Link>
-          <Link href="/blog" onClick={() => setMenuOpen(false)} className="block text-[14px] text-[#4B5563] hover:text-[#111827] py-2.5 transition-colors duration-200">
-            Blog
-          </Link>
-          <Link href="/about" onClick={() => setMenuOpen(false)} className="block text-[14px] text-[#4B5563] hover:text-[#111827] py-2.5 transition-colors duration-200">
-            About
-          </Link>
+          {[
+            { label: "Methodology", href: "/methodology" },
+            { label: "Blog",        href: "/blog"        },
+            { label: "About",       href: "/about"       },
+          ].map(({ label, href }) => {
+            const active = pathname === href || pathname.startsWith(href + "/");
+            return (
+              <Link
+                key={href}
+                href={href}
+                onClick={() => setMenuOpen(false)}
+                className={cn(
+                  "block text-[14px] py-2.5 transition-colors duration-200",
+                  active ? "text-[#111827] font-medium" : "text-[#4B5563] hover:text-[#111827]"
+                )}
+              >
+                {label}
+              </Link>
+            );
+          })}
           <div className="pt-4 border-t border-[#E5E7EB] space-y-3">
             {loggedIn ? (
               <Link href="/app/dashboard" className="block text-[14px] text-[#10B981] font-medium py-1">
@@ -229,5 +254,8 @@ export function MarketingNav() {
       )}
       </div>
     </header>
+    {/* Spacer — pushes page content below the fixed nav (h-16 = 64px nav height) */}
+    <div className="h-16" aria-hidden="true" />
+    </>
   );
 }

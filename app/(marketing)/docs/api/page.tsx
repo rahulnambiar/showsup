@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { MarketingNav } from "@/components/marketing-nav";
+import { MarketingFooter } from "@/components/marketing-footer";
 
 export const metadata: Metadata = {
   title: "API Reference — ShowsUp",
@@ -80,21 +82,7 @@ function Endpoint({ method, path, desc, cost, children }: {
 export default function ApiDocsPage() {
   return (
     <div className="min-h-screen bg-[#0A0E17] text-white">
-      {/* Top nav */}
-      <header className="border-b border-white/8 sticky top-0 z-30 bg-[#0A0E17]/95 backdrop-blur-sm">
-        <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 text-sm font-bold text-white">
-            <svg className="w-5 h-5 text-[#10B981]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-            </svg>
-            ShowsUp
-          </Link>
-          <div className="flex items-center gap-4">
-            <Link href="/app/settings" className="text-xs text-gray-400 hover:text-white transition-colors">Get API Key →</Link>
-            <Link href="https://github.com/rahulnambiar/showsup" className="text-xs text-gray-400 hover:text-white transition-colors">GitHub</Link>
-          </div>
-        </div>
-      </header>
+      <MarketingNav />
 
       <div className="max-w-6xl mx-auto px-6 py-12 lg:grid lg:grid-cols-[220px_1fr] lg:gap-12">
         {/* ── Sidebar nav ── */}
@@ -582,14 +570,7 @@ console.log(\`\${fixes.length} fixes generated — \${estimated_impact}\`);`}</C
             </div>
           </Section>
 
-          {/* Footer */}
-          <div className="border-t border-white/8 pt-8 flex items-center justify-between flex-wrap gap-4 text-xs text-gray-600">
-            <p>ShowsUp API v1 · <Link href="https://github.com/rahulnambiar/showsup" className="hover:text-gray-400">Open Source</Link></p>
-            <div className="flex items-center gap-4">
-              <Link href="/app/settings" className="hover:text-gray-400">Get API Key</Link>
-              <Link href="/" className="hover:text-gray-400">Home</Link>
-            </div>
-          </div>
+          <MarketingFooter />
 
         </main>
       </div>

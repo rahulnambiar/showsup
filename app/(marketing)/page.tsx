@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { MarketingNav } from "@/components/marketing-nav";
 import {
-  Search, Wrench, CheckCircle2, BarChart3, Sparkles, MessageSquare,
+  Search, Wrench, CheckCircle2, BarChart3, Sparkles, MessageSquare, // BarChart3 also used in footer logo
   FileText, Code2, BookOpen, Shield, ShoppingBag, Monitor, Terminal,
   Globe, ArrowRight, Github, Copy, Check, Star, ChevronDown, Upload,
   Scale,
@@ -1477,16 +1477,17 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-5 gap-10 mb-12">
             {/* Brand */}
             <div className="md:col-span-1 space-y-2">
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-2">
+                <BarChart3 className="w-4 h-4 text-[#10B981] flex-shrink-0" />
                 <span
                   className="text-[16px] font-semibold text-[#111827]"
                   style={{ fontFamily: "var(--font-inter, system-ui)" }}
                 >
                   ShowsUp
                 </span>
-                <span className="text-[#10B981]">●</span>
               </div>
-              <p className="text-[13px] text-[#4B5563]">Open source AEO agent</p>
+              <p className="text-[13px] text-[#4B5563]">Get your brand to show up in AI.</p>
+              <p className="text-[13px] text-[#9CA3AF]">Open Source · MIT Licensed</p>
               <p className="text-[13px] text-[#9CA3AF]">Made in Singapore 🇸🇬</p>
             </div>
 

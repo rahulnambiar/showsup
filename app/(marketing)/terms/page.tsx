@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { MarketingNav } from "@/components/marketing-nav";
+import { MarketingFooter } from "@/components/marketing-footer";
 
 export const metadata: Metadata = {
   title: "Terms of Service — ShowsUp",
@@ -221,9 +222,7 @@ export default function TermsPage() {
         </div>
       </main>
 
-      <footer className="border-t border-gray-200 py-8 text-center text-sm text-gray-400">
-        &copy; {new Date().getFullYear()} FVG Capital Pte. Ltd. All rights reserved.
-      </footer>
+      <MarketingFooter />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { MarketingNav } from "@/components/marketing-nav";
+import { MarketingFooter } from "@/components/marketing-footer";
 
 export const metadata: Metadata = {
   title: "About ShowsUp — Digital Marketing Entrepreneur Building in AI",
@@ -110,7 +111,7 @@ export default function AboutPage() {
                 <ul className="space-y-3 text-sm text-[#374151]">
                   {[
                     "Started career as software developer",
-                    "Pivoted to digital marketing ~2005",
+                    "Pivoted to digital marketing in 2008",
                     "Agency experience across India, Singapore, Jakarta",
                     "Co-founder & MD, Valuklik (2014)",
                     "Scaled Valuklik to 120+ people",
@@ -257,20 +258,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-[#E5E7EB] py-8 px-6">
-        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-[#9CA3AF]">
-          <p>© 2026 FVG Capital Pte. Ltd.</p>
-          <div className="flex gap-6">
-            <Link href="/privacy" className="hover:text-[#111827] transition-colors">
-              Privacy
-            </Link>
-            <Link href="/terms" className="hover:text-[#111827] transition-colors">
-              Terms
-            </Link>
-          </div>
-        </div>
-      </footer>
+      <MarketingFooter />
     </div>
   );
 }

@@ -13,6 +13,7 @@ import {
 } from "@/lib/pricing/cost-calculator";
 import { Zap, Info, ArrowRight } from "lucide-react";
 import { MarketingNav } from "@/components/marketing-nav";
+import { MarketingFooter } from "@/components/marketing-footer";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -789,6 +790,7 @@ function PublicReportBuilderPage() {
           </div>
         </div>
       </div>
+      <MarketingFooter />
     </div>
   );
 }
