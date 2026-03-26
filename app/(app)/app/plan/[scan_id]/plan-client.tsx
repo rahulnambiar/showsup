@@ -1100,7 +1100,7 @@ export function PlanClient({
     } else {
       // Find which funnel stage contains this layer and expand it
       const stage = FUNNEL_STAGES.find((s) =>
-        s.layers.includes(layerKey as (typeof s.layers)[number])
+        (s.layers as string[]).includes(layerKey)
       );
       if (stage) {
         setExpandedStages((prev) => {
