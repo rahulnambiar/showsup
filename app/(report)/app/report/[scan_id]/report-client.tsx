@@ -40,6 +40,7 @@ interface ScanRow {
   benchmark_data: Json;
   regional_scores: Json;
   regional_insights: Json;
+  aeo_readiness: Json;
   created_at: string;
 }
 

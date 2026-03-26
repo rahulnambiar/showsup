@@ -38,7 +38,7 @@ export async function PATCH(request: Request) {
 
     if (!item) return NextResponse.json({ error: "Plan item not found" }, { status: 404 });
 
-    const scan = item.scans as { user_id: string } | null;
+    const scan = item.scans as unknown as { user_id: string } | null;
     if (!scan || scan.user_id !== user.id)
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
