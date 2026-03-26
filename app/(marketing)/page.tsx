@@ -479,7 +479,7 @@ export default function HomePage() {
             className="text-[36px] sm:text-[48px] md:text-[56px] font-semibold text-[#111827] tracking-tight"
             style={{ fontFamily: "var(--font-inter, system-ui)", lineHeight: 1.1 }}
           >
-            Is your brand visible to AI?
+            Get your brand to show up in AI.
           </h1>
 
           {/* Subheadline */}
@@ -487,7 +487,7 @@ export default function HomePage() {
             className="text-[18px] text-[#4B5563] max-w-[640px] mx-auto"
             style={{ lineHeight: 1.7 }}
           >
-            Scan how your brand appears across ChatGPT, Claude, and Gemini — then generate the exact fixes to improve it. Open source, self-host free, or use our cloud.
+            Scan your visibility across ChatGPT, Claude, and Gemini. Get a research-backed improvement plan. Implement the fixes. Verify the results.
           </p>
 
           {/* Terminal */}
@@ -555,42 +555,47 @@ export default function HomePage() {
         <div className={cn(container, "space-y-14")}>
           <FadeIn className="text-center space-y-4">
             <SectionLabel>The workflow</SectionLabel>
-            <SectionHeading>From score to strategy in four steps</SectionHeading>
+            <SectionHeading>From score to strategy in five steps</SectionHeading>
             <SectionSub className="max-w-[520px] mx-auto">
               Not just a dashboard. A complete AEO workflow.
             </SectionSub>
           </FadeIn>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 relative">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4 relative">
             {/* Connector */}
-            <div className="hidden lg:block absolute top-[2.75rem] left-[25%] right-[25%] h-px bg-gradient-to-r from-transparent via-[#E5E7EB] to-transparent pointer-events-none" />
+            <div className="hidden lg:block absolute top-[2.75rem] left-[10%] right-[10%] h-px bg-gradient-to-r from-transparent via-[#E5E7EB] to-transparent pointer-events-none" />
 
             {[
               {
-                icon: Search,  step: "01", title: "Diagnose",        highlight: false,
+                icon: Search,       step: "01", title: "Diagnose",   highlight: false,
                 sub: "Scan AI Platforms",
                 desc: "Query ChatGPT, Claude, and Gemini with category-specific prompts across 10 regions.",
               },
               {
-                icon: Wrench,  step: "02", title: "Fix",             highlight: true,
+                icon: Sparkles,     step: "02", title: "Plan",       highlight: true,
+                sub: "Generate Improvement Plan",
+                desc: "10-dimension AEO analysis generates a research-backed, funnel-mapped roadmap with verified recommendations.",
+              },
+              {
+                icon: Wrench,       step: "03", title: "Fix",        highlight: false,
                 sub: "Generate Fixes",
                 desc: "Get llms.txt, schema markup, content briefs, comparison pages — all from your scan data.",
               },
               {
-                icon: CheckCircle2, step: "03", title: "Verify",     highlight: false,
+                icon: CheckCircle2, step: "04", title: "Verify",     highlight: false,
                 sub: "Measure Impact",
                 desc: "Re-scan targeted queries to see exactly what improved after implementing fixes.",
               },
               {
-                icon: BarChart3, step: "04", title: "Correlate",     highlight: false,
+                icon: BarChart3,    step: "05", title: "Correlate",  highlight: false,
                 sub: "Connect Business Data",
                 desc: "Link Search Console, upload sales data, and see how AI visibility impacts revenue.",
               },
             ].map((s, i) => (
-              <FadeIn key={s.step} delay={i * 80}>
+              <FadeIn key={s.step} delay={i * 70}>
                 <div
                   className={cn(
-                    "rounded-2xl border p-7 space-y-4 h-full transition-all duration-200 hover:-translate-y-0.5",
+                    "rounded-2xl border p-6 space-y-4 h-full transition-all duration-200 hover:-translate-y-0.5",
                     s.highlight
                       ? "border-[#10B981]/30 bg-[#F0FDF4] shadow-[0_4px_16px_rgba(16,185,129,0.1)]"
                       : "border-[#E5E7EB] bg-white shadow-[0_1px_3px_rgba(0,0,0,0.06)] hover:shadow-md"
@@ -598,7 +603,7 @@ export default function HomePage() {
                 >
                   <div
                     className={cn(
-                      "w-12 h-12 rounded-full flex items-center justify-center",
+                      "w-11 h-11 rounded-full flex items-center justify-center",
                       s.highlight ? "bg-[#10B981]" : "bg-[#F0FDF4]"
                     )}
                   >
@@ -608,12 +613,107 @@ export default function HomePage() {
                     <p className="text-[11px] font-medium text-[#9CA3AF] uppercase tracking-wider mb-1">
                       Step {s.step} — {s.title}
                     </p>
-                    <p className="text-[17px] font-semibold text-[#111827] mb-2">{s.sub}</p>
-                    <p className="text-[14px] text-[#4B5563] leading-relaxed">{s.desc}</p>
+                    <p className="text-[16px] font-semibold text-[#111827] mb-2">{s.sub}</p>
+                    <p className="text-[13px] text-[#4B5563] leading-relaxed">{s.desc}</p>
                   </div>
                 </div>
               </FadeIn>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── IMPROVEMENT PLAN SHOWCASE ─────────────────────────────────────── */}
+      <section className={cn(sectionPad, "px-6 bg-[#F9FAFB]")}>
+        <div className={cn(container)}>
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            {/* Left */}
+            <FadeIn className="space-y-8">
+              <div className="space-y-4">
+                <SectionLabel>AI Improvement Plan</SectionLabel>
+                <SectionHeading>A research-grade roadmap,<br />not a checklist.</SectionHeading>
+                <SectionSub>
+                  Every plan is built from your actual scan data — your website, your gaps, your competitors.
+                </SectionSub>
+              </div>
+              <ul className="space-y-4">
+                <CheckItem>10-dimension AEO readiness assessment across awareness → conversion</CheckItem>
+                <CheckItem>15–20 research-backed recommendations with cited sources</CheckItem>
+                <CheckItem>Effort-tagged quick wins vs. multi-week projects</CheckItem>
+                <CheckItem>Automated verification — mark a fix done and ShowsUp re-checks it</CheckItem>
+                <CheckItem>100 tokens · uses Claude Sonnet + live website analysis</CheckItem>
+              </ul>
+              <div className="flex flex-wrap gap-3">
+                <Link
+                  href="/signup"
+                  className="inline-flex items-center gap-2 bg-[#10B981] hover:bg-[#059669] text-white font-medium rounded-lg px-5 h-11 text-[14px] transition-all duration-200 hover:scale-[1.02] shadow-sm"
+                >
+                  Generate your plan <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+                <Link
+                  href="/methodology"
+                  className="inline-flex items-center gap-2 border border-[#E5E7EB] hover:border-[#D1D5DB] text-[#4B5563] hover:text-[#111827] font-medium rounded-lg px-5 h-11 text-[14px] transition-all duration-200"
+                >
+                  Read the methodology
+                </Link>
+              </div>
+            </FadeIn>
+
+            {/* Right — plan card mockup */}
+            <FadeIn delay={120}>
+              <div className="bg-white rounded-2xl border border-[#E5E7EB] shadow-[0_4px_24px_rgba(0,0,0,0.08)] overflow-hidden">
+                {/* Header */}
+                <div className="px-5 py-4 border-b border-[#F3F4F6] flex items-center justify-between">
+                  <div>
+                    <p className="text-[13px] font-semibold text-[#111827]">AI Improvement Plan</p>
+                    <p className="text-[11px] text-[#9CA3AF]">Acme Corp · 8 items · 2 critical</p>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-2 h-2 rounded-full bg-[#EF4444]" />
+                    <div className="w-2 h-2 rounded-full bg-[#F59E0B]" />
+                    <div className="w-2 h-2 rounded-full bg-[#10B981]" />
+                  </div>
+                </div>
+                {/* Plan items */}
+                <div className="divide-y divide-[#F9FAFB]">
+                  {[
+                    {
+                      priority: "critical", badge: "🔴 Critical", badgeBg: "#FEF2F2", badgeColor: "#DC2626",
+                      layer: "Crawler Readiness", effort: "Project",
+                      title: "Enable SSR — AI bots see an empty shell",
+                      desc: "GPTBot receives 0 words of content. No schema, no headings, no citations possible.",
+                    },
+                    {
+                      priority: "high", badge: "🟡 High", badgeBg: "#FFFBEB", badgeColor: "#D97706",
+                      layer: "Content Citability", effort: "Quick win",
+                      title: "Add FAQ schema to /pricing page",
+                      desc: "'How much does Acme cost?' gets ~2K AI searches/mo. You're invisible.",
+                    },
+                    {
+                      priority: "medium", badge: "🔵 Medium", badgeBg: "#EFF6FF", badgeColor: "#2563EB",
+                      layer: "Entity Strength", effort: "Quick win",
+                      title: "Standardise brand description across platforms",
+                      desc: "AI describes you differently on LinkedIn vs. Crunchbase vs. your own site.",
+                    },
+                  ].map((item) => (
+                    <div key={item.title} className="px-5 py-4 space-y-2">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: item.badgeBg, color: item.badgeColor }}>
+                          {item.badge}
+                        </span>
+                        <span className="text-[11px] text-[#9CA3AF]">{item.layer}</span>
+                        <span className="text-[11px] text-[#9CA3AF] ml-auto">{item.effort}</span>
+                      </div>
+                      <p className="text-[13px] font-semibold text-[#111827]">{item.title}</p>
+                      <p className="text-[12px] text-[#4B5563] leading-relaxed">{item.desc}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="px-5 py-3 bg-[#F9FAFB] border-t border-[#F3F4F6]">
+                  <p className="text-[12px] text-[#9CA3AF]">5 more items · 0 of 8 verified</p>
+                </div>
+              </div>
+            </FadeIn>
           </div>
         </div>
       </section>
@@ -1090,6 +1190,116 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ── RESEARCH-GRADE ANALYSIS ───────────────────────────────────────── */}
+      <section id="methodology" className={cn(sectionPad, "px-6 bg-white")}>
+        <div className={cn(container, "space-y-12")}>
+          <FadeIn className="text-center space-y-4">
+            <SectionLabel>Research-grade analysis</SectionLabel>
+            <SectionHeading>Not just a score. A research-grade improvement plan.</SectionHeading>
+            <SectionSub className="max-w-[600px] mx-auto">
+              ShowsUp analyses your brand across 10 dimensions backed by peer-reviewed research and
+              analysis of 680M+ AI citations.
+            </SectionSub>
+          </FadeIn>
+
+          {/* 10 Dimension Cards */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            {[
+              { emoji: "🔍", title: "Entity Strength",       desc: "Does AI recognise your brand as a distinct entity?",           stat: "2.8× more citations for consistent brands"          },
+              { emoji: "📚", title: "Training Data",         desc: "Where did AI learn about your brand?",                         stat: "Tier 1: Wikipedia, Reddit, industry press"          },
+              { emoji: "✍️", title: "Content Citability",    desc: "Is your content structured for AI to quote?",                  stat: "50–150 word chunks get 2.3× more citations"         },
+              { emoji: "🔗", title: "Citation Sources",      desc: "Are you on the platforms AI trusts?",                          stat: "Only 11% of domains cited by ChatGPT AND Perplexity" },
+              { emoji: "⚔️", title: "Competitive Narrative", desc: "What story does AI tell about you vs rivals?",                 stat: "First-mentioned brands get 5× more consideration"   },
+              { emoji: "📅", title: "Content Freshness",     desc: "Is your content current enough for AI?",                       stat: "65% of AI traffic targets content from the past year" },
+              { emoji: "🌐", title: "Multi-Platform",        desc: "Are you visible across enough platforms?",                     stat: "4+ platforms = 2.8× citation likelihood"            },
+              { emoji: "🎯", title: "Intent Alignment",      desc: "Are you visible for purchase queries, not just info?",         stat: "ChatGPT: 87% accurate informational, 54% transactional" },
+              { emoji: "📍", title: "Mention Position",      desc: "When AI mentions you, are you first or last?",                 stat: "Position 1–2 = 5× more user consideration"          },
+              { emoji: "🤖", title: "Crawler Readiness",     desc: "Can AI actually read your website?",                           stat: "87% of ChatGPT citations match Bing top 10"         },
+            ].map((dim, i) => (
+              <FadeIn key={dim.title} delay={i * 40}>
+                <div className="bg-white border border-[#E5E7EB] rounded-xl p-5 shadow-sm flex flex-col gap-3 h-full">
+                  <span className="text-2xl">{dim.emoji}</span>
+                  <div className="flex-1">
+                    <p className="text-[15px] font-semibold text-[#111827] mb-1.5">{dim.title}</p>
+                    <p className="text-[13px] text-[#4B5563] leading-relaxed">{dim.desc}</p>
+                  </div>
+                  <p className="text-[12px] text-[#059669] italic leading-snug">{dim.stat}</p>
+                </div>
+              </FadeIn>
+            ))}
+          </div>
+
+          <FadeIn className="text-center space-y-5">
+            <p className="text-[15px] text-[#4B5563] max-w-[560px] mx-auto leading-relaxed">
+              Each dimension is scored 0–10. Together they form your AEO Readiness Score — a
+              comprehensive measure of how prepared your brand is for AI-driven discovery.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Link
+                href="/methodology"
+                className="inline-flex items-center gap-1.5 text-[14px] font-medium text-[#10B981] hover:text-[#059669] transition-colors duration-200"
+              >
+                Read the full methodology <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+              <Link
+                href="/signup"
+                className="inline-flex items-center gap-1.5 text-[14px] font-medium text-[#4B5563] hover:text-[#111827] transition-colors duration-200"
+              >
+                See a sample plan <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+
+      {/* ── GENERIC VS SHOWSUP ────────────────────────────────────────────── */}
+      <section className={cn(sectionPad, "px-6 bg-[#F9FAFB]")}>
+        <div className={cn(container, "space-y-12")}>
+          <FadeIn className="text-center space-y-4">
+            <SectionHeading>Generic AI advice vs ShowsUp&apos;s improvement plan</SectionHeading>
+          </FadeIn>
+
+          <FadeIn>
+            <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+              {/* Left: generic */}
+              <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-2xl p-7 space-y-4">
+                <p className="text-[13px] font-semibold text-[#9CA3AF] uppercase tracking-wider">Generic tools say:</p>
+                <ul className="space-y-3">
+                  {[
+                    "Add structured data to your website",
+                    "Improve your content quality",
+                    "Build more backlinks",
+                    "Optimise for long-tail keywords",
+                    "Create FAQ pages",
+                  ].map((tip) => (
+                    <li key={tip} className="flex items-start gap-2.5 text-[14px] text-[#9CA3AF]" style={{ textDecoration: "line-through", textDecorationColor: "#D1D5DB" }}>
+                      <span className="text-[#D1D5DB] flex-shrink-0 mt-0.5">○</span>
+                      {tip}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Right: ShowsUp */}
+              <div className="bg-white border-l-4 border-[#10B981] rounded-2xl shadow-sm p-7 space-y-4">
+                <p className="text-[13px] font-semibold text-[#10B981] uppercase tracking-wider">ShowsUp says:</p>
+                <div className="space-y-3 text-[14px] text-[#111827] leading-relaxed">
+                  <p>
+                    Add FAQ schema to <span className="font-mono text-[13px] bg-[#F9FAFB] px-1.5 py-0.5 rounded text-[#4B5563]">/pricing</span> targeting{" "}
+                    <em>&ldquo;How much does [brand] cost?&rdquo;</em> — this query gets ~2K AI searches/month and you&apos;re invisible.
+                    Competitor Deel leads with pricing in their first sentence and has 5 FAQ entries covering tiers and free trial.
+                    Self-contained answer chunks of 50–150 words get 2.3× more citations.
+                  </p>
+                  <div className="bg-[#F0F9FF] border-l-4 border-[#3B82F6] rounded-r-lg px-4 py-3 text-[13px] text-[#1E40AF]">
+                    <span className="font-semibold">📊 Research:</span> 44.2% of LLM citations come from the first 30% of content — Kevin Indig, 1.2M answer analysis
+                  </div>
+                </div>
+              </div>
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+
       {/* ── PRICING ───────────────────────────────────────────────────────── */}
       <section id="pricing" className={cn(sectionPad, "px-6 bg-white")}>
         <div className={cn(container, "space-y-14")}>
@@ -1283,11 +1493,12 @@ export default function HomePage() {
               {
                 label: "Product",
                 links: [
-                  { label: "Cloud",            href: "/signup"    },
-                  { label: "CLI",              href: GITHUB_URL   },
-                  { label: "Chrome Extension", href: GITHUB_URL   },
-                  { label: "WordPress",        href: GITHUB_URL   },
-                  { label: "Shopify",          href: GITHUB_URL   },
+                  { label: "Cloud",            href: "/signup"       },
+                  { label: "CLI",              href: GITHUB_URL      },
+                  { label: "Chrome Extension", href: GITHUB_URL      },
+                  { label: "WordPress",        href: GITHUB_URL      },
+                  { label: "Shopify",          href: GITHUB_URL      },
+                  { label: "Methodology",      href: "/methodology"  },
                 ],
               },
               {

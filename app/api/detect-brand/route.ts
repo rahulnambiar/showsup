@@ -1,16 +1,52 @@
 import { NextResponse } from "next/server";
-import Anthropic from "@anthropic-ai/sdk";
+
+async function callLLM(prompt: string): Promise<string> {
+  // Try Anthropic first
+  if (process.env.ANTHROPIC_API_KEY) {
+    try {
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": process.env.ANTHROPIC_API_KEY,
+          "anthropic-version": "2023-06-01",
+        },
+        body: JSON.stringify({
+          model: "claude-haiku-4-5-20251001",
+          max_tokens: 512,
+          messages: [{ role: "user", content: prompt }],
+        }),
+      });
+      const data = await res.json() as { content?: Array<{ type: string; text?: string }>; error?: { message?: string } };
+      if (res.ok) return data.content?.[0]?.type === "text" ? data.content[0].text ?? "" : "";
+      if (res.status === 401 || res.status === 403) throw new Error(data.error?.message ?? "Anthropic auth error");
+      console.warn(`[detect-brand] Claude ${res.status} — falling back to OpenAI`);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg.includes("auth error")) throw err;
+      console.warn("[detect-brand] Claude unavailable — falling back to OpenAI:", msg);
+    }
+  }
+
+  // Fallback to OpenAI
+  if (!process.env.OPENAI_API_KEY) throw new Error("No LLM API key available");
+  const res = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${process.env.OPENAI_API_KEY}` },
+    body: JSON.stringify({ model: "gpt-4o-mini", messages: [{ role: "user", content: prompt }], max_tokens: 512 }),
+  });
+  const data = await res.json() as { error?: { message?: string }; choices?: Array<{ message?: { content?: string } }> };
+  if (!res.ok) throw new Error(data.error?.message ?? "OpenAI error");
+  return data.choices?.[0]?.message?.content ?? "";
+}
 
 export async function POST(request: Request) {
-  if (!process.env.ANTHROPIC_API_KEY) {
-    console.log("ShowsUp: No ANTHROPIC_API_KEY — brand detection unavailable");
+  if (!process.env.ANTHROPIC_API_KEY && !process.env.OPENAI_API_KEY) {
     return NextResponse.json(
-      { error: "Brand detection requires ANTHROPIC_API_KEY. Add it to your .env.local." },
+      { error: "Brand detection requires ANTHROPIC_API_KEY or OPENAI_API_KEY." },
       { status: 503 }
     );
   }
-
-  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
   try {
     const { url } = await request.json();
@@ -71,13 +107,7 @@ Return JSON only (no markdown, no explanation):
   "competitors": [{"name": "competitor1"}, {"name": "competitor2"}, {"name": "competitor3"}]
 }`;
 
-    const message = await client.messages.create({
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: 512,
-      messages: [{ role: "user", content: prompt }],
-    });
-
-    const text = message.content[0].type === "text" ? message.content[0].text : "";
+    const text = await callLLM(prompt);
     // Strip markdown code fences if present
     const cleaned = text.replace(/```(?:json)?\n?/g, "").replace(/```/g, "").trim();
     const parsed = JSON.parse(cleaned);

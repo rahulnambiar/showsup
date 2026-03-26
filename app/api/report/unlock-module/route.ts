@@ -24,42 +24,76 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   ]);
 }
 
-async function callAnthropic(prompt: string, maxTokens = 600): Promise<string> {
-  const res = await withTimeout(fetch("https://api.anthropic.com/v1/messages", {
+async function openAIFallback(prompt: string, maxTokens: number, model: "gpt-4o-mini" | "gpt-4o"): Promise<string> {
+  const res = await withTimeout(fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": process.env.ANTHROPIC_API_KEY!,
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify({
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: maxTokens,
-      messages: [{ role: "user", content: prompt }],
-    }),
-  }), 25000);
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error?.message ?? "Anthropic error");
-  return data.content?.[0]?.text ?? "";
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${process.env.OPENAI_API_KEY}` },
+    body: JSON.stringify({ model, messages: [{ role: "user", content: prompt }], max_tokens: maxTokens }),
+  }), 30000);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const data = await res.json() as any;
+  if (!res.ok) throw new Error(data.error?.message ?? `OpenAI ${model} error`);
+  return data.choices?.[0]?.message?.content ?? "";
+}
+
+async function callAnthropic(prompt: string, maxTokens = 600): Promise<string> {
+  try {
+    const res = await withTimeout(fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": process.env.ANTHROPIC_API_KEY!,
+        "anthropic-version": "2023-06-01",
+      },
+      body: JSON.stringify({
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: maxTokens,
+        messages: [{ role: "user", content: prompt }],
+      }),
+    }), 25000);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const data = await res.json() as any;
+    if (res.ok) return data.content?.[0]?.text ?? "";
+    if (res.status === 401 || res.status === 403) {
+      throw new Error(data.error?.message ?? "Anthropic error");
+    }
+    console.warn(`[unlock-module] Claude Haiku ${res.status} — falling back to gpt-4o-mini`);
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (msg.includes("Anthropic error") || msg.includes("OpenAI")) throw err;
+    console.warn("[unlock-module] Claude Haiku unavailable — falling back to gpt-4o-mini:", msg);
+  }
+  return openAIFallback(prompt, maxTokens, "gpt-4o-mini");
 }
 
 async function callAnthropicSonnet(prompt: string, maxTokens = 1500): Promise<string> {
-  const res = await withTimeout(fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": process.env.ANTHROPIC_API_KEY!,
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify({
-      model: "claude-sonnet-4-6",
-      max_tokens: maxTokens,
-      messages: [{ role: "user", content: prompt }],
-    }),
-  }), 45000);
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error?.message ?? "Anthropic Sonnet error");
-  return data.content?.[0]?.text ?? "";
+  try {
+    const res = await withTimeout(fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": process.env.ANTHROPIC_API_KEY!,
+        "anthropic-version": "2023-06-01",
+      },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        max_tokens: maxTokens,
+        messages: [{ role: "user", content: prompt }],
+      }),
+    }), 45000);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const data = await res.json() as any;
+    if (res.ok) return data.content?.[0]?.text ?? "";
+    if (res.status === 401 || res.status === 403) {
+      throw new Error(data.error?.message ?? "Anthropic Sonnet error");
+    }
+    console.warn(`[unlock-module] Claude Sonnet ${res.status} — falling back to gpt-4o`);
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (msg.includes("Anthropic") || msg.includes("OpenAI")) throw err;
+    console.warn("[unlock-module] Claude Sonnet unavailable — falling back to gpt-4o:", msg);
+  }
+  return openAIFallback(prompt, maxTokens, "gpt-4o");
 }
 
 // ── Module runners ────────────────────────────────────────────────────────────

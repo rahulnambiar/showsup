@@ -11,9 +11,21 @@ export interface BrandInfo {
   competitors: string[];
 }
 
+async function openAIFallback(prompt: string): Promise<string> {
+  const res = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${process.env.OPENAI_API_KEY}` },
+    body: JSON.stringify({ model: "gpt-4o-mini", messages: [{ role: "user", content: prompt }], max_tokens: 512 }),
+  });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const data = await res.json() as any;
+  if (!res.ok) throw new Error(data.error?.message ?? `OpenAI error ${res.status}`);
+  return data.choices?.[0]?.message?.content ?? "";
+}
+
 export async function detectBrand(url: string): Promise<BrandInfo> {
-  if (!process.env.ANTHROPIC_API_KEY) {
-    throw new Error("Brand detection requires ANTHROPIC_API_KEY. Use --brand and --category flags to skip detection.");
+  if (!process.env.ANTHROPIC_API_KEY && !process.env.OPENAI_API_KEY) {
+    throw new Error("Brand detection requires ANTHROPIC_API_KEY or OPENAI_API_KEY. Use --brand and --category flags to skip detection.");
   }
 
   let targetUrl = url.trim();
@@ -65,22 +77,46 @@ Return JSON only (no markdown):
   "competitors": [{"name": "competitor1"}, {"name": "competitor2"}, {"name": "competitor3"}]
 }`;
 
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method:  "POST",
-    headers: {
-      "Content-Type":       "application/json",
-      "x-api-key":          process.env.ANTHROPIC_API_KEY!,
-      "anthropic-version":  "2023-06-01",
-    },
-    body: JSON.stringify({
-      model:      "claude-haiku-4-5-20251001",
-      max_tokens: 512,
-      messages:   [{ role: "user", content: prompt }],
-    }),
-  });
+  let text = "";
+  let usedFallback = false;
 
-  const data = await res.json() as { content?: Array<{ type: string; text?: string }> };
-  const text    = data.content?.[0]?.type === "text" ? data.content[0].text ?? "" : "";
+  if (process.env.ANTHROPIC_API_KEY) {
+    try {
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method:  "POST",
+        headers: {
+          "Content-Type":       "application/json",
+          "x-api-key":          process.env.ANTHROPIC_API_KEY,
+          "anthropic-version":  "2023-06-01",
+        },
+        body: JSON.stringify({
+          model:      "claude-haiku-4-5-20251001",
+          max_tokens: 512,
+          messages:   [{ role: "user", content: prompt }],
+        }),
+      });
+      const data = await res.json() as { content?: Array<{ type: string; text?: string }>; error?: { message?: string } };
+      if (res.ok) {
+        text = data.content?.[0]?.type === "text" ? data.content[0].text ?? "" : "";
+      } else if (res.status === 401 || res.status === 403) {
+        throw new Error(data.error?.message ?? "Anthropic error");
+      } else {
+        console.warn(`[detect-brand] Claude Haiku ${res.status} — falling back to gpt-4o-mini`);
+        usedFallback = true;
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg.includes("Anthropic error")) throw err;
+      console.warn("[detect-brand] Claude Haiku unavailable — falling back to gpt-4o-mini:", msg);
+      usedFallback = true;
+    }
+  } else {
+    usedFallback = true;
+  }
+
+  if (usedFallback) {
+    text = await openAIFallback(prompt);
+  }
   const cleaned = text.replace(/```(?:json)?\n?/g, "").replace(/```/g, "").trim();
   const parsed  = JSON.parse(cleaned) as {
     brand_name?: string;

@@ -67,6 +67,9 @@ interface PlanClientProps {
   overallScore: number;
   websiteUrl: string | null;
   initialItems: PlanItem[];
+  isSample?: boolean;
+  tokenBalance?: number;
+  planTokenCost?: number;
   aeoScores: AeoScores | null;
   overallAeoReadiness: number | null;
 }
@@ -1001,6 +1004,9 @@ export function PlanClient({
   overallScore,
   websiteUrl: _websiteUrl, // eslint-disable-line @typescript-eslint/no-unused-vars
   initialItems,
+  isSample = false,
+  tokenBalance = 0,
+  planTokenCost = 200,
   aeoScores,
   overallAeoReadiness,
 }: PlanClientProps) {
@@ -1063,6 +1069,9 @@ export function PlanClient({
         body: JSON.stringify({ scan_id: scanId }),
       });
       const data = await res.json();
+      if (res.status === 402) {
+        throw new Error(`Not enough tokens. You need ${data.required} tokens but have ${data.balance}.`);
+      }
       if (!res.ok) throw new Error(data.error ?? "Generation failed");
       window.location.reload();
     } catch (e) {
@@ -1172,8 +1181,8 @@ export function PlanClient({
 
         {/* Body */}
         <div className="px-6 py-6">
-          {/* Generating state */}
           {items.length === 0 ? (
+            /* Fallback empty state (shouldn't normally appear) */
             <div className="flex items-center justify-center min-h-[400px]">
               <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-10 max-w-lg w-full text-center">
                 <div className="w-16 h-16 rounded-full bg-emerald-50 flex items-center justify-center mx-auto mb-4">
@@ -1213,6 +1222,75 @@ export function PlanClient({
             </div>
           ) : (
             <>
+              {/* Sample paywall banner */}
+              {isSample && (
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-5 flex items-center gap-3">
+                  <span className="text-2xl">🔒</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-amber-800">
+                      Preview — Sample Plan for Dyson
+                    </p>
+                    <p className="text-xs text-amber-700 mt-0.5">
+                      Generate your personalised plan to see real findings for {brand}.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Blurred wrapper for sample mode */}
+              <div className={isSample ? "relative" : ""}>
+                {isSample && (
+                  <div
+                    className="absolute inset-0 z-10 flex items-center justify-center rounded-xl"
+                    style={{ backdropFilter: "blur(6px)", backgroundColor: "rgba(255,255,255,0.55)" }}
+                  >
+                    <div className="bg-white rounded-2xl border border-gray-200 shadow-xl p-8 max-w-md w-full mx-4 text-center">
+                      <div className="w-14 h-14 rounded-full bg-emerald-50 flex items-center justify-center mx-auto mb-4">
+                        <Zap className="w-7 h-7 text-emerald-500" />
+                      </div>
+                      <h2 className="text-lg font-bold text-gray-900 mb-2">
+                        Unlock Your AI Improvement Plan
+                      </h2>
+                      <p className="text-sm text-gray-500 leading-relaxed mb-1">
+                        Get a personalised, data-driven roadmap across 10 AEO dimensions
+                        based on your actual scan for <strong>{brand}</strong>.
+                      </p>
+                      <p className="text-xs text-gray-400 mb-5">
+                        Costs {planTokenCost} tokens · Balance: {tokenBalance === Infinity ? "unlimited" : tokenBalance}
+                      </p>
+                      {generateError && (
+                        <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
+                          {generateError}
+                        </div>
+                      )}
+                      {(tokenBalance ?? 0) < (planTokenCost ?? 200) && tokenBalance !== Infinity ? (
+                        <div className="text-sm text-red-600 font-medium">
+                          Not enough tokens. You need {planTokenCost} but have {tokenBalance}.
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={generatePlan}
+                          disabled={generating}
+                          className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors disabled:opacity-60"
+                        >
+                          {generating ? (
+                            <>
+                              <RefreshCw className="w-4 h-4 animate-spin" />
+                              Generating your plan…
+                            </>
+                          ) : (
+                            <>
+                              <Zap className="w-4 h-4" />
+                              Generate Plan ({planTokenCost} tokens)
+                            </>
+                          )}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+
               {/* Progress bar */}
               <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 mb-5">
                 <div className="flex items-center justify-between mb-2">
@@ -1367,6 +1445,7 @@ export function PlanClient({
                   })}
                 </div>
               )}
+              </div>{/* end blurred wrapper */}
             </>
           )}
         </div>

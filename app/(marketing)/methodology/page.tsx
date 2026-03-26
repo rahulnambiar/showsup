@@ -1,17 +1,56 @@
 import type { Metadata } from "next";
+import { MarketingNav } from "@/components/marketing-nav";
 
 export const metadata: Metadata = {
-  title: "AEO Methodology — ShowsUp",
+  title: "AEO Methodology — How ShowsUp Measures AI Brand Visibility",
   description:
-    "The research-backed framework ShowsUp uses to measure and improve your brand's visibility across AI platforms like ChatGPT, Claude, and Gemini.",
+    "The research-backed framework for measuring and improving brand visibility across ChatGPT, Claude, and Gemini. 10 dimensions, 680M+ citations analysed.",
+  keywords: ["AEO methodology", "AI visibility framework", "how to improve AI brand visibility", "how LLMs choose brands", "answer engine optimisation"],
+  openGraph: {
+    title: "The ShowsUp AEO Framework — 10 Dimensions of AI Visibility",
+    description: "Based on 680M+ AI citations and peer-reviewed research. The open source methodology for measuring how AI platforms recommend brands.",
+    url: "https://showsup.co/methodology",
+    type: "article",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "The ShowsUp AEO Framework — 10 Dimensions of AI Visibility",
+    description: "Based on 680M+ AI citations. The research-backed methodology for measuring how ChatGPT, Claude, and Gemini choose which brands to recommend.",
+  },
 };
 
 export default function MethodologyPage() {
   return (
-    <div className="max-w-[1100px] mx-auto px-6 py-16">
+    <div style={{ background: "#FFFFFF", color: "#111827" }}>
+      <MarketingNav />
+
+      {/* Mobile anchor pills */}
+      <div className="lg:hidden sticky top-16 z-40 bg-white border-b border-[#E5E7EB] px-4 py-2 overflow-x-auto">
+        <div className="flex gap-2 w-max">
+          {[
+            { href: "#overview",      label: "Overview" },
+            { href: "#how-ai-chooses", label: "How AI Chooses" },
+            { href: "#dimensions",    label: "10 Dimensions" },
+            { href: "#scoring",       label: "Scoring" },
+            { href: "#fixes",         label: "Fix Generation" },
+            { href: "#verification",  label: "Verification" },
+            { href: "#research",      label: "Research" },
+          ].map((item) => (
+            <a
+              key={item.href}
+              href={item.href}
+              className="flex-shrink-0 text-[12px] font-medium text-[#4B5563] bg-[#F9FAFB] border border-[#E5E7EB] rounded-full px-3 py-1 hover:border-[#10B981] hover:text-[#111827] transition-colors"
+            >
+              {item.label}
+            </a>
+          ))}
+        </div>
+      </div>
+
+    <div className="max-w-[1100px] mx-auto px-6 pt-28 pb-16">
       <div className="flex gap-16">
         {/* Sidebar */}
-        <aside className="hidden lg:block w-48 flex-shrink-0 sticky top-24 self-start">
+        <aside className="hidden lg:block w-48 flex-shrink-0 sticky top-28 self-start">
           <nav className="space-y-1">
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
               On this page
@@ -1226,6 +1265,7 @@ export default function MethodologyPage() {
           </div>
         </main>
       </div>
+    </div>
     </div>
   );
 }

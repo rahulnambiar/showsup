@@ -1,7 +1,12 @@
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdmin } from "@supabase/supabase-js";
+import { getBalance } from "@/lib/tokens";
+import { isSelfHost } from "@/lib/mode";
 import { PlanClient } from "./plan-client";
+import { SAMPLE_PLAN_ITEMS } from "./sample-plan";
+
+const PLAN_TOKEN_COST = 100;
 
 function getAdmin() {
   return createAdmin(
@@ -80,11 +85,18 @@ export default async function PlanPage({
     planRows = data ?? [];
   } catch { /* table may not exist on older DBs */ }
 
-  const initialItems = planRows.map(dbRowToPlanItem);
+  const hasRealPlan = planRows.length > 0;
+  const initialItems = hasRealPlan ? planRows.map(dbRowToPlanItem) : SAMPLE_PLAN_ITEMS;
 
   const aeoScores = aeoReadiness
     ? Object.fromEntries(Object.entries(aeoReadiness).map(([k, v]) => [k, { score: v, summary: "" }]))
     : null;
+
+  // Token balance for paywall UI
+  let tokenBalance = 0;
+  if (!isSelfHost) {
+    try { tokenBalance = await getBalance(user!.id); } catch { /* ok */ }
+  }
 
   return (
     <PlanClient
@@ -94,6 +106,9 @@ export default async function PlanPage({
       overallScore={(scan.overall_score as number) ?? 0}
       websiteUrl={(scan.website as string) ?? null}
       initialItems={initialItems}
+      isSample={!hasRealPlan}
+      tokenBalance={isSelfHost ? Infinity : tokenBalance}
+      planTokenCost={PLAN_TOKEN_COST}
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       aeoScores={aeoScores as any}
       overallAeoReadiness={

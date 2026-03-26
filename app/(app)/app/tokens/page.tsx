@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Coins, Check, X, Zap, ArrowRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,40 +12,36 @@ import { trackTokensPageViewed, trackTokensPackageSelected, trackTokensPurchaseC
 
 const PACKAGES = [
   {
-    id: "starter",
-    label: "Starter",
-    tokens: 2500,
-    price_sgd: 19,
-    popular: false,
-    per_token: "S$0.008/token",
-    savings: null,
+    id:       "starter",
+    label:    "Starter",
+    tokens:   2500,
+    priceUsd: 9,
+    popular:  false,
+    savings:  null,
   },
   {
-    id: "explorer",
-    label: "Explorer",
-    tokens: 5000,
-    price_sgd: 39,
-    popular: true,
-    per_token: "S$0.008/token",
-    savings: null,
+    id:       "growth",
+    label:    "Growth",
+    tokens:   10000,
+    priceUsd: 29,
+    popular:  true,
+    savings:  "Save 26%",
   },
   {
-    id: "growth",
-    label: "Growth",
-    tokens: 12000,
-    price_sgd: 79,
-    popular: false,
-    per_token: "S$0.007/token",
-    savings: "Save 14% vs Explorer",
+    id:       "pro",
+    label:    "Pro",
+    tokens:   35000,
+    priceUsd: 79,
+    popular:  false,
+    savings:  "Save 40%",
   },
   {
-    id: "pro",
-    label: "Pro",
-    tokens: 30000,
-    price_sgd: 149,
-    popular: false,
-    per_token: "S$0.005/token",
-    savings: "Best value — Save 36%",
+    id:       "agency",
+    label:    "Agency",
+    tokens:   100000,
+    priceUsd: 199,
+    popular:  false,
+    savings:  "Best value — Save 49%",
   },
 ] as const;
 
@@ -74,44 +71,50 @@ const COST_TABLE = [
 const STANDARD_COST = calculateReportCost(STANDARD_CONFIG).totalTokens;
 
 export default function TokensPage() {
-  const [balance, setBalance] = useState<number | null>(null);
-  const [confirming, setConfirming] = useState<PackageId | null>(null);
-  const [purchasing, setPurchasing] = useState(false);
-  const [successPkg, setSuccessPkg] = useState<PackageId | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const searchParams  = useSearchParams();
+  const [balance, setBalance]       = useState<number | null>(null);
+  const [redirecting, setRedirecting] = useState<PackageId | null>(null);
+  const [error, setError]           = useState<string | null>(null);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   useEffect(() => {
     trackTokensPageViewed();
     fetch("/api/tokens/balance")
       .then((r) => r.json())
       .then((d) => setBalance(d.balance ?? 0));
-  }, []);
 
-  const selectedPkg = PACKAGES.find((p) => p.id === confirming) ?? null;
+    if (searchParams.get("success") === "1") {
+      setShowSuccess(true);
+      // Refresh balance after a short delay (webhook may take a moment)
+      setTimeout(() => {
+        fetch("/api/tokens/balance")
+          .then((r) => r.json())
+          .then((d) => { setBalance(d.balance ?? 0); window.dispatchEvent(new Event("tokenBalanceChanged")); });
+      }, 2000);
+    }
+  }, [searchParams]);
 
-  async function handlePurchase() {
-    if (!confirming) return;
+  async function handleBuy(pkgId: PackageId) {
     setError(null);
-    setPurchasing(true);
-    const pkg = PACKAGES.find((p) => p.id === confirming);
-    if (pkg) trackTokensPurchaseClicked({ id: pkg.id, tokens: pkg.tokens, price_sgd: pkg.price_sgd });
+    setRedirecting(pkgId);
+    const pkg = PACKAGES.find((p) => p.id === pkgId)!;
+    trackTokensPurchaseClicked({ id: pkg.id, tokens: pkg.tokens, price_sgd: pkg.priceUsd });
     try {
-      const res = await fetch("/api/tokens/purchase", {
-        method: "POST",
+      const res  = await fetch("/api/checkout", {
+        method:  "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ package_id: confirming }),
+        body:    JSON.stringify({ package_id: pkgId }),
       });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error ?? "Purchase failed");
+      const data = await res.json() as { url?: string; error?: string };
+      if (!res.ok || !data.url) {
+        setError(data.error ?? "Could not start checkout. Please try again.");
         return;
       }
-      setBalance(data.balance);
-      setSuccessPkg(confirming);
-      setConfirming(null);
-      window.dispatchEvent(new Event("tokenBalanceChanged"));
+      window.location.href = data.url;
+    } catch {
+      setError("Network error — please try again.");
     } finally {
-      setPurchasing(false);
+      setRedirecting(null);
     }
   }
 
@@ -135,17 +138,31 @@ export default function TokensPage() {
       </div>
 
       {/* Success banner */}
-      {successPkg && (
+      {showSuccess && (
         <div className="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
           <div className="flex items-center gap-2">
             <Check className="w-4 h-4 text-emerald-600" />
             <span className="text-sm text-emerald-700 font-medium">
-              {PACKAGES.find((p) => p.id === successPkg)?.tokens.toLocaleString()} tokens added successfully!
+              Payment successful! Tokens are being credited to your account.
             </span>
           </div>
-          <button onClick={() => setSuccessPkg(null)} className="text-gray-400 hover:text-gray-600 transition-colors">
+          <button onClick={() => setShowSuccess(false)} className="text-gray-400 hover:text-gray-600 transition-colors">
             <X className="w-4 h-4" />
           </button>
+        </div>
+      )}
+
+      {/* Cancelled banner */}
+      {searchParams.get("cancelled") === "1" && (
+        <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
+          <span className="text-sm text-gray-500">Payment cancelled — no charge was made.</span>
+        </div>
+      )}
+
+      {/* Error */}
+      {error && (
+        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3">
+          <p className="text-sm text-red-600">{error}</p>
         </div>
       )}
 
@@ -153,6 +170,7 @@ export default function TokensPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {PACKAGES.map((pkg) => {
           const scans = Math.floor(pkg.tokens / STANDARD_COST);
+          const isRedirecting = redirecting === pkg.id;
           return (
             <Card
               key={pkg.id}
@@ -177,8 +195,7 @@ export default function TokensPage() {
                     <span className="text-3xl font-bold text-gray-900 tabular-nums font-mono">{pkg.tokens.toLocaleString()}</span>
                     <span className="text-gray-400 text-sm">tokens</span>
                   </div>
-                  <p className="text-xl font-bold text-gray-900">S${pkg.price_sgd}</p>
-                  <p className="text-xs text-gray-400">{pkg.per_token}</p>
+                  <p className="text-xl font-bold text-gray-900">${pkg.priceUsd} <span className="text-sm font-normal text-gray-400">USD</span></p>
                 </div>
 
                 {pkg.savings ? (
@@ -201,9 +218,17 @@ export default function TokensPage() {
                       ? "bg-emerald-600 hover:bg-emerald-700 text-white"
                       : "bg-gray-100 hover:bg-gray-200 text-gray-700 border-0"
                   )}
-                  onClick={() => { setSuccessPkg(null); setError(null); setConfirming(pkg.id); trackTokensPackageSelected({ id: pkg.id, tokens: pkg.tokens, price_sgd: pkg.price_sgd }); }}
+                  onClick={() => { trackTokensPackageSelected({ id: pkg.id, tokens: pkg.tokens, price_sgd: pkg.priceUsd }); handleBuy(pkg.id); }}
+                  disabled={!!redirecting}
                 >
-                  Buy {pkg.label}
+                  {isRedirecting ? (
+                    <span className="flex items-center gap-2">
+                      <span className="w-4 h-4 border-2 border-current/30 border-t-current rounded-full animate-spin" />
+                      Redirecting…
+                    </span>
+                  ) : (
+                    `Buy ${pkg.label}`
+                  )}
                 </Button>
               </CardContent>
             </Card>
@@ -241,80 +266,6 @@ export default function TokensPage() {
           <ArrowRight className="w-3.5 h-3.5" />
         </Link>
       </div>
-
-      {/* Confirmation modal */}
-      {confirming && selectedPkg && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-black/30 backdrop-blur-sm"
-            onClick={() => !purchasing && setConfirming(null)}
-          />
-          <div className="relative bg-white border border-gray-200 rounded-2xl p-6 max-w-sm w-full shadow-2xl">
-            <div className="space-y-5">
-              <div>
-                <h3 className="text-lg font-bold text-gray-900">Confirm purchase</h3>
-                <p className="text-gray-500 text-sm mt-1">
-                  Add {selectedPkg.tokens.toLocaleString()} tokens to your account.
-                </p>
-              </div>
-
-              <div className="rounded-xl bg-gray-50 border border-gray-200 p-4 space-y-2.5">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">{selectedPkg.label} package</span>
-                  <span className="text-gray-900 font-medium">{selectedPkg.tokens.toLocaleString()} tokens</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Price</span>
-                  <span className="text-gray-900 font-medium">S${selectedPkg.price_sgd}</span>
-                </div>
-                <div className="border-t border-gray-200 pt-2.5 flex justify-between text-sm">
-                  <span className="text-gray-500">Balance after</span>
-                  <span className="text-emerald-700 font-bold tabular-nums">
-                    {((balance ?? 0) + selectedPkg.tokens).toLocaleString()} tokens
-                  </span>
-                </div>
-              </div>
-
-              <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
-                <p className="text-xs text-amber-700">
-                  🧪 <strong>Test mode</strong> — tokens are added instantly with no charge. Stripe integration coming soon.
-                </p>
-              </div>
-
-              {error && (
-                <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
-                  {error}
-                </p>
-              )}
-
-              <div className="flex gap-3">
-                <Button
-                  variant="outline"
-                  className="flex-1 border-gray-200 text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-                  onClick={() => setConfirming(null)}
-                  disabled={purchasing}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold"
-                  onClick={handlePurchase}
-                  disabled={purchasing}
-                >
-                  {purchasing ? (
-                    <span className="flex items-center gap-2">
-                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Adding…
-                    </span>
-                  ) : (
-                    "Add tokens"
-                  )}
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

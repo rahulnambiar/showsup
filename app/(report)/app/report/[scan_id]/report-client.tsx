@@ -1925,21 +1925,22 @@ export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: 
 
         {/* ── 10: Improvement Plan ── */}
         <Section id="improvement" title="AI Improvement Plan">
-          <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-6 space-y-4">
-            <div className="flex items-start gap-4">
-              <div className="w-10 h-10 rounded-full bg-emerald-500/15 flex items-center justify-center flex-shrink-0">
-                <svg className="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                </svg>
+          {scan.aeo_readiness ? (
+            /* Plan already generated — show link */
+            <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-6 space-y-4">
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 rounded-full bg-emerald-500/15 flex items-center justify-center flex-shrink-0">
+                  <svg className="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-white mb-1">Your AI Improvement Plan is ready</h3>
+                  <p className="text-sm text-gray-400 leading-relaxed">
+                    Prioritised fixes across 10 AEO dimensions with verified action steps.
+                  </p>
+                </div>
               </div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-white mb-1">Your personalised AEO action plan is ready</h3>
-                <p className="text-sm text-gray-400 leading-relaxed">
-                  We&apos;ve analysed your website and AI scan results across 10 AEO dimensions to generate a prioritised improvement plan — with specific fixes, effort estimates, and automated verification.
-                </p>
-              </div>
-            </div>
-            <div className="flex flex-wrap gap-3">
               <a
                 href={`/app/plan/${scan.id}`}
                 className="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-black font-semibold text-sm px-4 py-2 rounded-lg transition-colors"
@@ -1950,7 +1951,67 @@ export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: 
                 </svg>
               </a>
             </div>
-          </div>
+          ) : (
+            /* Plan not generated — paywall card */
+            <div className="rounded-xl border border-[#E5E7EB] bg-white p-6 space-y-5">
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 rounded-lg bg-[#F0FDF4] flex items-center justify-center flex-shrink-0">
+                  <svg className="w-5 h-5 text-[#10B981]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-[#111827] mb-1">📋 AI Improvement Plan</h3>
+                  <p className="text-sm text-[#4B5563] leading-relaxed">
+                    Get a research-grade improvement plan based on 10 dimensions of AEO readiness.
+                    ShowsUp analyses your actual website content, maps gaps to your marketing funnel,
+                    and generates verified recommendations with cited research backing.
+                  </p>
+                </div>
+              </div>
+
+              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {[
+                  "10-dimension AEO readiness assessment",
+                  "15–20 specific recommendations with research citations",
+                  "Funnel-mapped priorities (Awareness → Conversion)",
+                  "Automated fix verification",
+                  "Copyable action steps and code",
+                ].map((f) => (
+                  <li key={f} className="flex items-start gap-2 text-sm text-[#374151]">
+                    <svg className="w-4 h-4 text-[#10B981] flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+
+              <div className="flex flex-wrap items-center gap-3 pt-1">
+                {tokenBalance !== null && tokenBalance < 100 ? (
+                  <a
+                    href="/app/tokens"
+                    className="inline-flex items-center gap-2 bg-[#F59E0B] hover:bg-[#D97706] text-white font-semibold text-sm px-4 py-2 rounded-lg transition-colors"
+                  >
+                    Need 100 tokens — Buy more →
+                  </a>
+                ) : (
+                  <a
+                    href={`/app/plan/${scan.id}`}
+                    className="inline-flex items-center gap-2 bg-[#10B981] hover:bg-[#059669] text-white font-semibold text-sm px-4 py-2 rounded-lg transition-colors"
+                  >
+                    Generate Plan — 100 🪙
+                  </a>
+                )}
+                <a
+                  href="/methodology"
+                  className="text-sm text-[#4B5563] hover:text-[#111827] transition-colors"
+                >
+                  Learn about the methodology →
+                </a>
+              </div>
+            </div>
+          )}
         </Section>
 
         {/* ── 10: Benchmark ── */}

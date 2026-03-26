@@ -124,8 +124,8 @@ export function MarketingNav() {
               {label}
             </button>
           ))}
-          <Link href="#" className="text-[14px] text-[#4B5563] hover:text-[#111827] transition-colors duration-200">
-            Docs
+          <Link href="/methodology" className="text-[14px] text-[#4B5563] hover:text-[#111827] transition-colors duration-200">
+            Methodology
           </Link>
         </nav>
 
@@ -149,30 +149,34 @@ export function MarketingNav() {
           </a>
 
           {loggedIn ? (
-            <Link href="/app/dashboard" className="text-[13px] text-[#10B981] hover:text-[#059669] font-medium transition-colors duration-200">
-              Dashboard →
+            <Link
+              href="/app/dashboard"
+              className="inline-flex items-center gap-1.5 text-[13px] font-medium bg-[#10B981] hover:bg-[#059669] text-white rounded-lg px-4 py-2 transition-all duration-200 hover:scale-[1.02] shadow-sm"
+            >
+              Dashboard <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           ) : (
-            <Link href="/login" className="text-[13px] text-[#4B5563] hover:text-[#111827] transition-colors duration-200">
-              Sign in
-            </Link>
+            <>
+              <Link href="/login" className="text-[13px] text-[#4B5563] hover:text-[#111827] transition-colors duration-200">
+                Sign in
+              </Link>
+              <Link
+                href="/signup"
+                className="inline-flex items-center gap-1.5 text-[13px] font-medium bg-[#10B981] hover:bg-[#059669] text-white rounded-lg px-4 py-2 transition-all duration-200 hover:scale-[1.02] shadow-sm"
+              >
+                Get Started <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </>
           )}
-
-          <Link
-            href="/signup"
-            className="inline-flex items-center gap-1.5 text-[13px] font-medium bg-[#10B981] hover:bg-[#059669] text-white rounded-lg px-4 py-2 transition-all duration-200 hover:scale-[1.02] shadow-sm"
-          >
-            Get Started <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
         </div>
 
-        {/* Mobile: Get Started stays visible */}
+        {/* Mobile: CTA stays visible */}
         <div className="md:hidden flex items-center gap-2">
           <Link
-            href="/signup"
+            href={loggedIn ? "/app/dashboard" : "/signup"}
             className="text-[13px] font-medium bg-[#10B981] hover:bg-[#059669] text-white rounded-lg px-3 py-1.5 transition-colors duration-200"
           >
-            Get Started
+            {loggedIn ? "Dashboard" : "Get Started"}
           </Link>
           <button
             onClick={() => setMenuOpen(!menuOpen)}
@@ -200,8 +204,8 @@ export function MarketingNav() {
               {label}
             </button>
           ))}
-          <Link href="#" className="block text-[14px] text-[#4B5563] hover:text-[#111827] py-2.5 transition-colors duration-200">
-            Docs
+          <Link href="/methodology" className="block text-[14px] text-[#4B5563] hover:text-[#111827] py-2.5 transition-colors duration-200">
+            Methodology
           </Link>
           <div className="pt-4 border-t border-[#E5E7EB] space-y-3">
             {loggedIn ? (
