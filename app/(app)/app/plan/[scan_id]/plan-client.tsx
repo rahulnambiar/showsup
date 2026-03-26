@@ -623,15 +623,13 @@ function IssueCard({
                   Mark as Fixed ✓
                 </button>
               )}
-              {item.status !== "skipped" && (
-                <button
-                  type="button"
-                  onClick={() => onStatusChange(item.id, "skipped")}
-                  className="text-xs px-3 py-1.5 rounded-lg bg-gray-50 text-gray-500 border border-gray-200 hover:bg-gray-100 transition-colors"
-                >
-                  Skip
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={() => onStatusChange(item.id, "skipped")}
+                className="text-xs px-3 py-1.5 rounded-lg bg-gray-50 text-gray-500 border border-gray-200 hover:bg-gray-100 transition-colors"
+              >
+                Skip
+              </button>
             </>
           )}
           {item.status === "marked_fixed" && (
