@@ -109,8 +109,8 @@ export default function PrivacyPage() {
               We retain your personal data for as long as your account is active or as needed to
               provide the Service. You may request deletion of your account and associated data at
               any time by contacting us at{" "}
-              <a href="mailto:rahul@firstventuresgroup.com" className="text-emerald-600 hover:underline">
-                rahul@firstventuresgroup.com
+              <a href="mailto:hello@showsup.co" className="text-emerald-600 hover:underline">
+                hello@showsup.co
               </a>
               . Certain data may be retained for a period thereafter to comply with legal obligations
               or resolve disputes.
@@ -150,8 +150,8 @@ export default function PrivacyPage() {
             </ul>
             <p className="mt-3">
               To exercise any of these rights, contact us at{" "}
-              <a href="mailto:rahul@firstventuresgroup.com" className="text-emerald-600 hover:underline">
-                rahul@firstventuresgroup.com
+              <a href="mailto:hello@showsup.co" className="text-emerald-600 hover:underline">
+                hello@showsup.co
               </a>
               . We will respond within 30 days.
             </p>
@@ -194,8 +194,8 @@ export default function PrivacyPage() {
               <p>Singapore</p>
               <p>
                 Email:{" "}
-                <a href="mailto:rahul@firstventuresgroup.com" className="text-emerald-600 hover:underline">
-                  rahul@firstventuresgroup.com
+                <a href="mailto:hello@showsup.co" className="text-emerald-600 hover:underline">
+                  hello@showsup.co
                 </a>
               </p>
             </address>

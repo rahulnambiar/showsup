@@ -55,7 +55,7 @@ const jsonLd = {
       "foundingLocation": { "@type": "Place", "name": "Singapore" },
       "contactPoint": {
         "@type": "ContactPoint",
-        "email": "rahul@firstventuresgroup.com",
+        "email": "hello@showsup.co",
         "contactType": "customer support",
       },
       "sameAs": ["https://github.com/rahulnambiar/showsup"],
