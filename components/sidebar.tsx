@@ -222,6 +222,11 @@ export function Sidebar({ user }: SidebarProps) {
             <LogOut className="w-4 h-4" />
             Sign out
           </Button>
+          <div className="flex items-center gap-3 px-3 pt-1 pb-0.5">
+            <Link href="/privacy" className="text-[10px] text-gray-400 hover:text-gray-600 transition-colors">Privacy</Link>
+            <span className="text-gray-300 text-[10px]">·</span>
+            <Link href="/terms" className="text-[10px] text-gray-400 hover:text-gray-600 transition-colors">Terms</Link>
+          </div>
         </div>
       </aside>
 
