@@ -15,7 +15,7 @@ import { ReportTracker } from "./report-tracker";
 import { GeographySection } from "./geography-section";
 import { GscSection } from "./gsc-section";
 import { ChatTrigger } from "./chat-trigger";
-import { FREE_CHAT_MESSAGES, type ChatMessage } from "@/lib/chat/prompt";
+import { type ChatMessage } from "@/lib/chat/prompt";
 
 // Dynamic imports (client only)
 const PDFDownload = dynamic(

@@ -48,7 +48,7 @@ interface Props {
 
 // ── Component ──────────────────────────────────────────────────────────────
 
-export function GscSection({ brand, scanId, overallScore, aiResponses }: Props) {
+export function GscSection({ brand, scanId: _scanId, overallScore, aiResponses }: Props) {
   const [gscData, setGscData]   = useState<GscData | null>(null);
   const [loading, setLoading]   = useState(true);
   const [error, setError]       = useState<string | null>(null);

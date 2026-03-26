@@ -10,7 +10,7 @@ import { generateQueries, type QueryConfig } from "@/lib/query-generator";
 import { getRegion, type Region } from "./regions";
 import type {
   AnalysisResult, BrandProfile, CompetitorProfile, CompetitorsData,
-  PerceptionData, CitationData, ImprovementPlan, ImprovementPlanItem,
+  PerceptionData, CitationData, ImprovementPlan,
   BenchmarkData, Recommendation, ModelResult, ModelPromptResult,
   ScanInput, ScanOutput, ScanQuery, RegionalScore,
 } from "./types";

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
-import { Upload, FileText, Trash2, ChevronDown, CheckCircle2, AlertCircle, Database } from "lucide-react";
+import { Upload, FileText, Trash2, ChevronDown, CheckCircle2, AlertCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";

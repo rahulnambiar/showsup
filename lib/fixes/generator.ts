@@ -436,7 +436,7 @@ export async function generateFixes(input: FixInput): Promise<FixOutput> {
   );
 
   const fixes = results.flat();
-  const totalKb = Math.round(fixes.reduce((s, f) => s + f.sizeBytes, 0) / 1024);
+  // totalKb = Math.round(fixes.reduce((s, f) => s + f.sizeBytes, 0) / 1024)
 
   return {
     fixes,

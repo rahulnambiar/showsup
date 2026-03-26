@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient as createAdmin } from "@supabase/supabase-js";
-import { exchangeGscCode, fetchGscData } from "@/lib/gsc/client";
+import { exchangeGscCode } from "@/lib/gsc/client";
 import { google } from "googleapis";
 
 function getAdmin() {

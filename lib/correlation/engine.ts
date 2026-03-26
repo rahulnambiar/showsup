@@ -91,7 +91,7 @@ export function generateInsightText(
 
   const abs = Math.abs(pearson);
   const dir = pearson >= 0 ? "positive" : "negative";
-  const strength = abs >= 0.7 ? "strong" : abs >= 0.4 ? "moderate" : "weak";
+  // strength: abs >= 0.7 strong, abs >= 0.4 moderate, else weak
   const trendPhrase =
     trend === "rising"  ? "is trending up" :
     trend === "falling" ? "is trending down" :
