@@ -111,21 +111,20 @@ export function MarketingNav() {
 
         {/* Center links — desktop */}
         <nav className="hidden md:flex items-center gap-7">
-          {[
-            { label: "Product",      id: "product"      },
-            { label: "Integrations", id: "integrations" },
-            { label: "Pricing",      id: "pricing"      },
-          ].map(({ label, id }) => (
-            <button
-              key={id}
-              onClick={() => scrollOrLink(id)}
-              className="text-[14px] text-[#4B5563] hover:text-[#111827] transition-colors duration-200"
-            >
-              {label}
-            </button>
-          ))}
+          <button
+            onClick={() => scrollOrLink("product")}
+            className="text-[14px] text-[#4B5563] hover:text-[#111827] transition-colors duration-200"
+          >
+            Product
+          </button>
           <Link href="/methodology" className="text-[14px] text-[#4B5563] hover:text-[#111827] transition-colors duration-200">
             Methodology
+          </Link>
+          <Link href="/blog" className="text-[14px] text-[#4B5563] hover:text-[#111827] transition-colors duration-200">
+            Blog
+          </Link>
+          <Link href="/about" className="text-[14px] text-[#4B5563] hover:text-[#111827] transition-colors duration-200">
+            About
           </Link>
         </nav>
 
@@ -191,21 +190,20 @@ export function MarketingNav() {
       {/* Mobile menu */}
       {menuOpen && (
         <div className="md:hidden bg-white border-t border-[#E5E7EB] px-6 py-5 space-y-1 shadow-lg">
-          {[
-            { label: "Product",      id: "product"      },
-            { label: "Integrations", id: "integrations" },
-            { label: "Pricing",      id: "pricing"      },
-          ].map(({ label, id }) => (
-            <button
-              key={id}
-              onClick={() => { scrollOrLink(id); setMenuOpen(false); }}
-              className="block w-full text-left text-[14px] text-[#4B5563] hover:text-[#111827] py-2.5 transition-colors duration-200"
-            >
-              {label}
-            </button>
-          ))}
-          <Link href="/methodology" className="block text-[14px] text-[#4B5563] hover:text-[#111827] py-2.5 transition-colors duration-200">
+          <button
+            onClick={() => { scrollOrLink("product"); setMenuOpen(false); }}
+            className="block w-full text-left text-[14px] text-[#4B5563] hover:text-[#111827] py-2.5 transition-colors duration-200"
+          >
+            Product
+          </button>
+          <Link href="/methodology" onClick={() => setMenuOpen(false)} className="block text-[14px] text-[#4B5563] hover:text-[#111827] py-2.5 transition-colors duration-200">
             Methodology
+          </Link>
+          <Link href="/blog" onClick={() => setMenuOpen(false)} className="block text-[14px] text-[#4B5563] hover:text-[#111827] py-2.5 transition-colors duration-200">
+            Blog
+          </Link>
+          <Link href="/about" onClick={() => setMenuOpen(false)} className="block text-[14px] text-[#4B5563] hover:text-[#111827] py-2.5 transition-colors duration-200">
+            About
           </Link>
           <div className="pt-4 border-t border-[#E5E7EB] space-y-3">
             {loggedIn ? (

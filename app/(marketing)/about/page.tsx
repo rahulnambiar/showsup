@@ -3,28 +3,29 @@ import Link from "next/link";
 import { MarketingNav } from "@/components/marketing-nav";
 
 export const metadata: Metadata = {
-  title: "About ShowsUp — Built by a Digital Marketing Veteran",
+  title: "About ShowsUp — Digital Marketing Entrepreneur Building in AI",
   description:
-    "ShowsUp was built by Rahul Nambiar, a digital marketing practitioner since 2008 who founded Valuklik and exited to Dentsu. A passion project to help brands get found by AI.",
+    "ShowsUp was built by Rahul Nambiar — digital marketing entrepreneur, Valuklik co-founder, Dentsu exit, former board member, and now building in AI. A passion project to help brands get found by AI.",
   keywords: [
     "about ShowsUp",
     "Rahul Nambiar",
+    "Valuklik Dentsu",
     "AI brand visibility",
     "AEO tool",
-    "digital marketing",
+    "digital marketing entrepreneur",
   ],
   openGraph: {
-    title: "About ShowsUp — Built by a Digital Marketing Veteran",
+    title: "About ShowsUp — Built by a Career Marketer Who Got Excited About AI",
     description:
-      "ShowsUp was built by Rahul Nambiar, a digital marketing practitioner since 2008. A passion project to help brands get found by AI.",
-    url: "https://showsup.co/about",
+      "Rahul Nambiar spent 20 years in digital marketing, exited Valuklik to Dentsu, served on global agency boards — and then AI got him excited enough to build again.",
+    url: "https://www.showsup.co/about",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "About ShowsUp — Built by a Digital Marketing Veteran",
+    title: "About ShowsUp",
     description:
-      "ShowsUp was built by Rahul Nambiar, founder of Valuklik (exited to Dentsu). A passion project to help brands get found by AI.",
+      "Built by Rahul Nambiar — Valuklik founder, Dentsu exit, board member, now AI builder. A passion project to help every brand show up in AI.",
   },
 };
 
@@ -40,13 +41,13 @@ export default function AboutPage() {
             About
           </p>
           <h1 className="text-4xl sm:text-5xl font-bold text-[#111827] leading-tight mb-6">
-            Built by someone who&apos;s spent a lifetime in digital marketing.
+            Digital marketing entrepreneur. Now building in AI.
           </h1>
           <p className="text-xl text-[#6B7280] leading-relaxed max-w-3xl">
             ShowsUp isn&apos;t a VC-backed startup chasing the next trend. It&apos;s a
-            passion project built by a practitioner, for practitioners — people
-            who live and breathe brand visibility and want to stay ahead of the
-            biggest shift in search since Google.
+            passion project built by someone who has spent their entire career in
+            digital marketing — and who sees AI as the most important shift in
+            brand discovery since Google was invented.
           </p>
         </div>
       </section>
@@ -65,42 +66,28 @@ export default function AboutPage() {
           <div className="grid md:grid-cols-3 gap-10">
             <div className="md:col-span-2 space-y-5 text-[#374151] leading-relaxed">
               <p>
-                <strong className="text-[#111827]">Rahul Nambiar</strong> has
-                been a digital marketing practitioner since 2008. Over nearly
-                two decades he has run campaigns, built teams, and helped
-                hundreds of brands grow their online presence across every major
-                platform and channel.
+                <strong className="text-[#111827]">Rahul Nambiar</strong> started his career as a software developer — which, as it turns out, was the perfect foundation for everything that came after. About 20 years ago he made a deliberate pivot into digital marketing, drawn by the intersection of data, technology, and brand-building that the early internet made possible.
               </p>
               <p>
-                In 2010 he founded{" "}
-                <strong className="text-[#111827]">Valuklik</strong>, a
-                performance marketing agency that he grew into one of the
-                leading independent digital agencies in the region. After years
-                of sustained growth, he successfully exited Valuklik to{" "}
-                <strong className="text-[#111827]">Dentsu</strong> — one of the
-                world&apos;s largest advertising agency groups — a milestone that
-                validated the rigour and quality of work Valuklik had become
-                known for.
+                From 2008 onwards he worked with large local and international agency groups across Asia — based across India, Singapore, and Jakarta — developing a deep, hands-on understanding of performance marketing, analytics, and what it actually takes to make brands visible at scale.
               </p>
               <p>
-                Post-exit, Rahul transitioned into the role of investor and
-                advisor, backing early-stage startups across Southeast Asia and
-                beyond. He also served as a{" "}
-                <strong className="text-[#111827]">Board Member</strong> at one
-                of the largest ad agency groups in the world, helping shape
-                strategy at the intersection of technology and marketing.
+                In 2014 he joined{" "}
+                <strong className="text-[#111827]">Valuklik</strong> as Co-founder and Managing Director, and over the following years scaled the company to over 120 people, building one of the most respected performance marketing, analytics, and data-driven advertising practices in the region. In a landmark moment for the independent agency world, Valuklik was acquired by{" "}
+                <strong className="text-[#111827]">Dentsu</strong> — one of the largest advertising holding groups in the world.
               </p>
               <p>
-                Then came AI — and with it, a completely new way for people to
-                discover brands. Rahul got deeply excited about what Claude Code
-                made possible for solo builders, and decided to channel that
-                energy into building ShowsUp: a tool that helps brands
-                understand and improve their visibility in AI-generated answers.
+                Post-acquisition, Rahul continued to shape the industry from the top, eventually serving as a{" "}
+                <strong className="text-[#111827]">Board Member</strong> at Dentsu — his last chapter in advertising before stepping back from the industry in 2023 after 15 years at the front lines.
               </p>
               <p>
-                &ldquo;Digital marketing has been my life&apos;s work. ShowsUp is my way
-                of contributing back to a discipline I love — and making sure
-                practitioners aren&apos;t left behind by the AI transition.&rdquo;
+                Since then he has been an investor and advisor to startups, watching the AI revolution unfold from the sidelines. Then Claude Code happened — and something clicked. Here was a way for someone like him (an engineer-turned-marketer, not a full-time developer) to actually build something real, fast, and useful.
+              </p>
+              <p>
+                ShowsUp is the result: a tool built entirely with Claude Code, designed to solve a problem Rahul knows intimately — brands having no idea whether AI is recommending them or ignoring them. He&apos;ll be the first to admit he&apos;s a newcomer to the world of open source and AI product development, and you&apos;ll find plenty of rough edges. He&apos;s genuinely happy to hear about all of them.
+              </p>
+              <p className="italic text-[#6B7280]">
+                &ldquo;I&apos;ve spent my whole life in this industry. ShowsUp is my attempt to contribute something back — and to keep branding in the AI world a little more democratic. I&apos;ll always keep it open source, because I want more people to build on top of it.&rdquo;
               </p>
               <p>
                 <a
@@ -122,12 +109,15 @@ export default function AboutPage() {
                 </p>
                 <ul className="space-y-3 text-sm text-[#374151]">
                   {[
-                    "Digital marketing practitioner since 2008",
-                    "Founded & scaled Valuklik",
+                    "Started career as software developer",
+                    "Pivoted to digital marketing ~2005",
+                    "Agency experience across India, Singapore, Jakarta",
+                    "Co-founder & MD, Valuklik (2014)",
+                    "Scaled Valuklik to 120+ people",
                     "Exited Valuklik to Dentsu",
+                    "Board Member, Dentsu (left 2023)",
                     "Investor & advisor to startups",
-                    "Board Member, global ad agency group",
-                    "Builder of ShowsUp",
+                    "Building ShowsUp with Claude Code",
                   ].map((item) => (
                     <li key={item} className="flex items-start gap-2">
                       <span
@@ -204,26 +194,34 @@ export default function AboutPage() {
 
           <div className="max-w-3xl space-y-5 text-[#374151] leading-relaxed">
             <p>
-              ShowsUp is an open source passion project. The codebase is public
-              on GitHub, the methodology is open for scrutiny and improvement,
-              and contributions of all kinds are welcome — whether that&apos;s code,
-              research, feedback, or ideas.
+              Rahul is a self-confessed newcomer to open source and AI product development — and he&apos;s completely fine with that. ShowsUp will have rough edges, missing features, and the occasional embarrassing bug. That&apos;s the point of building in the open.
             </p>
             <p>
-              If you&apos;re a developer, an SEO practitioner, a researcher
-              interested in LLM citation patterns, or just someone who cares
-              about the future of brand discovery, get in touch.
+              He genuinely wants to hear from you — whether you&apos;ve found a bug, have a feature you&apos;d love to see, want to contribute code or research, or just have thoughts on how the methodology could be better. Developers, SEO practitioners, LLM researchers, brand managers — all welcome.
             </p>
             <p>
-              Email Rahul directly at{" "}
+              The plan is to always keep this open source, so anyone can build on top of it and make brand visibility in the AI world a little more democratic.
+            </p>
+            <p>
+              Reach Rahul directly at{" "}
               <a
                 href="mailto:rahul@showsup.co"
                 className="font-medium"
                 style={{ color: "#10B981" }}
               >
                 rahul@showsup.co
-              </a>{" "}
-              or open an issue / PR on{" "}
+              </a>
+              , connect on{" "}
+              <a
+                href="https://linkedin.com/in/rahulnambiar"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium"
+                style={{ color: "#10B981" }}
+              >
+                LinkedIn
+              </a>
+              , or open an issue on{" "}
               <a
                 href="https://github.com/rahulnambiar/showsup"
                 target="_blank"
