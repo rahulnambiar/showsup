@@ -21,23 +21,24 @@ const geistMono = localFont({
 
 export const metadata: Metadata = {
   title: {
-    default: "ShowsUp — Does your brand show up in AI?",
+    default: "ShowsUp — Get Your Brand to Show Up in AI",
     template: "%s — ShowsUp",
   },
   description:
-    "Measure your brand's visibility across ChatGPT, Claude, Gemini and more. Get your free AI visibility score with 1,000 free tokens. Instant results.",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "https://showsup.co"),
+    "Scan your brand's visibility across ChatGPT, Claude, and Gemini. Get a research-backed improvement plan, implement the fixes, and verify the results.",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "https://www.showsup.co"),
   openGraph: {
     type: "website",
     siteName: "ShowsUp",
-    title: "ShowsUp — AI Brand Visibility Platform",
-    description: "Does your brand show up when people ask AI for recommendations? Find out in 60 seconds.",
-    url: "https://showsup.co",
+    title: "ShowsUp — Get Your Brand to Show Up in AI",
+    description: "Scan your visibility across ChatGPT, Claude, and Gemini. Get a research-backed improvement plan. Implement the fixes. Verify the results.",
+    url: "https://www.showsup.co",
   },
   twitter: {
     card: "summary_large_image",
-    title: "ShowsUp — AI Brand Visibility",
-    description: "Does your brand show up in ChatGPT, Claude, and Gemini? Find out in 60 seconds.",
+    site: "@showsupco",
+    title: "ShowsUp — Get Your Brand to Show Up in AI",
+    description: "Is your brand invisible to AI? Scan, diagnose, and fix your visibility across ChatGPT, Claude, and Gemini.",
   },
   robots: {
     index: true,

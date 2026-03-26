@@ -1006,7 +1006,7 @@ export default function HomePage() {
       {/* ── CONNECT YOUR DATA ─────────────────────────────────────────────── */}
       <section id="integrations" className={cn(sectionPad, "px-6 bg-[#F9FAFB]")}>
         <div className={cn(container)}>
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-start">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             {/* Left */}
             <FadeIn className="space-y-8">
               <div className="space-y-4">
@@ -1065,15 +1065,17 @@ export default function HomePage() {
             </FadeIn>
 
             {/* Right — chart */}
-            <FadeIn delay={120} className="space-y-4">
-              <p className="text-[12px] font-medium uppercase tracking-wider text-[#9CA3AF]">
-                Example correlation
-              </p>
-              <CorrelationChart />
-              <p className="text-[13px] text-[#4B5563]">
-                When AI mentions you more, people search for you by name — and that search converts.
-                Track the full chain from AI recommendation to revenue.
-              </p>
+            <FadeIn delay={120}>
+              <div className="bg-white rounded-2xl border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-6 space-y-5">
+                <p className="text-[12px] font-medium uppercase tracking-wider text-[#9CA3AF]">
+                  Example correlation
+                </p>
+                <CorrelationChart />
+                <p className="text-[13px] text-[#4B5563] leading-relaxed">
+                  When AI mentions you more, people search for you by name — and that search converts.
+                  Track the full chain from AI recommendation to revenue.
+                </p>
+              </div>
             </FadeIn>
           </div>
         </div>

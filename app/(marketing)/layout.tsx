@@ -16,21 +16,29 @@ const jbMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ShowsUp — Open Source AEO Agent",
+  title: "ShowsUp — Get Your Brand to Show Up in AI",
   description:
-    "Scan how your brand appears across ChatGPT, Claude, and Gemini. Generate the exact fixes — llms.txt, schema markup, content briefs. MIT licensed, self-host free.",
-  keywords: ["AEO", "AI visibility", "llms.txt", "schema markup", "ChatGPT visibility", "Claude visibility", "brand visibility AI"],
+    "Scan your brand's visibility across ChatGPT, Claude, and Gemini. Get a research-backed improvement plan. Implement the fixes. Verify the results. Free to start.",
+  keywords: [
+    "AI visibility", "AEO", "answer engine optimisation", "brand visibility AI",
+    "ChatGPT visibility", "Claude visibility", "Gemini visibility",
+    "llms.txt", "schema markup", "AI search optimisation", "show up in AI",
+  ],
   openGraph: {
     type: "website",
-    title: "ShowsUp — Open Source AEO Agent",
-    description: "Scan your AI visibility across ChatGPT, Claude & Gemini. Generate llms.txt, schema markup, and content briefs to fix the gaps. MIT licensed, self-host free.",
-    url: "https://showsup.co",
+    title: "ShowsUp — Get Your Brand to Show Up in AI",
+    description: "Scan your visibility across ChatGPT, Claude, and Gemini. Get a research-backed improvement plan. Implement the fixes. Verify the results.",
+    url: "https://www.showsup.co",
     siteName: "ShowsUp",
   },
   twitter: {
     card: "summary_large_image",
-    title: "ShowsUp — Open Source AEO Agent",
-    description: "Does your brand show up in AI? Scan, diagnose, and fix your AI visibility. Open source.",
+    title: "ShowsUp — Get Your Brand to Show Up in AI",
+    description: "Is your brand invisible to AI? Scan, diagnose, and fix your visibility across ChatGPT, Claude, and Gemini.",
+    site: "@showsupco",
+  },
+  alternates: {
+    canonical: "https://www.showsup.co",
   },
 };
 

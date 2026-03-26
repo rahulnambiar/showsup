@@ -10,7 +10,6 @@ import {
   BarChart3,
   Settings,
   LogOut,
-  TrendingUp,
   Coins,
   ChevronDown,
   Wand2,
@@ -27,7 +26,6 @@ const navItems = [
   { href: "/app/report-builder", icon: Wand2,           label: "Analyse your Brand"  },
   { href: "/app/scores",         icon: BarChart3,       label: "Scores"              },
   { href: "/app/plan",           icon: ClipboardList,   label: "Improvement Plan"    },
-  { href: "/app/trends",         icon: TrendingUp,      label: "Trends"              },
   { href: "/app/data-sources",   icon: Database,        label: "Data Sources"        },
   { href: "/app/insights",       icon: LineChart,       label: "Insights"            },
   { href: "/app/tokens",         icon: Coins,           label: "Tokens"              },
@@ -159,6 +157,11 @@ export function Sidebar({ user }: SidebarProps) {
   const pathname = usePathname();
   const router   = useRouter();
 
+  // Report pages live under /app/report/ — treat as Scores sub-page
+  const effectivePath = pathname.startsWith("/app/report/")
+    ? "/app/scores"
+    : pathname;
+
   async function handleSignOut() {
     await createClient().auth.signOut();
     router.push("/");
@@ -180,7 +183,7 @@ export function Sidebar({ user }: SidebarProps) {
         {/* Nav */}
         <nav className="flex-1 px-2 space-y-0.5 overflow-y-auto">
           {navItems.map(({ href, icon: Icon, label }) => {
-            const active = pathname === href || pathname.startsWith(href + "/");
+            const active = effectivePath === href || effectivePath.startsWith(href + "/");
             return (
               <Link
                 key={href}
