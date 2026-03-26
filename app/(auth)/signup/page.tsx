@@ -40,7 +40,7 @@ export default function SignupPage() {
 
     if (!res.ok) {
       if (data.alreadyConfirmed) {
-        setError("This account is already confirmed — please sign in.");
+        setError("ALREADY_CONFIRMED");
       } else {
         setError(data.error ?? "Signup failed. Please try again.");
       }
@@ -230,10 +230,21 @@ export default function SignupPage() {
             />
           </div>
 
-          {error && (
+          {error && error !== "ALREADY_CONFIRMED" && (
             <p className="text-sm text-[#EF4444] bg-[#EF4444]/10 border border-[#EF4444]/20 rounded-md px-3 py-2">
               {error}
             </p>
+          )}
+          {error === "ALREADY_CONFIRMED" && (
+            <div className="text-sm bg-[#1F2937] border border-white/10 rounded-md px-3 py-2.5 space-y-1">
+              <p className="text-white font-medium">Account already exists</p>
+              <p className="text-gray-400 text-xs">
+                An account with this email already exists.{" "}
+                <Link href={`/login?email=${encodeURIComponent(email)}`} className="text-[#10B981] hover:underline font-medium">
+                  Sign in instead →
+                </Link>
+              </p>
+            </div>
           )}
 
           <Button

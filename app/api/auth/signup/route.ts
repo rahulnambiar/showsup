@@ -99,16 +99,23 @@ export async function POST(request: Request) {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://showsup.co";
     const redirectTo = `${appUrl}/auth/callback?next=${encodeURIComponent(next ?? "/app/dashboard")}`;
 
-    // Step 1: sign up via anon client — same code path as client-side signup,
-    // so it respects Supabase auth settings and works with any allowed email.
-    // Supabase may also try to send its own email; we override with Resend below.
+    // Step 1: Check if user already exists and is confirmed
+    const { data: existingUsers } = await admin.auth.admin.listUsers();
+    const existingUser = existingUsers?.users?.find(
+      (u) => u.email?.toLowerCase() === email.toLowerCase()
+    );
+    if (existingUser?.email_confirmed_at) {
+      return NextResponse.json({ alreadyConfirmed: true }, { status: 409 });
+    }
+
+    // Step 2: sign up via anon client
     const { error: signUpError } = await anon.auth.signUp({
       email,
       password,
       options: { emailRedirectTo: redirectTo },
     });
 
-    // Ignore "already registered" — user exists, we just resend the link
+    // Ignore "already registered" — user exists but unconfirmed, resend the link
     if (signUpError && !signUpError.message.toLowerCase().includes("already")) {
       return NextResponse.json({ error: signUpError.message }, { status: 400 });
     }

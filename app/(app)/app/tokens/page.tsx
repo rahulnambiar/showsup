@@ -85,12 +85,18 @@ export default function TokensPage() {
 
     if (searchParams.get("success") === "1") {
       setShowSuccess(true);
-      // Refresh balance after a short delay (webhook may take a moment)
-      setTimeout(() => {
+      // Poll balance up to 5 times (webhook can take a few seconds to fire)
+      let attempts = 0;
+      const poll = setInterval(() => {
+        attempts++;
         fetch("/api/tokens/balance")
           .then((r) => r.json())
-          .then((d) => { setBalance(d.balance ?? 0); window.dispatchEvent(new Event("tokenBalanceChanged")); });
-      }, 2000);
+          .then((d) => {
+            setBalance(d.balance ?? 0);
+            window.dispatchEvent(new Event("tokenBalanceChanged"));
+          });
+        if (attempts >= 5) clearInterval(poll);
+      }, 3000);
     }
   }, [searchParams]);
 
