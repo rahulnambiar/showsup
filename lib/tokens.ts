@@ -117,21 +117,17 @@ export async function getTransactionHistory(userId: string, limit = 20) {
 export async function ensureSignupBonus(userId: string): Promise<void> {
   const supabase = getAdmin();
 
-  // Try to insert the bonus transaction first — if it already exists the insert
-  // will fail (unique constraint on user_id + type='signup_bonus') and we return.
-  // This is atomic and race-condition safe.
-  const { error: txError } = await supabase.from("token_transactions").insert({
-    user_id: userId,
-    amount: SIGNUP_BONUS,
-    balance_after: SIGNUP_BONUS, // will correct below
-    type: "signup_bonus",
-    description: "Welcome! 1,000 free tokens to get started",
-  });
+  // Check whether the bonus has already been granted for this user
+  const { data: existing } = await supabase
+    .from("token_transactions")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("type", "signup_bonus")
+    .maybeSingle();
 
-  // Duplicate — bonus already granted
-  if (txError) return;
+  if (existing) return; // already granted — nothing to do
 
-  // Insert succeeded — now credit the tokens
+  // Not yet granted — credit the tokens
   const { data: existing_row } = await supabase
     .from("user_tokens")
     .select("balance")
@@ -147,10 +143,11 @@ export async function ensureSignupBonus(userId: string): Promise<void> {
       { onConflict: "user_id" }
     );
 
-  // Correct the balance_after now that we know the real value
-  await supabase
-    .from("token_transactions")
-    .update({ balance_after: newBalance })
-    .eq("user_id", userId)
-    .eq("type", "signup_bonus");
+  await supabase.from("token_transactions").insert({
+    user_id: userId,
+    amount: SIGNUP_BONUS,
+    balance_after: newBalance,
+    type: "signup_bonus",
+    description: "Welcome! 1,000 free tokens to get started",
+  });
 }
