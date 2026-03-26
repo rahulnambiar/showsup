@@ -1414,8 +1414,28 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── FAQ ───────────────────────────────────────────────────────────── */}
+      {/* ── BUILT IN THE OPEN ─────────────────────────────────────────────── */}
       <section className={cn(sectionPad, "px-6 bg-[#F9FAFB]")}>
+        <div className={cn(container, "max-w-[720px] text-center space-y-4")}>
+          <FadeIn>
+            <SectionLabel>Built in the open</SectionLabel>
+            <p className="text-[16px] text-[#4B5563] leading-relaxed mt-4">
+              Built by a solo developer in Singapore, pair-programmed with Claude Code. Every scan, fix, and analysis in ShowsUp is powered by Anthropic&apos;s Claude. The entire codebase is open source — MIT licensed.
+            </p>
+            <a
+              href={GITHUB_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 mt-6 text-[14px] font-medium text-[#10B981] hover:text-[#059669] transition-colors duration-200"
+            >
+              <Github className="w-4 h-4" /> View the source on GitHub →
+            </a>
+          </FadeIn>
+        </div>
+      </section>
+
+      {/* ── FAQ ───────────────────────────────────────────────────────────── */}
+      <section className={cn(sectionPad, "px-6 bg-white")}>
         <div className={cn(container, "max-w-[720px]")}>
           <FadeIn className="text-center space-y-4 mb-12">
             <SectionHeading>Questions</SectionHeading>
@@ -1553,7 +1573,11 @@ export default function HomePage() {
             ))}
           </div>
 
-          <div className="border-t border-[#E5E7EB] pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="border-t border-[#E5E7EB] pt-6 space-y-4">
+            <p className="text-[13px] text-[#9CA3AF] text-center">
+              Built with Claude Code · Next.js · Supabase · Vercel
+            </p>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <p className="text-[12px] text-[#9CA3AF]">© 2026 FVG Capital Pte. Ltd. All rights reserved.</p>
             <div className="flex items-center gap-4">
               <a href="/privacy" className="text-[12px] text-[#9CA3AF] hover:text-[#4B5563] transition-colors duration-200">Privacy</a>
@@ -1567,6 +1591,7 @@ export default function HomePage() {
                 <Github className="w-4 h-4" />
               </a>
             </div>
+          </div>
           </div>
         </div>
       </footer>
