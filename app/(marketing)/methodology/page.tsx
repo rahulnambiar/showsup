@@ -123,8 +123,8 @@ export default function MethodologyPage() {
             <p className="text-gray-600 leading-relaxed mb-4">
               Answer Engine Optimization (AEO) is the discipline of making your
               brand consistently visible when AI platforms answer questions in
-              your category. Unlike traditional SEO — which optimizes for clicks
-              from search results — AEO targets the moments when ChatGPT, Claude,
+              your category. Unlike traditional SEO (which optimizes for clicks
+              from search results), AEO targets the moments when ChatGPT, Claude,
               Gemini, and Perplexity synthesize recommendations directly inside a
               conversation.
             </p>
@@ -132,7 +132,7 @@ export default function MethodologyPage() {
               The challenge is that AI platforms don&apos;t follow the same rules as
               search engines. They draw on parametric knowledge (learned in
               training), real-time retrieval (live web search), and structured
-              entity graphs — each of which rewards different optimization
+              entity graphs, each of which rewards different optimization
               strategies.
             </p>
             <p className="text-gray-600 leading-relaxed">
@@ -154,8 +154,8 @@ export default function MethodologyPage() {
               Parametric Knowledge
             </h3>
             <p className="text-gray-600 leading-relaxed mb-4">
-              Large language models are trained on internet-scale text corpora
-              — Wikipedia, Reddit, industry publications, review platforms, and
+              Large language models are trained on internet-scale text corpora:
+              Wikipedia, Reddit, industry publications, review platforms, and
               licensed web crawls. Brands that appear frequently and consistently
               in these sources become part of the model&apos;s parametric memory:
               baked-in knowledge that persists even without live search.
@@ -173,7 +173,7 @@ export default function MethodologyPage() {
                 (0.334 correlation with citation frequency).
               </p>
               <p className="text-xs text-blue-600 mt-1">
-                — Omniscient Digital, 23K+ Citation Study, 2025
+                Omniscient Digital, 23K+ Citation Study, 2025
               </p>
             </div>
 
@@ -191,7 +191,7 @@ export default function MethodologyPage() {
                 <span className="text-emerald-500 flex-shrink-0 mt-0.5">✓</span>
                 <span>
                   <strong className="text-gray-800">ChatGPT / Copilot:</strong>{" "}
-                  Powered by Bing — 87% correlation between Bing top 10 and
+                  Powered by Bing, with 87% correlation between Bing top 10 and
                   ChatGPT citations
                 </span>
               </li>
@@ -212,11 +212,11 @@ export default function MethodologyPage() {
             </ul>
             <div className="bg-blue-50 border-l-4 border-blue-400 pl-4 py-3 rounded-r-lg my-4">
               <p className="text-sm text-blue-800">
-                📊 Only 11% of domains are cited by both ChatGPT and Perplexity
-                — platform-specific citation strategies are essential.
+                📊 Only 11% of domains are cited by both ChatGPT and Perplexity,
+                so platform-specific citation strategies are essential.
               </p>
               <p className="text-xs text-blue-600 mt-1">
-                — Seer Interactive, 500+ Citation Analysis, 2025
+                Seer Interactive, 500+ Citation Analysis, 2025
               </p>
             </div>
           </section>
@@ -247,7 +247,7 @@ export default function MethodologyPage() {
                   platforms are 2.8x more likely to be cited by ChatGPT.
                 </p>
                 <p className="text-xs text-blue-600 mt-1">
-                  — Digital Bloom, 2025
+                  Digital Bloom, 2025
                 </p>
               </div>
               <div className="mb-4">
@@ -319,7 +319,7 @@ export default function MethodologyPage() {
                   coverage significantly improve LLM brand recall.
                 </p>
                 <p className="text-xs text-blue-600 mt-1">
-                  — AirOps, LLM Citation Analysis
+                  AirOps, LLM Citation Analysis
                 </p>
               </div>
               <div className="mb-4">
@@ -383,7 +383,7 @@ export default function MethodologyPage() {
               </div>
               <p className="text-gray-600 leading-relaxed mb-4">
                 Does website content follow the patterns LLMs prefer for
-                citation? AI platforms extract and cite &ldquo;chunks&rdquo; — self-contained
+                citation? AI platforms extract and cite &ldquo;chunks&rdquo;: self-contained
                 passages that answer questions without requiring surrounding
                 context.
               </p>
@@ -394,7 +394,7 @@ export default function MethodologyPage() {
                   unstructured prose.
                 </p>
                 <p className="text-xs text-blue-600 mt-1">
-                  — Kevin Indig, 1.2M ChatGPT Answer Analysis
+                  Kevin Indig, 1.2M ChatGPT Answer Analysis
                 </p>
               </div>
               <div className="mb-4">
@@ -404,8 +404,8 @@ export default function MethodologyPage() {
                 <ul className="space-y-1">
                   {[
                     "Answer-first format (key claim in opening sentence)",
-                    "Chunk structure — self-contained 50–150 word answers",
-                    "Data density — statistics and specific numbers per page",
+                    "Chunk structure: self-contained 50–150 word answers",
+                    "Data density: statistics and specific numbers per page",
                     "Expert quotes and testimonials with specific results",
                     "Reading level alignment (Flesch-Kincaid grade ~16)",
                   ].map((m) => (
@@ -465,11 +465,11 @@ export default function MethodologyPage() {
               <div className="bg-blue-50 border-l-4 border-blue-400 pl-4 py-3 rounded-r-lg mb-4">
                 <p className="text-sm text-blue-800">
                   📊 Only 11% of domains are cited by both ChatGPT and
-                  Perplexity — platform-specific citation strategies are
+                  Perplexity, so platform-specific citation strategies are
                   essential.
                 </p>
                 <p className="text-xs text-blue-600 mt-1">
-                  — Seer Interactive, 500+ Citation Analysis
+                  Seer Interactive, 500+ Citation Analysis
                 </p>
               </div>
               <div className="mb-4">
@@ -532,7 +532,7 @@ export default function MethodologyPage() {
               </div>
               <p className="text-gray-600 leading-relaxed mb-4">
                 What story does AI tell about this brand vs competitors? LLMs
-                develop &ldquo;narratives&rdquo; about brands — the adjectives, use cases, and
+                develop &ldquo;narratives&rdquo; about brands: the adjectives, use cases, and
                 comparisons that appear consistently in their training data.
               </p>
               <div className="bg-blue-50 border-l-4 border-blue-400 pl-4 py-3 rounded-r-lg mb-4">
@@ -542,7 +542,7 @@ export default function MethodologyPage() {
                   citation frequency.
                 </p>
                 <p className="text-xs text-blue-600 mt-1">
-                  — Omniscient Digital, 23K+ Citation Study
+                  Omniscient Digital, 23K+ Citation Study
                 </p>
               </div>
               <div className="mb-4">
@@ -605,8 +605,8 @@ export default function MethodologyPage() {
                 </h3>
               </div>
               <p className="text-gray-600 leading-relaxed mb-4">
-                How current is the website content? AI platforms — especially
-                those with real-time search — heavily weight recently updated
+                How current is the website content? AI platforms, especially
+                those with real-time search, heavily weight recently updated
                 content, and even parametric knowledge deprioritizes stale
                 information.
               </p>
@@ -616,7 +616,7 @@ export default function MethodologyPage() {
                   79% targets content within 2 years.
                 </p>
                 <p className="text-xs text-blue-600 mt-1">
-                  — Digital Bloom, 2025 AI Visibility Report
+                  Digital Bloom, 2025 AI Visibility Report
                 </p>
               </div>
               <div className="mb-4">
@@ -689,7 +689,7 @@ export default function MethodologyPage() {
                   cited. Average cited domain age is 17 years.
                 </p>
                 <p className="text-xs text-blue-600 mt-1">
-                  — Digital Bloom, 2025
+                  Digital Bloom, 2025
                 </p>
               </div>
               <div className="mb-4">
@@ -751,7 +751,7 @@ export default function MethodologyPage() {
               </div>
               <p className="text-gray-600 leading-relaxed mb-4">
                 Is the brand visible across all query intent types? Different AI
-                platforms have different strengths by intent type —
+                platforms have different strengths by intent type:
                 informational, commercial, transactional, and navigational.
               </p>
               <div className="bg-blue-50 border-l-4 border-blue-400 pl-4 py-3 rounded-r-lg mb-4">
@@ -761,7 +761,7 @@ export default function MethodologyPage() {
                   intent (91%).
                 </p>
                 <p className="text-xs text-blue-600 mt-1">
-                  — AirOps, Cross-Platform Intent Analysis
+                  AirOps, Cross-Platform Intent Analysis
                 </p>
               </div>
               <div className="mb-4">
@@ -834,7 +834,7 @@ export default function MethodologyPage() {
                   source content.
                 </p>
                 <p className="text-xs text-blue-600 mt-1">
-                  — Omniscient Digital / Kevin Indig, 2025
+                  Omniscient Digital / Kevin Indig, 2025
                 </p>
               </div>
               <div className="mb-4">
@@ -903,11 +903,11 @@ export default function MethodologyPage() {
               <div className="bg-blue-50 border-l-4 border-blue-400 pl-4 py-3 rounded-r-lg mb-4">
                 <p className="text-sm text-blue-800">
                   📊 87% of ChatGPT SearchGPT citations match Bing&apos;s top 10.
-                  IndexNow enables instant Bing/Copilot indexing — dramatically
+                  IndexNow enables instant Bing/Copilot indexing, dramatically
                   reducing time-to-citation.
                 </p>
                 <p className="text-xs text-blue-600 mt-1">
-                  — WebSpero Solutions, 2026
+                  WebSpero Solutions, 2026
                 </p>
               </div>
               <div className="mb-4">
@@ -1052,7 +1052,7 @@ export default function MethodologyPage() {
             <p className="text-gray-600 leading-relaxed mb-6">
               After scoring, ShowsUp generates targeted fixes based on your
               specific dimension gaps. Every fix is customized to your brand,
-              category, and competitive position — not generic templates. There
+              category, and competitive position, not generic templates. There
               are 7 fix types:
             </p>
             <div className="space-y-4">
@@ -1167,7 +1167,7 @@ export default function MethodologyPage() {
                 Full impact measurement requires a new ShowsUp scan after
                 implementing fixes. AI models update their parametric knowledge
                 at training intervals, and real-time search indexes update
-                continuously — allow 2–4 weeks for measurable citation changes.
+                continuously. Allow 2–4 weeks for measurable citation changes.
               </p>
             </div>
           </section>
@@ -1253,7 +1253,7 @@ export default function MethodologyPage() {
               See how your brand scores
             </h3>
             <p className="text-gray-600 mb-6">
-              Get your free AI Visibility Report — we&apos;ll analyze your brand
+              Get your free AI Visibility Report. We&apos;ll analyze your brand
               across all 10 dimensions and generate a personalized improvement
               plan.
             </p>
@@ -1261,7 +1261,7 @@ export default function MethodologyPage() {
               href="/signup"
               className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl px-8 py-3 transition-colors"
             >
-              Check your AI visibility — Free →
+              Check your AI visibility, Free →
             </a>
           </div>
         </main>

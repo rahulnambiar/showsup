@@ -125,12 +125,12 @@ export default function ApiDocsPage() {
           <Section id="overview">
             <div className="space-y-4">
               <div className="inline-flex items-center gap-2 rounded-full border border-[#10B981]/25 bg-[#10B981]/10 px-3 py-1 text-xs text-[#10B981] font-medium">
-                v1 — stable
+                v1, stable
               </div>
               <h1 className="text-4xl font-bold tracking-tight">API Reference</h1>
               <p className="text-lg text-gray-400 leading-relaxed max-w-2xl">
                 Pull AI visibility scores, scan history, and fix artifacts into any workflow.
-                Zapier, n8n, custom dashboards, CI/CD pipelines — if it can make HTTP requests, it can use ShowsUp.
+                Zapier, n8n, custom dashboards, CI/CD pipelines: if it can make HTTP requests, it can use ShowsUp.
               </p>
             </div>
             <Code lang="Base URL">{"https://showsup.co/api/v1"}</Code>
@@ -234,7 +234,7 @@ export default function ApiDocsPage() {
                 <div>
                   <p className="text-xs text-gray-500 mb-2 font-semibold uppercase">Parameters</p>
                   <div className="space-y-1.5 text-xs">
-                    <div className="flex gap-2"><code className="text-gray-300 w-20">domain</code><span className="text-gray-500">required — e.g. <code>example.com</code></span></div>
+                    <div className="flex gap-2"><code className="text-gray-300 w-20">domain</code><span className="text-gray-500">required, e.g. <code>example.com</code></span></div>
                   </div>
                 </div>
                 <div>
@@ -407,7 +407,7 @@ export default function ApiDocsPage() {
             <h2 className="text-xl font-bold text-white">Webhooks</h2>
             <p className="text-gray-400 text-sm leading-relaxed">
               Register an endpoint to receive real-time events when scans complete or scores change.
-              Requests are signed with HMAC-SHA256 — verify the <code className="text-gray-300">X-ShowsUp-Signature</code> header.
+              Requests are signed with HMAC-SHA256. Verify the <code className="text-gray-300">X-ShowsUp-Signature</code> header.
             </p>
 
             <div className="space-y-3">
@@ -555,9 +555,9 @@ console.log(\`\${fixes.length} fixes generated — \${estimated_impact}\`);`}</C
                     ["402", "Payment",       "Insufficient tokens for this operation"],
                     ["400", "Bad Request",   "Missing required parameters"],
                     ["404", "Not Found",     "Scan or resource not found"],
-                    ["429", "Rate Limited",  "Slow down — see Retry-After header"],
+                    ["429", "Rate Limited",  "Slow down, see Retry-After header"],
                     ["503", "Unavailable",   "Scan engine temporarily unavailable"],
-                    ["500", "Server Error",  "Unexpected error — contact support"],
+                    ["500", "Server Error",  "Unexpected error, contact support"],
                   ].map(([status, code, meaning]) => (
                     <tr key={status} className="border-b border-white/5 last:border-0">
                       <td className="px-4 py-2.5"><Badge color={status === "401" || status === "402" ? "amber" : "gray"}>{status}</Badge></td>

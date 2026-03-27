@@ -48,7 +48,7 @@ export default function WordPressPage() {
           <p className="text-xl text-[#6B7280] leading-relaxed max-w-3xl mb-8">
             The ShowsUp WordPress plugin brings your brand&apos;s AI visibility score
             directly into your WordPress admin dashboard. No new tool to learn,
-            no separate login — your AEO data lives right where you manage your
+            no separate login. Your AEO data lives right where you manage your
             content.
           </p>
           <div className="flex flex-wrap gap-4">
@@ -92,7 +92,7 @@ export default function WordPressPage() {
               {
                 title: "Weekly scan scheduling",
                 description:
-                  "Set the plugin to run a full AI visibility scan once a week automatically. Scans run in the background using WordPress cron — no manual action needed.",
+                  "Set the plugin to run a full AI visibility scan once a week automatically. Scans run in the background using WordPress cron, so no manual action is needed.",
               },
               {
                 title: "Score history",
@@ -102,7 +102,7 @@ export default function WordPressPage() {
               {
                 title: "Improvement recommendations",
                 description:
-                  "The plugin surfaces your top improvement actions from ShowsUp's AI-generated Improvement Plan, directly in the WordPress admin — so you know exactly what content to create or update.",
+                  "The plugin surfaces your top improvement actions from ShowsUp's AI-generated Improvement Plan, directly in the WordPress admin, so you know exactly what content to create or update.",
               },
             ].map((item) => (
               <div

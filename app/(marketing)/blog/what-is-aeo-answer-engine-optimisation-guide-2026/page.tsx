@@ -70,16 +70,16 @@ export default function PostAEOGuide() {
             <h2 className="text-2xl font-bold text-[#111827] mb-3">What is AEO?</h2>
             <div className="w-10 h-1 rounded-full mb-6" style={{ background: "#10B981" }} />
             <p className="mb-4">
-              <strong className="text-[#111827]">Answer Engine Optimisation (AEO)</strong> is the discipline of improving how your brand is represented, cited, and recommended by AI-powered answer engines — platforms like ChatGPT, Claude, Gemini, and Perplexity that respond to queries with direct, synthesised answers rather than a list of links.
+              <strong className="text-[#111827]">Answer Engine Optimisation (AEO)</strong> is the discipline of improving how your brand is represented, cited, and recommended by AI-powered answer engines: platforms like ChatGPT, Claude, Gemini, and Perplexity that respond to queries with direct, synthesised answers rather than a list of links.
             </p>
             <p className="mb-4">
-              The term deliberately echoes <strong className="text-[#111827]">Search Engine Optimisation (SEO)</strong>, and the comparison is instructive. SEO is about getting your pages to rank well in a results list. AEO is about getting your brand to be <em>mentioned</em> — recommended by name — inside a conversational answer.
+              The term deliberately echoes <strong className="text-[#111827]">Search Engine Optimisation (SEO)</strong>, and the comparison is instructive. SEO is about getting your pages to rank well in a results list. AEO is about getting your brand to be <em>mentioned</em> and recommended by name inside a conversational answer.
             </p>
             <p className="mb-4">
-              The core difference: with SEO, a user still has to choose to click your link. With AEO, the AI is making the recommendation on your behalf. If ChatGPT says &ldquo;for small business accounting, most people use QuickBooks or FreshBooks,&rdquo; QuickBooks and FreshBooks have effectively won a customer recommendation — without the customer ever performing a traditional search.
+              The core difference: with SEO, a user still has to choose to click your link. With AEO, the AI is making the recommendation on your behalf. If ChatGPT says &ldquo;for small business accounting, most people use QuickBooks or FreshBooks,&rdquo; QuickBooks and FreshBooks have effectively won a customer recommendation without the customer ever performing a traditional search.
             </p>
             <p>
-              AEO is not a replacement for SEO. In 2026, you still need both. But AEO addresses a growing and largely unmeasured slice of how consumers discover and evaluate products — and most brands are flying completely blind on it.
+              AEO is not a replacement for SEO. In 2026, you still need both. But AEO addresses a growing and largely unmeasured slice of how consumers discover and evaluate products, and most brands are flying completely blind on it.
             </p>
           </section>
 
@@ -91,10 +91,10 @@ export default function PostAEOGuide() {
               AI assistants have crossed the threshold from novelty to utility. ChatGPT alone surpassed 200 million weekly active users in late 2024, and that number has continued to grow. More importantly, the <em>nature</em> of usage has matured: people are no longer just asking AI to write their emails. They are asking it to help them make decisions.
             </p>
             <p className="mb-4">
-              Studies and surveys across 2025 consistently show that <strong className="text-[#111827]">roughly 40–50% of consumers now use an AI assistant at least occasionally for product research or recommendations</strong> — and in younger demographics (18–34), that figure exceeds 60%. For B2B software purchasing, the influence is even higher: procurement teams and individual buyers routinely ask AI tools which vendors to evaluate.
+              Studies and surveys across 2025 consistently show that <strong className="text-[#111827]">roughly 40–50% of consumers now use an AI assistant at least occasionally for product research or recommendations</strong>, and in younger demographics (18–34), that figure exceeds 60%. For B2B software purchasing, the influence is even higher: procurement teams and individual buyers routinely ask AI tools which vendors to evaluate.
             </p>
             <p className="mb-4">
-              The stakes are significant. When an AI recommends your brand, the user encounters your name in a context of trust and authority — the AI has, in effect, pre-validated you. When an AI omits your brand from a relevant recommendation, that is a missed commercial opportunity that leaves no trace in your analytics.
+              The stakes are significant. When an AI recommends your brand, the user encounters your name in a context of trust and authority (the AI has, in effect, pre-validated you). When an AI omits your brand from a relevant recommendation, that is a missed commercial opportunity that leaves no trace in your analytics.
             </p>
             <p>
               Unlike a Google ranking, there is no AI leaderboard, no rank tracker, no impression report. That invisibility is exactly the problem AEO exists to solve.
@@ -109,13 +109,13 @@ export default function PostAEOGuide() {
               AI assistants are not search engines with a different interface. Their recommendation logic is fundamentally different. Understanding this is the prerequisite for doing AEO well.
             </p>
             <p className="mb-4">
-              <strong className="text-[#111827]">Training data and pre-training exposure.</strong> Large language models learn about the world — including brands — from vast corpora of text collected from the web, books, and other sources. A brand that appears frequently, positively, and authoritatively in that training data becomes part of the model&apos;s &ldquo;knowledge.&rdquo; A brand with sparse or negative coverage may not register at all.
+              <strong className="text-[#111827]">Training data and pre-training exposure.</strong> Large language models learn about the world (including brands) from vast corpora of text collected from the web, books, and other sources. A brand that appears frequently, positively, and authoritatively in that training data becomes part of the model&apos;s &ldquo;knowledge.&rdquo; A brand with sparse or negative coverage may not register at all.
             </p>
             <p className="mb-4">
-              <strong className="text-[#111827]">Real-time retrieval (RAG).</strong> Increasingly, AI tools like Perplexity and ChatGPT with web browsing enabled use retrieval-augmented generation (RAG) — they pull live information from the web at query time and synthesise it into an answer. This means your current web presence, not just historical training data, matters.
+              <strong className="text-[#111827]">Real-time retrieval (RAG).</strong> Increasingly, AI tools like Perplexity and ChatGPT with web browsing enabled use retrieval-augmented generation (RAG), pulling live information from the web at query time and synthesising it into an answer. This means your current web presence, not just historical training data, matters.
             </p>
             <p className="mb-4">
-              <strong className="text-[#111827]">Authority signals.</strong> AI models have learned — from their training data — which sources are trustworthy. Being cited by Wikipedia, major publications, industry analysts, and respected domain-specific sites increases the weight the model places on information about your brand.
+              <strong className="text-[#111827]">Authority signals.</strong> AI models have learned from their training data which sources are trustworthy. Being cited by Wikipedia, major publications, industry analysts, and respected domain-specific sites increases the weight the model places on information about your brand.
             </p>
             <p>
               <strong className="text-[#111827]">Structured data.</strong> Machine-readable signals like schema markup, llms.txt files, and well-structured FAQs make it easier for both AI models and their retrieval systems to extract accurate, specific information about your brand. Ambiguity is the enemy of being recommended.
@@ -137,12 +137,12 @@ export default function PostAEOGuide() {
               {[
                 ["Prominence", "How frequently and centrally your brand is mentioned when AI discusses your category. Are you a footnote or the lead recommendation?"],
                 ["Sentiment", "The overall tone of AI-generated content about your brand. Positive framing correlates strongly with recommendation likelihood."],
-                ["Coverage", "The breadth of sources that mention your brand — reviews, articles, forums, analyst reports. A wider citation footprint is harder for AI to ignore."],
-                ["Structured Data", "The presence and quality of schema.org markup on your website — Organisation, Product, FAQ, BreadcrumbList, and others."],
+                ["Coverage", "The breadth of sources that mention your brand: reviews, articles, forums, analyst reports. A wider citation footprint is harder for AI to ignore."],
+                ["Structured Data", "The presence and quality of schema.org markup on your website: Organisation, Product, FAQ, BreadcrumbList, and others."],
                 ["llms.txt", "Whether you have published an llms.txt file that explicitly tells AI systems how to represent your brand. An emerging but already meaningful signal."],
-                ["Schema Markup", "Assessed separately from broader structured data — specifically looking at the depth and accuracy of your JSON-LD implementation."],
+                ["Schema Markup", "Assessed separately from broader structured data, specifically looking at the depth and accuracy of your JSON-LD implementation."],
                 ["Citation Quality", "Not just how many sources mention you, but how authoritative those sources are. A citation from Harvard Business Review carries more weight than a low-DA blog post."],
-                ["Topical Authority", "Whether AI models associate your brand with genuine expertise in your domain — evidenced by educational content, original research, and expert commentary."],
+                ["Topical Authority", "Whether AI models associate your brand with genuine expertise in your domain, evidenced by educational content, original research, and expert commentary."],
                 ["Brand Consistency", "How consistently your name, description, category, and key claims appear across web properties. Inconsistency creates model confusion."],
                 ["Recency", "Whether your brand has generated positive, relevant coverage in the past 12 months. AI systems that use live retrieval weight fresh signals heavily."],
               ].map(([dim, desc], i) => (
@@ -198,7 +198,7 @@ export default function PostAEOGuide() {
               The challenge with AEO is that there is no native reporting surface. You cannot log into ChatGPT and see how often it mentions your brand, any more than you could log into a customer&apos;s brain and see how they think of you.
             </p>
             <p className="mb-4">
-              ShowsUp was built to fill this gap. Our scanner queries multiple AI models with category-relevant prompts, analyses the outputs, audits your technical signals (schema, llms.txt, structured data), and assesses your citation footprint — then produces a composite AEO score across all 10 dimensions.
+              ShowsUp was built to fill this gap. Our scanner queries multiple AI models with category-relevant prompts, analyses the outputs, audits your technical signals (schema, llms.txt, structured data), and assesses your citation footprint, then produces a composite AEO score across all 10 dimensions.
             </p>
             <p>
               The scan takes under two minutes and gives you a baseline score you can track over time as you make improvements. It is the only way to know, with any rigour, where you actually stand.

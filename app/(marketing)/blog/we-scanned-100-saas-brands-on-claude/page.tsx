@@ -50,10 +50,10 @@ export default function PostSaaSScan() {
             Research
           </p>
           <h1 className="text-4xl sm:text-5xl font-bold text-[#111827] leading-tight mb-6">
-            We Scanned 100 SaaS Brands on Claude — Here&apos;s What We Found
+            We Scanned 100 SaaS Brands on Claude: Here&apos;s What We Found
           </h1>
           <p className="text-xl text-[#6B7280] leading-relaxed mb-6">
-            We ran the ShowsUp scanner on 100 SaaS companies across 10 categories. The results were surprising — the brands you&apos;d expect to dominate often didn&apos;t.
+            We ran the ShowsUp scanner on 100 SaaS companies across 10 categories. The results were surprising: the brands you&apos;d expect to dominate often didn&apos;t.
           </p>
           <p className="text-sm text-[#9CA3AF]">February 20, 2026 · 14 min read</p>
         </div>
@@ -90,7 +90,7 @@ export default function PostSaaSScan() {
             <h2 className="text-2xl font-bold text-[#111827] mb-3">Key Finding 1: Brand Size Does Not Predict AI Visibility</h2>
             <div className="w-10 h-1 rounded-full mb-6" style={{ background: "#10B981" }} />
             <p className="mb-4">
-              This was the finding that surprised us most, even though in retrospect it makes sense. We expected category leaders — the brands with the highest ARR, most customers, and biggest marketing budgets — to dominate their AI visibility scores. They did not.
+              This was the finding that surprised us most, even though in retrospect it makes sense. We expected category leaders (the brands with the highest ARR, most customers, and biggest marketing budgets) to dominate their AI visibility scores. They did not.
             </p>
             <p className="mb-4">
               In the CRM category, for example, a mid-sized specialist CRM focused exclusively on real estate agencies outscored two of the three dominant general-purpose CRM platforms on Topical Authority, Citation Quality, and Brand Consistency — despite having a fraction of the brand recognition and web traffic.
@@ -99,7 +99,7 @@ export default function PostSaaSScan() {
               The pattern repeated across categories. In project management, a 40-person company that had published a well-regarded annual report on remote team productivity consistently appeared in Claude&apos;s responses for remote-work-related queries, often ahead of tools with significantly larger customer bases.
             </p>
             <p className="mb-4">
-              The explanation is not that small brands are inherently better at AEO. It is that large brands have typically relied on their scale and marketing spend to dominate SEO — and those advantages do not translate directly to AI visibility. An LLM does not know or care how much you spend on Google Ads.
+              The explanation is not that small brands are inherently better at AEO. It is that large brands have typically relied on their scale and marketing spend to dominate SEO, and those advantages do not translate directly to AI visibility. An LLM does not know or care how much you spend on Google Ads.
             </p>
             <p>
               What matters is the quality of your signal: how clearly you are positioned, how consistently that positioning appears across independent sources, and whether you are genuinely associated with expertise in your domain. Those are things a focused specialist brand can do at least as well as an enterprise platform.
@@ -111,7 +111,7 @@ export default function PostSaaSScan() {
             <h2 className="text-2xl font-bold text-[#111827] mb-3">Key Finding 2: Structured Data Had the Highest Correlation with Good Scores</h2>
             <div className="w-10 h-1 rounded-full mb-6" style={{ background: "#10B981" }} />
             <p className="mb-4">
-              Of all the technical signals we measured, structured data — specifically the presence and quality of schema.org markup — showed the highest correlation with overall AEO scores. Brands with comprehensive schema implementation scored, on average, 31 points higher out of 100 than brands with no schema or only partial implementation.
+              Of all the technical signals we measured, structured data (specifically the presence and quality of schema.org markup) showed the highest correlation with overall AEO scores. Brands with comprehensive schema implementation scored, on average, 31 points higher out of 100 than brands with no schema or only partial implementation.
             </p>
             <p className="mb-4">
               This makes intuitive sense. AI systems that use live retrieval need to extract and interpret information about your brand quickly and accurately. Structured data removes ambiguity: it tells the retrieval system exactly what kind of entity you are, what you do, what your key products are, and how to describe you. Brands that provide this structured context are dramatically easier for AI to represent accurately.
@@ -121,7 +121,7 @@ export default function PostSaaSScan() {
             </p>
             <ol className="space-y-2 list-none">
               {[
-                ["Organisation", "Establishing your entity — name, description, founding date, logo, contact, and social profiles."],
+                ["Organisation", "Establishing your entity: name, description, founding date, logo, contact, and social profiles."],
                 ["FAQPage", "Directly answering the questions your buyers ask, in a machine-readable format that AI retrieval systems can extract verbatim."],
                 ["Product / Service", "Describing your core offerings with precise, structured attributes."],
                 ["BreadcrumbList", "Helping AI systems understand your site structure and content hierarchy."],
@@ -149,7 +149,7 @@ export default function PostSaaSScan() {
               The most common failure mode was not deliberate inconsistency but neglect. The LinkedIn page had not been updated since a rebrand. The Crunchbase description still reflected a product direction abandoned two years ago. The G2 profile used a category label the company had moved away from.
             </p>
             <p>
-              These inconsistencies create genuine problems for AI models. When a model encounters conflicting descriptions of the same brand across multiple sources, it cannot form a confident, coherent representation — and uncertain models tend to either omit the brand or hedge with vague language. Neither outcome serves you.
+              These inconsistencies create genuine problems for AI models. When a model encounters conflicting descriptions of the same brand across multiple sources, it cannot form a confident, coherent representation, and uncertain models tend to either omit the brand or hedge with vague language. Neither outcome serves you.
             </p>
           </section>
 
@@ -158,16 +158,16 @@ export default function PostSaaSScan() {
             <h2 className="text-2xl font-bold text-[#111827] mb-3">Key Finding 4: Recent Coverage Mattered More Than Old High-Authority Links</h2>
             <div className="w-10 h-1 rounded-full mb-6" style={{ background: "#10B981" }} />
             <p className="mb-4">
-              In traditional SEO, a link from a high-authority domain acquired years ago retains its value indefinitely. In AEO — particularly for AI systems that use live retrieval — recency is a first-class signal.
+              In traditional SEO, a link from a high-authority domain acquired years ago retains its value indefinitely. In AEO, particularly for AI systems that use live retrieval, recency is a first-class signal.
             </p>
             <p className="mb-4">
-              We found that brands with consistent recent coverage (at least 4–6 editorial mentions in authoritative publications in the past 12 months) outscored brands with older, higher-authority coverage on Recency and Prominence dimensions — even when the older coverage was objectively more impressive in domain authority terms.
+              We found that brands with consistent recent coverage (at least 4–6 editorial mentions in authoritative publications in the past 12 months) outscored brands with older, higher-authority coverage on Recency and Prominence dimensions, even when the older coverage was objectively more impressive in domain authority terms.
             </p>
             <p className="mb-4">
-              One accounting software brand in our study had been featured in a Forbes article in 2021 and a Wall Street Journal piece in 2022 — genuinely high-authority coverage. But they had generated almost no press in 2024 or 2025. Their Recency score was near zero, and their Prominence score in Claude&apos;s responses reflected it: the model consistently recommended more recently active competitors when accounting software questions came up.
+              One accounting software brand in our study had been featured in a Forbes article in 2021 and a Wall Street Journal piece in 2022, genuinely high-authority coverage. But they had generated almost no press in 2024 or 2025. Their Recency score was near zero, and their Prominence score in Claude&apos;s responses reflected it: the model consistently recommended more recently active competitors when accounting software questions came up.
             </p>
             <p>
-              This has a practical implication: your PR and content strategy needs to be a consistent, ongoing commitment — not a burst campaign before a product launch. Brands that publish original research quarterly, issue regular product updates, and maintain an active media relations program are better positioned than those who only invest in PR around major milestones.
+              This has a practical implication: your PR and content strategy needs to be a consistent, ongoing commitment, not a burst campaign before a product launch. Brands that publish original research quarterly, issue regular product updates, and maintain an active media relations program are better positioned than those who only invest in PR around major milestones.
             </p>
           </section>
 
@@ -182,13 +182,13 @@ export default function PostSaaSScan() {
               {[
                 {
                   category: "CRM",
-                  winner: "A vertical CRM for real estate agencies — near-perfect schema implementation, very consistent positioning.",
-                  loser: "A general-purpose enterprise CRM — strong brand recognition but near-zero schema markup and major consistency issues across profiles.",
+                  winner: "A vertical CRM for real estate agencies: near-perfect schema implementation, very consistent positioning.",
+                  loser: "A general-purpose enterprise CRM: strong brand recognition but near-zero schema markup and major consistency issues across profiles.",
                 },
                 {
                   category: "HR Software",
                   winner: "A mid-market HRIS with a strong annual HR trends report that earned consistent editorial citations.",
-                  loser: "A large enterprise HR platform — minimal structured data, outdated external profiles, no content strategy.",
+                  loser: "A large enterprise HR platform: minimal structured data, outdated external profiles, no content strategy.",
                 },
                 {
                   category: "Project Management",
@@ -197,13 +197,13 @@ export default function PostSaaSScan() {
                 },
                 {
                   category: "Email Marketing",
-                  winner: "A small deliverability-focused ESP that had published original research on inbox placement rates — heavily cited.",
+                  winner: "A small deliverability-focused ESP that had published original research on inbox placement rates, heavily cited.",
                   loser: "A market leader that relied on brand volume but had inconsistent category labelling across external profiles.",
                 },
                 {
                   category: "Customer Support",
                   winner: "A mid-sized helpdesk platform with comprehensive FAQ schema, consistent positioning, and a strong G2 review presence.",
-                  loser: "A newly rebranded platform — the rebrand had created significant inconsistency across web properties that had not yet resolved.",
+                  loser: "A newly rebranded platform: the rebrand had created significant inconsistency across web properties that had not yet resolved.",
                 },
               ].map(({ category, winner, loser }) => (
                 <div key={category} className="rounded-xl border border-[#E5E7EB] p-5">
@@ -231,10 +231,10 @@ export default function PostSaaSScan() {
             <ul className="space-y-3">
               {[
                 "A single, precise, consistently used category label and one-line description that appeared verbatim across all major web properties.",
-                "Comprehensive schema.org markup on their website — at minimum Organisation, Product/Service, and FAQ schema.",
+                "Comprehensive schema.org markup on their website, at minimum Organisation, Product/Service, and FAQ schema.",
                 "A content strategy that generated original, data-driven content at least quarterly, earning genuine editorial citations.",
                 "An active and authentic review presence on at least one category-relevant review platform (G2, Capterra, Trustpilot, etc.).",
-                "An llms.txt file — which, while not yet universal, showed strong correlation with higher Prominence scores, likely because it reduces model uncertainty about how to describe the brand.",
+                "An llms.txt file, which while not yet universal showed strong correlation with higher Prominence scores, likely because it reduces model uncertainty about how to describe the brand.",
               ].map((item) => (
                 <li key={item} className="flex items-start gap-3">
                   <span
@@ -252,7 +252,7 @@ export default function PostSaaSScan() {
             <h2 className="text-2xl font-bold text-[#111827] mb-3">What to Do If Your Brand Scored Low</h2>
             <div className="w-10 h-1 rounded-full mb-6" style={{ background: "#10B981" }} />
             <p className="mb-4">
-              A low AEO score is not a life sentence. Every dimension is improvable — and some of the highest-impact changes are also the quickest to implement.
+              A low AEO score is not a life sentence. Every dimension is improvable, and some of the highest-impact changes are also the quickest to implement.
             </p>
             <p className="mb-4">
               Start with the lowest-hanging fruit: audit your external profiles for consistency, add schema markup to your homepage, and create your llms.txt file. These are one-time tasks that can meaningfully move your score within a few weeks.
@@ -261,7 +261,7 @@ export default function PostSaaSScan() {
               For Coverage, Citation Quality, and Recency, you are looking at a longer-term content and PR programme. Focus on quality over quantity: two editorial placements in authoritative publications per quarter will do more for your AI visibility than weekly press releases on low-authority wire services.
             </p>
             <p>
-              For Topical Authority, invest in original research. Survey your customers, analyse your platform data, or partner with an academic institution. Original data earns citations — and citations are the fundamental currency of AI visibility.
+              For Topical Authority, invest in original research. Survey your customers, analyse your platform data, or partner with an academic institution. Original data earns citations, and citations are the fundamental currency of AI visibility.
             </p>
           </section>
 
@@ -275,7 +275,7 @@ export default function PostSaaSScan() {
             How does your brand compare?
           </h2>
           <p className="text-[#6B7280] mb-8 max-w-xl mx-auto">
-            Run a free ShowsUp scan to get your AEO score across all 10 dimensions — and a prioritised improvement plan.
+            Run a free ShowsUp scan to get your AEO score across all 10 dimensions, along with a prioritised improvement plan.
           </p>
           <Link
             href="/signup"

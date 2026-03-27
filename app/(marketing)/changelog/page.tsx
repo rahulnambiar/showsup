@@ -30,16 +30,16 @@ const releases = [
       {
         type: "New",
         items: [
-          "Stripe token payments — purchase scan tokens directly from the dashboard; no subscription required.",
-          "Google OAuth — sign in with your Google account in addition to email/password.",
-          "Custom favicon — ShowsUp now has its own branded favicon across all pages.",
-          "Privacy Policy and Terms of Service pages — fully drafted and accessible from all footers.",
+          "Stripe token payments: purchase scan tokens directly from the dashboard; no subscription required.",
+          "Google OAuth: sign in with your Google account in addition to email/password.",
+          "Custom favicon: ShowsUp now has its own branded favicon across all pages.",
+          "Privacy Policy and Terms of Service pages: fully drafted and accessible from all footers.",
         ],
       },
       {
         type: "Improved",
         items: [
-          "Report sidebar redesigned — cleaner layout, collapsible sections, and faster navigation between scan dimensions.",
+          "Report sidebar redesigned: cleaner layout, collapsible sections, and faster navigation between scan dimensions.",
           "Scan results load noticeably faster after backend query optimisations.",
           "Mobile layout improvements across the marketing site.",
         ],
@@ -61,9 +61,9 @@ const releases = [
       {
         type: "New",
         items: [
-          "Improvement Plan generator — after every scan, ShowsUp now generates a prioritised, AI-written action plan based on your weakest AEO dimensions.",
-          "PDF export — download any scan report as a clean, branded PDF. Useful for sharing with clients or stakeholders.",
-          "Google Search Console integration — connect your GSC property and overlay organic search data on your AI visibility scores.",
+          "Improvement Plan generator: after every scan, ShowsUp now generates a prioritised, AI-written action plan based on your weakest AEO dimensions.",
+          "PDF export: download any scan report as a clean, branded PDF. Useful for sharing with clients or stakeholders.",
+          "Google Search Console integration: connect your GSC property and overlay organic search data on your AI visibility scores.",
         ],
       },
       {

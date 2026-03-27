@@ -50,7 +50,7 @@ export default function ShopifyPage() {
             questions like &ldquo;What&apos;s the best running shoe brand for flat feet?&rdquo;
             or &ldquo;Which sustainable skincare brands are worth trying?&rdquo; If your
             store isn&apos;t in those answers, you&apos;re invisible to a massive and
-            growing channel. ShowsUp tells you exactly where you stand — and how
+            growing channel. ShowsUp tells you exactly where you stand and how
             to improve.
           </p>
           <div className="flex flex-wrap gap-4">
@@ -89,19 +89,19 @@ export default function ShopifyPage() {
               Search has always been the lifeblood of ecommerce discovery. But
               the way people search is changing faster than most store owners
               realise. AI chatbots now handle hundreds of millions of
-              product-related queries per day — and unlike Google, they give a
+              product-related queries per day, and unlike Google, they give a
               specific answer rather than a list of links to browse.
             </p>
             <p>
               When someone asks ChatGPT for a running shoe recommendation, it
               might name two or three brands. If yours isn&apos;t one of them, you
-              don&apos;t just rank lower — you don&apos;t exist in that conversation at
+              don&apos;t just rank lower. You don&apos;t exist in that conversation at
               all. The brands that get recommended build compounding trust and
               traffic. The ones that don&apos;t are slowly losing share of mind without
               knowing it.
             </p>
             <p>
-              ShowsUp for Shopify gives you visibility into this new channel —
+              ShowsUp for Shopify gives you visibility into this new channel:
               measured, tracked, and with a clear action plan to improve it.
             </p>
           </div>
@@ -122,7 +122,7 @@ export default function ShopifyPage() {
               {
                 title: "Store visibility score",
                 description:
-                  "A composite AEO score for your Shopify store across 10 dimensions — from brand authority and schema markup to product review coverage and social proof.",
+                  "A composite AEO score for your Shopify store across 10 dimensions, from brand authority and schema markup to product review coverage and social proof.",
               },
               {
                 title: "Product mention tracking",

@@ -103,7 +103,7 @@ function UrlInput({ variant = "dark" }: { variant?: "dark" | "light" }) {
   );
 }
 
-// ── Terminal Block (dark — intentional contrast) ────────────────────────────
+// ── Terminal Block (dark, intentional contrast) ────────────────────────────
 
 function TerminalBlock() {
   const [copied, setCopied] = useState(false);
@@ -148,7 +148,7 @@ function TerminalBlock() {
         <p className="mt-3 pl-2 text-gray-300">
           ShowsUp Score:{" "}
           <span className="text-[#10B981] font-medium">64/100</span>{" "}
-          — Good presence
+          · Good presence
         </p>
         <p className="pl-2 text-gray-400">
           ChatGPT: <span className="text-white">71</span>{"  "}
@@ -267,7 +267,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "What are tokens?",
-    a: "Tokens are the currency for the cloud version. Each scan and fix generation costs tokens based on actual AI compute used. Self-hosting is free — you bring your own API keys.",
+    a: "Tokens are the currency for the cloud version. Each scan and fix generation costs tokens based on actual AI compute used. Self-hosting is free: you bring your own API keys.",
   },
   {
     q: "Can I self-host ShowsUp?",
@@ -279,7 +279,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "How accurate is the ShowsUp Score?",
-    a: "Scores are based on real-time queries to actual AI platforms. Since LLMs are non-deterministic, we run multiple queries and use median scores. Scores are directional — focus on relative improvement over time.",
+    a: "Scores are based on real-time queries to actual AI platforms. Since LLMs are non-deterministic, we run multiple queries and use median scores. Scores are directional, so focus on relative improvement over time.",
   },
   {
     q: "What does the Chrome extension do?",
@@ -386,7 +386,7 @@ function CorrelationChart() {
         ))}
       </div>
       <p className="text-[11px] text-[#9CA3AF] mt-2 italic px-1">
-        Correlation: 0.72 — when AI recommends you more, revenue grows.
+        Correlation: 0.72. When AI recommends you more, revenue grows.
       </p>
     </div>
   );
@@ -579,7 +579,7 @@ export default function HomePage() {
               {
                 icon: Wrench,       step: "03", title: "Fix",        highlight: false,
                 sub: "Generate Fixes",
-                desc: "Get llms.txt, schema markup, content briefs, comparison pages — all from your scan data.",
+                desc: "Get llms.txt, schema markup, content briefs, and comparison pages, all generated from your scan data.",
               },
               {
                 icon: CheckCircle2, step: "04", title: "Verify",     highlight: false,
@@ -611,7 +611,7 @@ export default function HomePage() {
                   </div>
                   <div>
                     <p className="text-[11px] font-medium text-[#9CA3AF] uppercase tracking-wider mb-1">
-                      Step {s.step} — {s.title}
+                      Step {s.step}: {s.title}
                     </p>
                     <p className="text-[16px] font-semibold text-[#111827] mb-2">{s.sub}</p>
                     <p className="text-[13px] text-[#4B5563] leading-relaxed">{s.desc}</p>
@@ -633,14 +633,14 @@ export default function HomePage() {
                 <SectionLabel>AI Improvement Plan</SectionLabel>
                 <SectionHeading>A research-grade roadmap,<br />not a checklist.</SectionHeading>
                 <SectionSub>
-                  Every plan is built from your actual scan data — your website, your gaps, your competitors.
+                  Every plan is built from your actual scan data: your website, your gaps, your competitors.
                 </SectionSub>
               </div>
               <ul className="space-y-4">
                 <CheckItem>10-dimension AEO readiness assessment across awareness → conversion</CheckItem>
                 <CheckItem>15–20 research-backed recommendations with cited sources</CheckItem>
                 <CheckItem>Effort-tagged quick wins vs. multi-week projects</CheckItem>
-                <CheckItem>Automated verification — mark a fix done and ShowsUp re-checks it</CheckItem>
+                <CheckItem>Automated verification: mark a fix done and ShowsUp re-checks it</CheckItem>
                 <CheckItem>100 tokens · uses Claude Sonnet + live website analysis</CheckItem>
               </ul>
               <div className="flex flex-wrap gap-3">
@@ -659,7 +659,7 @@ export default function HomePage() {
               </div>
             </FadeIn>
 
-            {/* Right — plan card mockup */}
+            {/* Right: plan card mockup */}
             <FadeIn delay={120}>
               <div className="bg-white rounded-2xl border border-[#E5E7EB] shadow-[0_4px_24px_rgba(0,0,0,0.08)] overflow-hidden">
                 {/* Header */}
@@ -680,7 +680,7 @@ export default function HomePage() {
                     {
                       priority: "critical", badge: "🔴 Critical", badgeBg: "#FEF2F2", badgeColor: "#DC2626",
                       layer: "Crawler Readiness", effort: "Project",
-                      title: "Enable SSR — AI bots see an empty shell",
+                      title: "Enable SSR: AI bots see an empty shell",
                       desc: "GPTBot receives 0 words of content. No schema, no headings, no citations possible.",
                     },
                     {
@@ -735,7 +735,7 @@ export default function HomePage() {
               { icon: Code2,        title: "Schema Markup",     desc: "FAQ and Organization JSON-LD targeting the exact queries where you're invisible." },
               { icon: BookOpen,     title: "Content Briefs",    desc: "Full outlines with titles, structure, and AI optimization tips for high-volume gaps." },
               { icon: Scale,        title: "Comparison Pages",  desc: "Draft vs-pages for every competitor outranking you. Balanced, factual, AI-friendly." },
-              { icon: Star,         title: "Citation Playbook", desc: "G2, Reddit, Wikipedia — which sources AI cites in your category and how to get listed." },
+              { icon: Star,         title: "Citation Playbook", desc: "G2, Reddit, Wikipedia: which sources AI cites in your category and how to get listed." },
               { icon: Shield,       title: "Crawlability Audit",desc: "Is your robots.txt blocking AI? Is your content JavaScript-rendered? Instant diagnosis." },
               { icon: Sparkles,     title: "Brand Narrative",   desc: "Optimized meta descriptions and page copy using the language AI prefers for your category." },
               { icon: MessageSquare,title: "AI Analyst Chat",   desc: "Ask anything about your report. Get strategic analysis and draft action plans with your data." },
@@ -768,7 +768,7 @@ export default function HomePage() {
                 </SectionSub>
               </div>
               <ul className="space-y-4">
-                <CheckItem>Ask why your score is low — get answers citing your actual scan data</CheckItem>
+                <CheckItem>Ask why your score is low and get answers citing your actual scan data</CheckItem>
                 <CheckItem>Request competitor deep-dives with real numbers</CheckItem>
                 <CheckItem>Draft 30-day action plans, CMO emails, content calendars</CheckItem>
                 <CheckItem>5 free questions per report, then 2 tokens each</CheckItem>
@@ -781,7 +781,7 @@ export default function HomePage() {
               </Link>
             </FadeIn>
 
-            {/* Right — chat mockup */}
+            {/* Right: chat mockup */}
             <FadeIn delay={120} className="w-full">
               <div className="bg-white rounded-2xl border border-[#E5E7EB] shadow-[0_4px_24px_rgba(0,0,0,0.08)] overflow-hidden">
                 {/* Header */}
@@ -813,7 +813,7 @@ export default function HomePage() {
                         Deel outranks you for 3 reasons based on your scan: they&apos;re mentioned in{" "}
                         <span className="font-medium text-[#111827]">83%</span> of category queries vs your{" "}
                         <span className="font-medium text-[#111827]">40%</span>. The biggest gap is{" "}
-                        <span className="font-medium text-[#10B981]">&quot;best HR platform&quot;</span> — Deel appears first
+                        <span className="font-medium text-[#10B981]">&quot;best HR platform&quot;</span>: Deel appears first
                         on both ChatGPT and Claude while you don&apos;t appear at all. This query has{" "}
                         ~5K estimated AI searches/month.
                       </p>
@@ -906,7 +906,7 @@ export default function HomePage() {
                   </tr>
                   <tr>
                     <td className="px-5 py-3.5 font-medium text-[#4B5563]">Rank</td>
-                    {["#2", "#3", "—", "—", "#4"].map((v, i) => (
+                    {["#2", "#3", "n/a", "n/a", "#4"].map((v, i) => (
                       <td key={i} className="text-center px-4 py-3.5 text-[#4B5563]">{v}</td>
                     ))}
                   </tr>
@@ -1026,7 +1026,7 @@ export default function HomePage() {
                   },
                   {
                     icon: Upload,      title: "CSV Upload",
-                    desc: "Ahrefs, Semrush, Nielsen, Brandwatch, Shopify — any CSV.",
+                    desc: "Ahrefs, Semrush, Nielsen, Brandwatch, Shopify: import any CSV.",
                     status: "Available", avail: true,
                   },
                   {
@@ -1064,7 +1064,7 @@ export default function HomePage() {
               </div>
             </FadeIn>
 
-            {/* Right — chart */}
+            {/* Right: chart */}
             <FadeIn delay={120}>
               <div className="bg-white rounded-2xl border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-6 space-y-5">
                 <p className="text-[12px] font-medium uppercase tracking-wider text-[#9CA3AF]">
@@ -1072,7 +1072,7 @@ export default function HomePage() {
                 </p>
                 <CorrelationChart />
                 <p className="text-[13px] text-[#4B5563] leading-relaxed">
-                  When AI mentions you more, people search for you by name — and that search converts.
+                  When AI mentions you more, people search for you by name, and that search converts.
                   Track the full chain from AI recommendation to revenue.
                 </p>
               </div>
@@ -1233,7 +1233,7 @@ export default function HomePage() {
 
           <FadeIn className="text-center space-y-5">
             <p className="text-[15px] text-[#4B5563] max-w-[560px] mx-auto leading-relaxed">
-              Each dimension is scored 0–10. Together they form your AEO Readiness Score — a
+              Each dimension is scored 0–10. Together they form your AEO Readiness Score: a
               comprehensive measure of how prepared your brand is for AI-driven discovery.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -1288,12 +1288,12 @@ export default function HomePage() {
                 <div className="space-y-3 text-[14px] text-[#111827] leading-relaxed">
                   <p>
                     Add FAQ schema to <span className="font-mono text-[13px] bg-[#F9FAFB] px-1.5 py-0.5 rounded text-[#4B5563]">/pricing</span> targeting{" "}
-                    <em>&ldquo;How much does [brand] cost?&rdquo;</em> — this query gets ~2K AI searches/month and you&apos;re invisible.
+                    <em>&ldquo;How much does [brand] cost?&rdquo;</em> This query gets ~2K AI searches/month and you&apos;re invisible.
                     Competitor Deel leads with pricing in their first sentence and has 5 FAQ entries covering tiers and free trial.
                     Self-contained answer chunks of 50–150 words get 2.3× more citations.
                   </p>
                   <div className="bg-[#F0F9FF] border-l-4 border-[#3B82F6] rounded-r-lg px-4 py-3 text-[13px] text-[#1E40AF]">
-                    <span className="font-semibold">📊 Research:</span> 44.2% of LLM citations come from the first 30% of content — Kevin Indig, 1.2M answer analysis
+                    <span className="font-semibold">📊 Research:</span> 44.2% of LLM citations come from the first 30% of content (Kevin Indig, 1.2M answer analysis)
                   </div>
                 </div>
               </div>
@@ -1352,7 +1352,7 @@ export default function HomePage() {
                     From $0{" "}
                     <span className="text-[16px] font-normal text-[#9CA3AF]">to start</span>
                   </p>
-                  <p className="text-[14px] text-[#4B5563] mt-1">1,000 free tokens — no setup needed</p>
+                  <p className="text-[14px] text-[#4B5563] mt-1">1,000 free tokens, no setup needed</p>
                 </div>
                 <ul className="space-y-3 flex-1">
                   {[
@@ -1382,8 +1382,8 @@ export default function HomePage() {
               {[
                 { tokens: "2,500",  price: "S$19",  rate: "S$0.008/token",          popular: false },
                 { tokens: "5,000",  price: "S$39",  rate: "S$0.008/token",          popular: true  },
-                { tokens: "12,000", price: "S$79",  rate: "S$0.007/tok — save 14%", popular: false },
-                { tokens: "30,000", price: "S$149", rate: "S$0.005/tok — save 36%", popular: false },
+                { tokens: "12,000", price: "S$79",  rate: "S$0.007/tok, save 14%", popular: false },
+                { tokens: "30,000", price: "S$149", rate: "S$0.005/tok, save 36%", popular: false },
               ].map((pkg) => (
                 <div
                   key={pkg.tokens}
@@ -1420,7 +1420,7 @@ export default function HomePage() {
           <FadeIn>
             <SectionLabel>Built in the open</SectionLabel>
             <p className="text-[16px] text-[#4B5563] leading-relaxed mt-4">
-              Built by a solo developer in Singapore, pair-programmed with Claude Code. Every scan, fix, and analysis in ShowsUp is powered by Anthropic&apos;s Claude. The entire codebase is open source — MIT licensed.
+              Built by a solo developer in Singapore, pair-programmed with Claude Code. Every scan, fix, and analysis in ShowsUp is powered by Anthropic&apos;s Claude. The entire codebase is open source and MIT licensed.
             </p>
             <a
               href={GITHUB_URL}

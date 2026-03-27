@@ -54,7 +54,7 @@ export default function PostAISurfaces() {
             Google AI Overviews vs ChatGPT vs Claude: Where Should You Focus Your AI Visibility Efforts?
           </h1>
           <p className="text-xl text-[#6B7280] leading-relaxed mb-6">
-            There are now multiple AI surfaces where your brand can show up — or not. Google AI Overviews, ChatGPT, Claude, Perplexity. Each works differently. Here&apos;s how to prioritise.
+            There are now multiple AI surfaces where your brand can show up or not. Google AI Overviews, ChatGPT, Claude, Perplexity. Each works differently. Here&apos;s how to prioritise.
           </p>
           <p className="text-sm text-[#9CA3AF]">January 22, 2026 · 10 min read</p>
         </div>
@@ -69,7 +69,7 @@ export default function PostAISurfaces() {
             <h2 className="text-2xl font-bold text-[#111827] mb-3">The 4 Main AI Surfaces</h2>
             <div className="w-10 h-1 rounded-full mb-6" style={{ background: "#10B981" }} />
             <p className="mb-6">
-              Brand discovery has fragmented. In 2024, you mostly had to worry about Google. In 2026, there are four distinct AI surfaces that matter for most brands — and each has its own logic, user base, and recommendation mechanism.
+              Brand discovery has fragmented. In 2024, you mostly had to worry about Google. In 2026, there are four distinct AI surfaces that matter for most brands, each with its own logic, user base, and recommendation mechanism.
             </p>
             <div className="space-y-6">
               {[
@@ -87,7 +87,7 @@ export default function PostAISurfaces() {
                 },
                 {
                   name: "Perplexity",
-                  desc: "A dedicated AI search engine that always uses live retrieval — there is no pure language model mode. Every query triggers a real-time web search, with results synthesised and cited. Perplexity is particularly popular with researchers, analysts, and technically sophisticated users. It shows its sources, which means citation quality and domain authority are especially important here. Perplexity has also been explicit about supporting structured signals like llms.txt.",
+                  desc: "A dedicated AI search engine that always uses live retrieval. There is no pure language model mode. Every query triggers a real-time web search, with results synthesised and cited. Perplexity is particularly popular with researchers, analysts, and technically sophisticated users. It shows its sources, which means citation quality and domain authority are especially important here. Perplexity has also been explicit about supporting structured signals like llms.txt.",
                 },
               ].map(({ name, desc }) => (
                 <div key={name} className="rounded-xl border border-[#E5E7EB] p-6">
@@ -109,11 +109,11 @@ export default function PostAISurfaces() {
               {[
                 {
                   surface: "Google AI Overviews",
-                  mechanism: "Pulls from Google's indexed web, weighted by existing PageRank-like signals. Your traditional SEO — backlinks, page authority, structured data, E-E-A-T (Experience, Expertise, Authoritativeness, Trustworthiness) — translates directly here. If you rank well in organic search, you are better positioned in AI Overviews.",
+                  mechanism: "Pulls from Google's indexed web, weighted by existing PageRank-like signals. Your traditional SEO (backlinks, page authority, structured data, E-E-A-T: Experience, Expertise, Authoritativeness, Trustworthiness) translates directly here. If you rank well in organic search, you are better positioned in AI Overviews.",
                 },
                 {
                   surface: "ChatGPT",
-                  mechanism: "In browsing mode, retrieves from Bing's index. In non-browsing mode, draws on training data (cutoff: early 2025 for current GPT-4o). Brand signals in training data — the volume, sentiment, and authority of mentions — matter enormously. For real-time retrieval, Bing authority and citation quality are the key levers.",
+                  mechanism: "In browsing mode, retrieves from Bing's index. In non-browsing mode, draws on training data (cutoff: early 2025 for current GPT-4o). Brand signals in training data (the volume, sentiment, and authority of mentions) matter enormously. For real-time retrieval, Bing authority and citation quality are the key levers.",
                 },
                 {
                   surface: "Claude",
@@ -121,7 +121,7 @@ export default function PostAISurfaces() {
                 },
                 {
                   surface: "Perplexity",
-                  mechanism: "Always live retrieval. Sources are always shown. Perplexity's ranking of which sources to cite is influenced by domain authority, content quality, and relevance. Because Perplexity shows citations, being cited here drives direct referral traffic — making it the most measurable of the four surfaces.",
+                  mechanism: "Always live retrieval. Sources are always shown. Perplexity's ranking of which sources to cite is influenced by domain authority, content quality, and relevance. Because Perplexity shows citations, being cited here drives direct referral traffic, making it the most measurable of the four surfaces.",
                 },
               ].map(({ surface, mechanism }) => (
                 <div key={surface}>
@@ -189,12 +189,12 @@ export default function PostAISurfaces() {
                 {
                   industry: "Local services (professional services, restaurants, healthcare, etc.)",
                   priority: "Google AI Overviews",
-                  rationale: "Local intent queries are heavily concentrated in Google's ecosystem. AI Overviews for 'best dentist in [city]' or 'top accounting firms in [area]' are now common. Traditional local SEO signals — Google Business Profile, reviews, citations — translate directly into AI Overview presence.",
+                  rationale: "Local intent queries are heavily concentrated in Google's ecosystem. AI Overviews for 'best dentist in [city]' or 'top accounting firms in [area]' are now common. Traditional local SEO signals (Google Business Profile, reviews, citations) translate directly into AI Overview presence.",
                 },
                 {
                   industry: "Media, publishing, and content brands",
                   priority: "Perplexity, then Google AI Overviews",
-                  rationale: "Perplexity shows its sources. A media brand cited in a Perplexity answer gets a visible link and attribution — a direct traffic driver that the other surfaces don't provide. Google AI Overviews is also important for informational queries. ChatGPT is less relevant for media brands unless the goal is to be recognised as an authoritative source the model draws on.",
+                  rationale: "Perplexity shows its sources. A media brand cited in a Perplexity answer gets a visible link and attribution, a direct traffic driver that the other surfaces don't provide. Google AI Overviews is also important for informational queries. ChatGPT is less relevant for media brands unless the goal is to be recognised as an authoritative source the model draws on.",
                 },
               ].map(({ industry, priority, rationale }) => (
                 <div key={industry} className="rounded-xl border border-[#E5E7EB] p-5">
@@ -225,7 +225,7 @@ export default function PostAISurfaces() {
                 "Publishing comprehensive, accurate schema.org markup on your website benefits Google AI Overviews, ChatGPT's retrieval, Claude's retrieval, and Perplexity equally.",
                 "Earning editorial mentions in high-authority publications improves your training data signal (ChatGPT, Claude), your PageRank signal (Google AI Overviews), and your citation quality signal (Perplexity).",
                 "Maintaining consistent brand positioning across web properties reduces model confusion on every platform that tries to represent you.",
-                "Publishing original research earns citations that accumulate across all four surfaces — in training data, in indexed search results, and in real-time retrieval.",
+                "Publishing original research earns citations that accumulate across all four surfaces: in training data, in indexed search results, and in real-time retrieval.",
                 "Creating an llms.txt file provides a canonical brand brief that any AI retrieval system can consume, regardless of the underlying model.",
               ].map((item) => (
                 <li key={item} className="flex items-start gap-3">
@@ -250,10 +250,10 @@ export default function PostAISurfaces() {
               ShowsUp queries ChatGPT, Claude, and Gemini as part of every brand scan. We use a standardised set of prompts relevant to your declared category, analyse the outputs for brand mentions, and score your Prominence, Sentiment, and Coverage across all three models.
             </p>
             <p className="mb-4">
-              This gives you a single, consolidated view of your AI presence across the models that power the surfaces your buyers use — rather than having to manually test each one yourself (which, besides being time-consuming, produces inconsistent results due to the probabilistic nature of model outputs).
+              This gives you a single, consolidated view of your AI presence across the models that power the surfaces your buyers use, rather than having to manually test each one yourself (which, besides being time-consuming, produces inconsistent results due to the probabilistic nature of model outputs).
             </p>
             <p>
-              We also audit your technical signals — schema, llms.txt, structured data, citation footprint — which influence your visibility on Google AI Overviews and Perplexity as well, giving you a comprehensive baseline from which to track improvement.
+              We also audit your technical signals (schema, llms.txt, structured data, citation footprint), which influence your visibility on Google AI Overviews and Perplexity as well, giving you a comprehensive baseline from which to track improvement.
             </p>
           </section>
 
@@ -266,7 +266,7 @@ export default function PostAISurfaces() {
                 ["Run a baseline AEO scan", "Before you prioritise any surface, establish where you actually stand. Use ShowsUp to get a scored baseline across all 10 dimensions and all three major AI models."],
                 ["Identify your primary surface", "Based on your industry and buyer behaviour (see the prioritisation guide above), identify the one surface that matters most for your commercial goals right now."],
                 ["Fix the technical foundations", "Schema markup, llms.txt, and brand consistency are quick wins that help across all surfaces. Do these first, regardless of which surface you prioritise."],
-                ["Build an editorial calendar around authority", "Plan at least 4 editorial touchpoints per quarter — a mix of original research, guest contributions, press releases with news hooks, and curated expert commentary."],
+                ["Build an editorial calendar around authority", "Plan at least 4 editorial touchpoints per quarter: a mix of original research, guest contributions, press releases with news hooks, and curated expert commentary."],
                 ["Re-scan quarterly", "AEO scores change as your web presence evolves and as AI models update. Track your progress every 90 days and adjust your efforts based on which dimensions are moving."],
               ].map(([title, body], i) => (
                 <li key={title} className="flex gap-4">
@@ -295,7 +295,7 @@ export default function PostAISurfaces() {
             See where your brand stands across ChatGPT, Claude, and Gemini
           </h2>
           <p className="text-[#6B7280] mb-8 max-w-xl mx-auto">
-            Run a free ShowsUp scan to get your AEO baseline — and know exactly which surfaces and signals to focus on first.
+            Run a free ShowsUp scan to get your AEO baseline and know exactly which surfaces and signals to focus on first.
           </p>
           <Link
             href="/signup"

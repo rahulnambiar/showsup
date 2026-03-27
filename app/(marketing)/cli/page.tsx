@@ -65,7 +65,7 @@ export default function CliPage() {
           <p className="text-xl text-[#6B7280] leading-relaxed max-w-3xl mb-8">
             Run AI brand visibility scans from your terminal, automate monthly
             reports, and integrate brand monitoring directly into your CI/CD
-            pipeline. Everything the dashboard does — available from the command
+            pipeline. Everything the dashboard does is available from the command
             line.
           </p>
           <div className="flex flex-wrap gap-4">
@@ -163,8 +163,8 @@ export default function CliPage() {
                 showsup report --brand &quot;Acme Corp&quot; --output report.json
               </CodeBlock>
               <p className="mt-3 text-sm text-[#6B7280]">
-                Exports the full structured report — scores, prompt responses,
-                improvement plan, and competitor comparison — as a JSON file.
+                Exports the full structured report as a JSON file: scores, prompt responses,
+                improvement plan, and competitor comparison.
               </p>
             </div>
           </div>
@@ -202,7 +202,7 @@ export default function CliPage() {
               {
                 title: "Competitor benchmarking",
                 description:
-                  "Build a simple script that scans your brand and 3–5 competitors weekly and produces a comparison table — useful for client reporting.",
+                  "Build a simple script that scans your brand and 3–5 competitors weekly and produces a comparison table, useful for client reporting.",
               },
             ].map((item) => (
               <div

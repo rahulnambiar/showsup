@@ -6,7 +6,7 @@ import { MarketingFooter } from "@/components/marketing-footer";
 export const metadata: Metadata = {
   title: "About ShowsUp — Digital Marketing Entrepreneur Building in AI",
   description:
-    "ShowsUp was built by Rahul Nambiar — digital marketing entrepreneur, Valuklik co-founder, Dentsu exit, former board member, and now building in AI. A passion project to help brands get found by AI.",
+    "ShowsUp was built by Rahul Nambiar, a digital marketing entrepreneur, Valuklik co-founder, Dentsu board member, and now an AI builder. A passion project to help brands get found by AI.",
   keywords: [
     "about ShowsUp",
     "Rahul Nambiar",
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "About ShowsUp — Built by a Career Marketer Who Got Excited About AI",
     description:
-      "Rahul Nambiar spent 20 years in digital marketing, exited Valuklik to Dentsu, served on global agency boards — and then AI got him excited enough to build again.",
+      "Rahul Nambiar spent 20 years in digital marketing, exited Valuklik to Dentsu, served on global agency boards, and then AI got him excited enough to build again.",
     url: "https://www.showsup.co/about",
     type: "website",
   },
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "About ShowsUp",
     description:
-      "Built by Rahul Nambiar — Valuklik founder, Dentsu exit, board member, now AI builder. A passion project to help every brand show up in AI.",
+      "Built by Rahul Nambiar, Valuklik founder, Dentsu exit, board member, now AI builder. A passion project to help every brand show up in AI.",
   },
 };
 
@@ -45,10 +45,10 @@ export default function AboutPage() {
             Digital marketing entrepreneur. Now building in AI.
           </h1>
           <p className="text-xl text-[#6B7280] leading-relaxed max-w-3xl">
-            ShowsUp isn&apos;t a VC-backed startup chasing the next trend. It&apos;s a
+            ShowsUp is not a VC-backed startup chasing the next trend. It is a
             passion project built by someone who has spent their entire career in
-            digital marketing — and who sees AI as the most important shift in
-            brand discovery since Google was invented.
+            digital marketing, and who genuinely believes AI is the most
+            important shift in brand discovery since Google was invented.
           </p>
         </div>
       </section>
@@ -67,28 +67,59 @@ export default function AboutPage() {
           <div className="grid md:grid-cols-3 gap-10">
             <div className="md:col-span-2 space-y-5 text-[#374151] leading-relaxed">
               <p>
-                <strong className="text-[#111827]">Rahul Nambiar</strong> started his career as a software developer — which, as it turns out, was the perfect foundation for everything that came after. About 20 years ago he made a deliberate pivot into digital marketing, drawn by the intersection of data, technology, and brand-building that the early internet made possible.
+                <strong className="text-[#111827]">Rahul Nambiar</strong> started
+                his career as a software developer, which turned out to be the
+                perfect foundation for everything that came after. About 20 years
+                ago he made a deliberate move into digital marketing, drawn by the
+                intersection of data, technology and brand-building that the early
+                internet made possible.
               </p>
               <p>
-                From 2008 onwards he worked with large local and international agency groups across Asia — based across India, Singapore, and Jakarta — developing a deep, hands-on understanding of performance marketing, analytics, and what it actually takes to make brands visible at scale.
+                From 2008 onwards he worked with large local and international
+                agency groups across Asia, spending time in India, Singapore and
+                Jakarta. That decade gave him a deep, hands-on understanding of
+                performance marketing, analytics and what it actually takes to make
+                brands visible at scale.
               </p>
               <p>
                 In 2014 he joined{" "}
-                <strong className="text-[#111827]">Valuklik</strong> as Co-founder and Managing Director, and over the following years scaled the company to over 120 people, building one of the most respected performance marketing, analytics, and data-driven advertising practices in the region. In a landmark moment for the independent agency world, Valuklik was acquired by{" "}
-                <strong className="text-[#111827]">Dentsu</strong> — one of the largest advertising holding groups in the world.
+                <strong className="text-[#111827]">Valuklik</strong> as
+                Co-founder and Managing Director. Over the following years he
+                scaled the company to over 120 people, building one of the most
+                respected performance marketing, analytics and data-driven
+                advertising practices in the region. Valuklik was eventually
+                acquired by{" "}
+                <strong className="text-[#111827]">Dentsu</strong>, one of the
+                largest advertising holding groups in the world.
               </p>
               <p>
-                Post-acquisition, Rahul continued to shape the industry from the top, eventually serving as a{" "}
-                <strong className="text-[#111827]">Board Member</strong> at Dentsu — his last chapter in advertising before stepping back from the industry in 2023 after 15 years at the front lines.
+                After the acquisition, Rahul continued to shape the industry,
+                eventually serving as a{" "}
+                <strong className="text-[#111827]">Board Member</strong> at
+                Dentsu. He stepped back from advertising in 2023 after 15 years
+                at the front lines.
               </p>
               <p>
-                Since then he has been an investor and advisor to startups, watching the AI revolution unfold from the sidelines. Then Claude Code happened — and something clicked. Here was a way for someone like him (an engineer-turned-marketer, not a full-time developer) to actually build something real, fast, and useful.
+                Since then he has been an investor and advisor to startups,
+                watching the AI revolution unfold. Then Claude Code came along and
+                something clicked. Here was a way for someone like him, an
+                engineer-turned-marketer rather than a full-time developer, to
+                actually build something real, fast and useful.
               </p>
               <p>
-                ShowsUp is the result: a tool built entirely with Claude Code, designed to solve a problem Rahul knows intimately — brands having no idea whether AI is recommending them or ignoring them. He&apos;ll be the first to admit he&apos;s a newcomer to the world of open source and AI product development, and you&apos;ll find plenty of rough edges. He&apos;s genuinely happy to hear about all of them.
+                ShowsUp is the result. A tool built entirely with Claude Code,
+                designed to solve a problem Rahul knows intimately: most brands
+                have no idea whether AI is recommending them or quietly ignoring
+                them. He will be the first to admit he is a newcomer to open
+                source and AI product development, and there are plenty of rough
+                edges. He is genuinely happy to hear about all of them.
               </p>
               <p className="italic text-[#6B7280]">
-                &ldquo;I&apos;ve spent my whole life in this industry. ShowsUp is my attempt to contribute something back — and to keep branding in the AI world a little more democratic. I&apos;ll always keep it open source, because I want more people to build on top of it.&rdquo;
+                &ldquo;I&apos;ve spent my whole life in this industry. ShowsUp is
+                my attempt to contribute something back, and to keep branding in
+                the AI world a little more democratic. I&apos;ll always keep it
+                open source, because I want more people to build on top of
+                it.&rdquo;
               </p>
               <p>
                 <a
@@ -148,35 +179,34 @@ export default function AboutPage() {
 
           <div className="space-y-6 text-[#374151] leading-relaxed max-w-3xl">
             <p className="text-xl text-[#111827] font-medium">
-              AI is changing how brands get discovered. Most brands don&apos;t even
-              know if they show up.
+              AI is changing how brands get discovered. Most brands don&apos;t
+              even know if they show up.
             </p>
             <p>
-              Billions of people now turn to ChatGPT, Claude, Gemini, and
-              Perplexity with questions that used to go to Google. &ldquo;What&apos;s the
-              best CRM for a small business?&rdquo; &ldquo;Which running shoe brand has the
-              best cushioning?&rdquo; &ldquo;Who are the top cybersecurity firms in
-              Singapore?&rdquo;
+              Billions of people now turn to ChatGPT, Claude, Gemini and
+              Perplexity with questions that used to go to Google. &ldquo;What&apos;s
+              the best CRM for a small business?&rdquo; &ldquo;Which running shoe
+              brand has the best cushioning?&rdquo; &ldquo;Who are the top
+              cybersecurity firms in Singapore?&rdquo;
             </p>
             <p>
-              These AI engines give confident, specific answers — and those
+              These AI engines give confident, specific answers, and those
               answers shape purchase decisions. A brand that gets recommended by
-              ChatGPT has an enormous edge over one that doesn&apos;t. But unlike
-              Google, there&apos;s no rank tracker. There&apos;s no keyword report. There
-              is no &ldquo;position 1.&rdquo; Until now, brands had no systematic way to
-              measure their presence in AI-generated answers at all.
+              ChatGPT has an enormous edge over one that does not. But unlike
+              Google, there is no rank tracker. There is no keyword report.
+              There is no position one. Until now, brands had no systematic way
+              to measure their presence in AI-generated answers at all.
             </p>
             <p>
               ShowsUp was built to fix that. We give brands a clear,
-              research-backed score for their AI visibility, explain exactly
-              why they rank the way they do, and provide an actionable
-              improvement plan grounded in the same signals AI engines actually
-              use.
+              research-backed score for their AI visibility, explain exactly why
+              they rank the way they do, and provide an actionable improvement
+              plan grounded in the same signals AI engines actually use.
             </p>
             <p>
-              The methodology is open source. The goal is to help every brand —
-              regardless of size or budget — understand and improve their
-              standing in the AI era.
+              The methodology is open source. The goal is to help every brand,
+              regardless of size or budget, understand and improve their standing
+              in the AI era.
             </p>
           </div>
         </div>
@@ -195,13 +225,22 @@ export default function AboutPage() {
 
           <div className="max-w-3xl space-y-5 text-[#374151] leading-relaxed">
             <p>
-              Rahul is a self-confessed newcomer to open source and AI product development — and he&apos;s completely fine with that. ShowsUp will have rough edges, missing features, and the occasional embarrassing bug. That&apos;s the point of building in the open.
+              Rahul is a self-confessed newcomer to open source and AI product
+              development, and he is completely fine with that. ShowsUp will
+              have rough edges, missing features and the occasional embarrassing
+              bug. That is the point of building in the open.
             </p>
             <p>
-              He genuinely wants to hear from you — whether you&apos;ve found a bug, have a feature you&apos;d love to see, want to contribute code or research, or just have thoughts on how the methodology could be better. Developers, SEO practitioners, LLM researchers, brand managers — all welcome.
+              He genuinely wants to hear from you. Whether you have found a bug,
+              have a feature in mind, want to contribute code or research, or
+              just have thoughts on the methodology, you are welcome here.
+              Developers, SEO practitioners, LLM researchers and brand managers
+              alike.
             </p>
             <p>
-              The plan is to always keep this open source, so anyone can build on top of it and make brand visibility in the AI world a little more democratic.
+              The plan is to always keep this open source, so anyone can build
+              on top of it and make brand visibility in the AI world a little
+              more democratic.
             </p>
             <p>
               Reach Rahul directly at{" "}

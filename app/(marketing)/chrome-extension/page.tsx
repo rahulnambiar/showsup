@@ -48,7 +48,7 @@ export default function ChromeExtensionPage() {
           <p className="text-xl text-[#6B7280] leading-relaxed max-w-3xl mb-8">
             The ShowsUp Chrome Extension adds a one-click AI visibility score to
             any website you visit. Research competitors, prospect new clients,
-            or check your own brand — without leaving the tab.
+            or check your own brand, without leaving the tab.
           </p>
           <div className="flex flex-wrap gap-4">
             <a
@@ -87,7 +87,7 @@ export default function ChromeExtensionPage() {
                 step: "1",
                 title: "Visit any website",
                 description:
-                  "Navigate to any brand's website — a competitor, a prospect, or your own domain. The extension icon appears in your browser toolbar.",
+                  "Navigate to any brand's website: a competitor, a prospect, or your own domain. The extension icon appears in your browser toolbar.",
               },
               {
                 step: "2",
@@ -99,7 +99,7 @@ export default function ChromeExtensionPage() {
                 step: "3",
                 title: "Get instant insights",
                 description:
-                  "See the brand's overall AEO score, which AI models mention them, and the top dimensions driving (or hurting) their score — all in a compact popup.",
+                  "See the brand's overall AEO score, which AI models mention them, and the top dimensions driving (or hurting) their score, all in a compact popup.",
               },
             ].map((item) => (
               <div key={item.step} className="flex flex-col gap-3">
@@ -140,7 +140,7 @@ export default function ChromeExtensionPage() {
               {
                 title: "Model-level coverage",
                 description:
-                  "See exactly which AI platforms mention the brand and in what percentage of relevant queries — broken down by ChatGPT, Claude, and Gemini.",
+                  "See exactly which AI platforms mention the brand and in what percentage of relevant queries, broken down by ChatGPT, Claude, and Gemini.",
               },
               {
                 title: "Top dimension scores",
@@ -184,7 +184,7 @@ export default function ChromeExtensionPage() {
             {[
               {
                 role: "Agency account managers",
-                use: "Check a prospect's AI visibility during a discovery call — then show them how ShowsUp can help. Instant credibility.",
+                use: "Check a prospect's AI visibility during a discovery call, then show them how ShowsUp can help. Instant credibility.",
               },
               {
                 role: "SEO consultants",

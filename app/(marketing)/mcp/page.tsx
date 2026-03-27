@@ -67,7 +67,7 @@ export default function McpPage() {
             The ShowsUp MCP server exposes your brand&apos;s AI visibility data as a
             tool any MCP-compatible AI assistant can use. Ask Claude Desktop
             &ldquo;What&apos;s our brand&apos;s AEO score this month?&rdquo; and get a live answer
-            — no dashboard required.
+            with a live answer, no dashboard required.
           </p>
           <div className="flex flex-wrap gap-4">
             <Link
@@ -113,7 +113,7 @@ export default function McpPage() {
               MCP is supported by Claude Desktop, Cursor, Zed, and a growing
               number of AI-native development environments. Once you configure
               an MCP server, the AI assistant gains access to its tools and can
-              call them whenever relevant — without any copy-paste from you.
+              call them whenever relevant, without any copy-paste from you.
             </p>
           </div>
         </div>
@@ -135,7 +135,7 @@ export default function McpPage() {
               {
                 title: "Query your brand score",
                 description:
-                  'Ask "What\'s my brand\'s current AEO score?" in Claude Desktop and get a live response — overall score, dimension breakdown, and change since last scan.',
+                  'Ask "What\'s my brand\'s current AEO score?" in Claude Desktop and get a live response: overall score, dimension breakdown, and change since last scan.',
               },
               {
                 title: "Get improvement recommendations",
@@ -150,7 +150,7 @@ export default function McpPage() {
               {
                 title: "Trigger scans programmatically",
                 description:
-                  "AI agents can initiate a new scan via the MCP server — useful for automated pipelines that need fresh data before generating a report.",
+                  "AI agents can initiate a new scan via the MCP server, useful for automated pipelines that need fresh data before generating a report.",
               },
             ].map((item) => (
               <div

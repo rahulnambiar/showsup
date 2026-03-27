@@ -4,7 +4,7 @@ import { MarketingNav } from "@/components/marketing-nav";
 import { MarketingFooter } from "@/components/marketing-footer";
 
 export const metadata: Metadata = {
-  title: "Blog — AI Visibility Insights | ShowsUp",
+  title: "Blog: AI Visibility Insights | ShowsUp",
   description:
     "Practical guides, research, and strategy for brands navigating the AI visibility era. Covering AEO, answer engine optimisation, ChatGPT brand recommendations, and more.",
   keywords: [
@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     "AI SEO 2026",
   ],
   openGraph: {
-    title: "Blog — AI Visibility Insights | ShowsUp",
+    title: "Blog: AI Visibility Insights | ShowsUp",
     description:
       "Practical guides and research for brands navigating the AI visibility era.",
     url: "https://showsup.co/blog",
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Blog — AI Visibility Insights | ShowsUp",
+    title: "Blog: AI Visibility Insights | ShowsUp",
     description:
       "Practical guides and research for brands navigating the AI visibility era.",
   },
@@ -43,15 +43,15 @@ const articles = [
     slug: "how-chatgpt-decides-which-brands-to-recommend",
     date: "March 5, 2026",
     description:
-      "ChatGPT doesn't rank results — it makes recommendations. Understanding the signals that influence those recommendations is the first step to improving your brand's AI visibility. Here's what the evidence shows.",
+      "ChatGPT doesn't rank results. It makes recommendations. Understanding the signals that influence those recommendations is the first step to improving your brand's AI visibility. Here's what the evidence shows.",
     readTime: "9 min read",
   },
   {
-    title: "We Scanned 100 SaaS Brands on Claude — Here's What We Found",
+    title: "We Scanned 100 SaaS Brands on Claude: Here's What We Found",
     slug: "we-scanned-100-saas-brands-on-claude",
     date: "February 20, 2026",
     description:
-      "We ran the ShowsUp scanner on 100 SaaS companies across 10 categories and scored them across all 10 AEO dimensions. The results were surprising — the brands you'd expect to dominate often didn't.",
+      "We ran the ShowsUp scanner on 100 SaaS companies across 10 categories and scored them across all 10 AEO dimensions. The results were surprising: the brands you'd expect to dominate often didn't.",
     readTime: "14 min read",
   },
   {
@@ -67,7 +67,7 @@ const articles = [
     slug: "google-sge-vs-chatgpt-vs-claude-where-to-focus",
     date: "January 22, 2026",
     description:
-      "There are now multiple AI surfaces where your brand can show up — or not. Google's AI Overviews, ChatGPT, Claude, Perplexity. Each works differently. Here's how to prioritise where to invest your AEO efforts.",
+      "There are now multiple AI surfaces where your brand can show up or not. Google's AI Overviews, ChatGPT, Claude, Perplexity. Each works differently. Here's how to prioritise where to invest your AEO efforts.",
     readTime: "10 min read",
   },
 ];
@@ -136,7 +136,7 @@ export default function BlogPage() {
             See how your brand shows up in AI
           </h2>
           <p className="text-[#6B7280] mb-8 max-w-xl mx-auto">
-            Don&apos;t just read about AEO — measure it. Run a free brand visibility
+            Don&apos;t just read about AEO. Measure it. Run a free brand visibility
             scan and get your score in minutes.
           </p>
           <Link

@@ -53,7 +53,7 @@ export default function PostChatGPTRecommendations() {
             How ChatGPT Decides Which Brands to Recommend (And How to Be One of Them)
           </h1>
           <p className="text-xl text-[#6B7280] leading-relaxed mb-6">
-            ChatGPT doesn&apos;t rank results — it makes recommendations. Understanding the signals that influence those recommendations is the first step to improving your brand&apos;s AI visibility.
+            ChatGPT doesn&apos;t rank results. It makes recommendations. Understanding the signals that influence those recommendations is the first step to improving your brand&apos;s AI visibility.
           </p>
           <p className="text-sm text-[#9CA3AF]">March 5, 2026 · 9 min read</p>
         </div>
@@ -68,16 +68,16 @@ export default function PostChatGPTRecommendations() {
             <h2 className="text-2xl font-bold text-[#111827] mb-3">How ChatGPT Actually Works</h2>
             <div className="w-10 h-1 rounded-full mb-6" style={{ background: "#10B981" }} />
             <p className="mb-4">
-              It is worth starting with a simplified but accurate picture of what is happening under the hood — because a lot of the advice floating around about &quot;optimising for ChatGPT&quot; is based on a fundamental misunderstanding.
+              It is worth starting with a simplified but accurate picture of what is happening under the hood, because a lot of the advice floating around about &quot;optimising for ChatGPT&quot; is based on a fundamental misunderstanding.
             </p>
             <p className="mb-4">
-              ChatGPT is a large language model (LLM). It was trained on an enormous corpus of text drawn from the web, books, academic papers, code repositories, and other sources. During training, the model learned statistical patterns in language — and in doing so, it absorbed a great deal of real-world knowledge, including knowledge about brands, products, companies, and categories.
+              ChatGPT is a large language model (LLM). It was trained on an enormous corpus of text drawn from the web, books, academic papers, code repositories, and other sources. During training, the model learned statistical patterns in language and in doing so absorbed a great deal of real-world knowledge, including knowledge about brands, products, companies, and categories.
             </p>
             <p className="mb-4">
-              When you ask ChatGPT &quot;what are the best project management tools for a remote team?&quot;, it is not running a search query and returning results. It is generating a response based on everything it learned during training — including which brands were mentioned frequently, in what context, and with what sentiment.
+              When you ask ChatGPT &quot;what are the best project management tools for a remote team?&quot;, it is not running a search query and returning results. It is generating a response based on everything it learned during training, including which brands were mentioned frequently, in what context, and with what sentiment.
             </p>
             <p>
-              In some configurations, ChatGPT can also perform live web retrieval (via its browsing tool), pulling in current information at query time. But even then, the model applies a trained sense of what sources to trust and how to weight information — meaning your underlying web presence still matters enormously.
+              In some configurations, ChatGPT can also perform live web retrieval (via its browsing tool), pulling in current information at query time. But even then, the model applies a trained sense of what sources to trust and how to weight information, meaning your underlying web presence still matters enormously.
             </p>
           </section>
 
@@ -89,13 +89,13 @@ export default function PostChatGPTRecommendations() {
               Google gives you ten blue links. You get ranked. The user still has to decide what to click. Your meta title, description, and review stars all compete for their attention on the results page.
             </p>
             <p className="mb-4">
-              ChatGPT gives the user one answer. Or a short list. The model has already decided — on the user&apos;s behalf — which brands are worth mentioning. There is no results page for the user to evaluate. The recommendation <em>is</em> the outcome.
+              ChatGPT gives the user one answer. Or a short list. The model has already decided, on the user&apos;s behalf, which brands are worth mentioning. There is no results page for the user to evaluate. The recommendation <em>is</em> the outcome.
             </p>
             <p className="mb-4">
-              This is a qualitatively different kind of influence. If ChatGPT names your brand in response to &quot;what&apos;s the best HR software for a 50-person company?&quot;, you have effectively received a personalised endorsement. That endorsement carries the implied authority of the AI — and users tend to perceive it that way.
+              This is a qualitatively different kind of influence. If ChatGPT names your brand in response to &quot;what&apos;s the best HR software for a 50-person company?&quot;, you have effectively received a personalised endorsement. That endorsement carries the implied authority of the AI, and users tend to perceive it that way.
             </p>
             <p>
-              Conversely, if ChatGPT consistently omits your brand from those answers, you are invisible to a growing segment of buyers — and you will never know it from your analytics, because there is no referral traffic from an AI that never mentioned you.
+              Conversely, if ChatGPT consistently omits your brand from those answers, you are invisible to a growing segment of buyers and you will never know it from your analytics, because there is no referral traffic from an AI that never mentioned you.
             </p>
           </section>
 
@@ -104,14 +104,14 @@ export default function PostChatGPTRecommendations() {
             <h2 className="text-2xl font-bold text-[#111827] mb-3">6 Signals That Influence Brand Recommendations</h2>
             <div className="w-10 h-1 rounded-full mb-6" style={{ background: "#10B981" }} />
             <p className="mb-6">
-              Based on our analysis of how LLMs respond to brand-related queries — and what distinguishes brands that get recommended from those that don&apos;t — here are the six factors that matter most:
+              Based on our analysis of how LLMs respond to brand-related queries, and what distinguishes brands that get recommended from those that don&apos;t, here are the six factors that matter most:
             </p>
             <div className="space-y-6">
               {[
                 {
                   num: "01",
                   title: "Volume of mentions in training data",
-                  body: "Brands that appeared frequently across many different contexts in the training corpus are better represented in the model's weights. This is the AI equivalent of branded search volume — it reflects how much your brand exists in the world's written record. The brands that get recommended most readily are the ones the model has seen mentioned thousands of times across independent sources.",
+                  body: "Brands that appeared frequently across many different contexts in the training corpus are better represented in the model's weights. This is the AI equivalent of branded search volume, reflecting how much your brand exists in the world's written record. The brands that get recommended most readily are the ones the model has seen mentioned thousands of times across independent sources.",
                 },
                 {
                   num: "02",
@@ -126,17 +126,17 @@ export default function PostChatGPTRecommendations() {
                 {
                   num: "04",
                   title: "Schema markup and structured data",
-                  body: "Structured data on your website — schema.org markup for your Organisation, products, FAQs, and reviews — helps both live retrieval systems and the model's understanding of who you are. It reduces the ambiguity that causes AI models to either omit you or misrepresent you. Brands with thorough schema markup are easier for AI systems to represent accurately.",
+                  body: "Structured data on your website (schema.org markup for your Organisation, products, FAQs, and reviews) helps both live retrieval systems and the model's understanding of who you are. It reduces the ambiguity that causes AI models to either omit you or misrepresent you. Brands with thorough schema markup are easier for AI systems to represent accurately.",
                 },
                 {
                   num: "05",
                   title: "Brand consistency across the web",
-                  body: "If your website describes you as an 'AI-powered CRM', your LinkedIn says 'sales automation platform', your Crunchbase says 'SaaS company', and your G2 profile says 'customer relationship management software' — the model sees four different identities and struggles to represent you coherently. Consistency in your category label, description, and key claims across all web properties makes you easier to recommend.",
+                  body: "If your website describes you as an 'AI-powered CRM', your LinkedIn says 'sales automation platform', your Crunchbase says 'SaaS company', and your G2 profile says 'customer relationship management software', the model sees four different identities and struggles to represent you coherently. Consistency in your category label, description, and key claims across all web properties makes you easier to recommend.",
                 },
                 {
                   num: "06",
                   title: "Recency of positive coverage",
-                  body: "For AI systems that use live retrieval, freshness matters a great deal. Coverage from the past 12 months is weighted more heavily than older content. Brands that are actively generating news, product updates, case studies, and press coverage are seen as current and active — traits that increase recommendation likelihood, particularly in fast-moving categories.",
+                  body: "For AI systems that use live retrieval, freshness matters a great deal. Coverage from the past 12 months is weighted more heavily than older content. Brands that are actively generating news, product updates, case studies, and press coverage are seen as current and active, which increases recommendation likelihood, particularly in fast-moving categories.",
                 },
               ].map(({ num, title, body }) => (
                 <div key={num} className="flex gap-5">
@@ -160,7 +160,7 @@ export default function PostChatGPTRecommendations() {
             <h2 className="text-2xl font-bold text-[#111827] mb-3">What Doesn&apos;t Work: Why Old SEO Tactics Fail</h2>
             <div className="w-10 h-1 rounded-full mb-6" style={{ background: "#10B981" }} />
             <p className="mb-4">
-              It is tempting to assume that because AEO shares some vocabulary with SEO, the same tactics apply. They do not — and understanding why is important.
+              It is tempting to assume that because AEO shares some vocabulary with SEO, the same tactics apply. They do not, and understanding why is important.
             </p>
             <p className="mb-4">
               <strong className="text-[#111827]">Buying links does not work.</strong> In traditional SEO, acquiring backlinks from high-authority domains improves your PageRank. In AEO, what matters is not a link pointing to your site but an editorial mention of your brand name in published text. Paid links typically come with rel=&quot;nofollow&quot; attributes and are placed in contexts designed for link-building, not for authentic discussion of your brand. LLMs have, in effect, learned to distinguish these from genuine mentions.
@@ -169,7 +169,7 @@ export default function PostChatGPTRecommendations() {
               <strong className="text-[#111827]">Keyword stuffing does not work.</strong> There is no keyword density metric for LLMs. The model is not scanning for the phrase &quot;best CRM software&quot; on your page — it is drawing on a holistic representation of your brand built from millions of data points. Stuffing keywords into your content may actually signal low-quality content, which is counter-productive.
             </p>
             <p>
-              <strong className="text-[#111827]">Gaming review sites does not work.</strong> LLMs are pattern-recognition systems trained on vast datasets. A sudden spike of suspiciously similar positive reviews, or a review profile that contradicts editorial coverage, creates an inconsistent signal that the model cannot resolve into a confident recommendation. Authenticity — at scale and over time — is what builds AI visibility.
+              <strong className="text-[#111827]">Gaming review sites does not work.</strong> LLMs are pattern-recognition systems trained on vast datasets. A sudden spike of suspiciously similar positive reviews, or a review profile that contradicts editorial coverage, creates an inconsistent signal that the model cannot resolve into a confident recommendation. Authenticity at scale and over time is what builds AI visibility.
             </p>
           </section>
 
@@ -183,7 +183,7 @@ export default function PostChatGPTRecommendations() {
                 "Invest in a small number of high-quality editorial placements in authoritative publications rather than spreading budget across many low-quality outlets.",
                 "Implement comprehensive schema.org markup on your homepage and key landing pages: Organisation, Product (or Service), and FAQ at minimum.",
                 "Create an llms.txt file at the root of your domain that describes your brand clearly, including your category, key differentiators, target audience, and founding information.",
-                "Develop original research or data that journalists and analysts will cite — this is one of the highest-leverage ways to earn genuine, authoritative mentions.",
+                "Develop original research or data that journalists and analysts will cite. This is one of the highest-leverage ways to earn genuine, authoritative mentions.",
                 "Respond to customer reviews and maintain an active, authentic review presence on the platforms most relevant to your category (G2, Capterra, Trustpilot, or industry-specific equivalents).",
                 "Run a quarterly prompt audit: ask ChatGPT, Claude, and Perplexity who they recommend in your category and track whether your brand is mentioned.",
               ].map((item) => (
@@ -208,7 +208,7 @@ export default function PostChatGPTRecommendations() {
             Does ChatGPT recommend your brand?
           </h2>
           <p className="text-[#6B7280] mb-8 max-w-xl mx-auto">
-            Run a free ShowsUp scan to find out — and get a detailed breakdown of the signals holding you back.
+            Run a free ShowsUp scan to find out and get a detailed breakdown of the signals holding you back.
           </p>
           <Link
             href="/signup"

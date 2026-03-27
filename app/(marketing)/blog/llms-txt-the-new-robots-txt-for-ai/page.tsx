@@ -72,13 +72,13 @@ export default function PostLlmsTxt() {
               <strong className="text-[#111827]">llms.txt</strong> is a plain-text file placed at the root of a website (i.e., <code className="bg-[#F3F4F6] px-1.5 py-0.5 rounded text-sm font-mono text-[#111827]">yourdomain.com/llms.txt</code>) that provides AI language models with structured, authoritative information about the brand or organisation that owns the site.
             </p>
             <p className="mb-4">
-              The concept was proposed by Jeremy Howard (of fast.ai) in mid-2024 and has since been adopted and refined by practitioners across the AEO and AI community. It is not an official standard from the W3C or any governing body — but like robots.txt in the early days of the web, it has emerged as a de facto convention that AI tool builders are beginning to support.
+              The concept was proposed by Jeremy Howard (of fast.ai) in mid-2024 and has since been adopted and refined by practitioners across the AEO and AI community. It is not an official standard from the W3C or any governing body, but like robots.txt in the early days of the web, it has emerged as a de facto convention that AI tool builders are beginning to support.
             </p>
             <p className="mb-4">
-              The analogy to robots.txt is intentional but slightly imprecise. robots.txt is a directive — it tells crawlers what they may and may not index. llms.txt is more descriptive — it tells AI systems how the brand wants to be represented and understood. Think of it as a structured brand brief written directly for machines.
+              The analogy to robots.txt is intentional but slightly imprecise. robots.txt is a directive: it tells crawlers what they may and may not index. llms.txt is more descriptive: it tells AI systems how the brand wants to be represented and understood. Think of it as a structured brand brief written directly for machines.
             </p>
             <p>
-              A companion format, <strong className="text-[#111827]">llms-full.txt</strong>, is a longer version that includes more detailed content — full documentation, extended FAQs, product descriptions — suitable for AI systems that can ingest larger context windows.
+              A companion format, <strong className="text-[#111827]">llms-full.txt</strong>, is a longer version that includes more detailed content such as full documentation, extended FAQs, and product descriptions, suitable for AI systems that can ingest larger context windows.
             </p>
           </section>
 
@@ -87,7 +87,7 @@ export default function PostLlmsTxt() {
             <h2 className="text-2xl font-bold text-[#111827] mb-3">Why It Matters for AI Visibility</h2>
             <div className="w-10 h-1 rounded-full mb-6" style={{ background: "#10B981" }} />
             <p className="mb-4">
-              AI models — especially those using retrieval-augmented generation — have to make decisions about your brand with imperfect information. They scrape your website, find third-party mentions, and try to synthesise a coherent picture of who you are and what you do. That synthesis is often inaccurate, incomplete, or confused — particularly if your web presence is inconsistent or if your category is crowded.
+              AI models, especially those using retrieval-augmented generation, have to make decisions about your brand with imperfect information. They scrape your website, find third-party mentions, and try to synthesise a coherent picture of who you are and what you do. That synthesis is often inaccurate, incomplete, or confused, particularly if your web presence is inconsistent or if your category is crowded.
             </p>
             <p className="mb-4">
               llms.txt is your opportunity to eliminate that ambiguity. By providing a canonical, machine-readable source of truth about your brand, you give AI systems a definitive reference point. When a retrieval system finds your llms.txt, it has clear, authoritative answers to the most important questions: What does this company do? Who is it for? What makes it different? What are its main products?
@@ -97,7 +97,7 @@ export default function PostLlmsTxt() {
               <Link href="/blog/we-scanned-100-saas-brands-on-claude" style={{ color: "#10B981" }} className="font-medium">
                 the full study
               </Link>
-              ), brands that had published an llms.txt file scored measurably higher on Prominence and Brand Consistency dimensions. The correlation is not proof of causation — it may be that brands who are organised enough to publish llms.txt also tend to have their brand house in order across other signals. But the pattern is consistent.
+              ), brands that had published an llms.txt file scored measurably higher on Prominence and Brand Consistency dimensions. The correlation is not proof of causation (it may be that brands organised enough to publish llms.txt also tend to have their brand house in order across other signals), but the pattern is consistent.
             </p>
             <p>
               There is also a forward-looking reason to implement llms.txt now: AI tool builders are actively working on features that consume it. Being an early adopter means your brand information is accurate in these systems from day one, rather than being reconstructed (often incorrectly) from scraped web content.
@@ -109,7 +109,7 @@ export default function PostLlmsTxt() {
             <h2 className="text-2xl font-bold text-[#111827] mb-3">What Goes in an llms.txt File</h2>
             <div className="w-10 h-1 rounded-full mb-6" style={{ background: "#10B981" }} />
             <p className="mb-4">
-              The file uses simple Markdown formatting and consists of a set of clearly labelled sections. There is no rigid schema — the convention is flexible — but effective llms.txt files typically include:
+              The file uses simple Markdown formatting and consists of a set of clearly labelled sections. There is no rigid schema; the convention is flexible, but effective llms.txt files typically include:
             </p>
             <ul className="space-y-3 mb-6">
               {[
@@ -224,12 +224,12 @@ transactional or PLG-led).
             <div className="w-10 h-1 rounded-full mb-6" style={{ background: "#10B981" }} />
             <ol className="space-y-4">
               {[
-                ["Start with your brand brief", "Before writing the file, align internally on your canonical one-liner, category label, and three key differentiators. If you cannot agree on these, the llms.txt process will surface that inconsistency — which is actually a useful exercise."],
-                ["Draft the file in Markdown", "Use the sections outlined above. Keep descriptions concise and factual. Avoid marketing superlatives — AI models weight factual, neutral language more reliably than promotional copy."],
+                ["Start with your brand brief", "Before writing the file, align internally on your canonical one-liner, category label, and three key differentiators. If you cannot agree on these, the llms.txt process will surface that inconsistency, which is actually a useful exercise."],
+                ["Draft the file in Markdown", "Use the sections outlined above. Keep descriptions concise and factual. Avoid marketing superlatives, as AI models weight factual, neutral language more reliably than promotional copy."],
                 ["Review for consistency", "Compare every claim in your llms.txt against your website, LinkedIn, and key directory profiles. They should match."],
                 ["Place it at the root of your domain", "The file must be accessible at yourdomain.com/llms.txt with a text/plain content type. It should be publicly accessible without authentication."],
                 ["Submit it to AI directories", "Some AI tool registries and crawlers allow you to submit your llms.txt URL directly. This accelerates discovery."],
-                ["Update it when your product changes", "llms.txt is a living document. Treat it like your website — update it whenever your product offering, positioning, or key facts change."],
+                ["Update it when your product changes", "llms.txt is a living document. Treat it like your website and update it whenever your product offering, positioning, or key facts change."],
               ].map(([title, body], i) => (
                 <li key={title} className="flex gap-4">
                   <span
@@ -252,7 +252,7 @@ transactional or PLG-led).
             <h2 className="text-2xl font-bold text-[#111827] mb-3">llms.txt vs robots.txt vs Structured Data: How They Work Together</h2>
             <div className="w-10 h-1 rounded-full mb-6" style={{ background: "#10B981" }} />
             <p className="mb-4">
-              These are complementary signals that operate at different layers of the stack — not alternatives to one another.
+              These are complementary signals that operate at different layers of the stack, not alternatives to one another.
             </p>
             <div className="space-y-4">
               {[
@@ -276,7 +276,7 @@ transactional or PLG-led).
               ))}
             </div>
             <p className="mt-4">
-              A comprehensive AEO technical setup uses all three: robots.txt to protect internal content, schema markup for page-level structured data, and llms.txt for a brand-level AI brief. They do not conflict — they reinforce each other.
+              A comprehensive AEO technical setup uses all three: robots.txt to protect internal content, schema markup for page-level structured data, and llms.txt for a brand-level AI brief. They do not conflict; they reinforce each other.
             </p>
           </section>
 
@@ -305,7 +305,7 @@ transactional or PLG-led).
               ))}
             </ul>
             <p className="mt-4">
-              A complete, consistent, and current llms.txt file contributes meaningfully to your overall AEO score — and it is one of the fastest technical wins available to most brands.
+              A complete, consistent, and current llms.txt file contributes meaningfully to your overall AEO score, and it is one of the fastest technical wins available to most brands.
             </p>
           </section>
 
@@ -319,7 +319,7 @@ transactional or PLG-led).
             Does your llms.txt pass the AEO audit?
           </h2>
           <p className="text-[#6B7280] mb-8 max-w-xl mx-auto">
-            Run a free ShowsUp scan to check your llms.txt and all 9 other AEO dimensions — with a specific, prioritised fix list.
+            Run a free ShowsUp scan to check your llms.txt and all 9 other AEO dimensions, with a specific, prioritised fix list.
           </p>
           <Link
             href="/signup"
