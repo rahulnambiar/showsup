@@ -63,7 +63,7 @@ export function MarketingFooter() {
 
         <div className="border-t border-[#E5E7EB] pt-6">
           <p className="text-[12px] text-[#9CA3AF]">
-            © {new Date().getFullYear()} FVG Capital Pte. Ltd. All rights reserved.
+            © {new Date().getFullYear()} ShowsUp. All rights reserved.
           </p>
         </div>
       </div>

@@ -1578,7 +1578,7 @@ export default function HomePage() {
               Built with Claude Code · Next.js · Supabase · Vercel
             </p>
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p className="text-[12px] text-[#9CA3AF]">© 2026 FVG Capital Pte. Ltd. All rights reserved.</p>
+            <p className="text-[12px] text-[#9CA3AF]">© 2026 ShowsUp. All rights reserved.</p>
             <div className="flex items-center gap-4">
               <a href="/privacy" className="text-[12px] text-[#9CA3AF] hover:text-[#4B5563] transition-colors duration-200">Privacy</a>
               <a href="/terms" className="text-[12px] text-[#9CA3AF] hover:text-[#4B5563] transition-colors duration-200">Terms</a>

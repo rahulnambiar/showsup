@@ -27,7 +27,7 @@ export default async function AppLayout({
           {children}
           <footer className="hidden lg:block border-t border-gray-100 px-6 py-4 mt-auto">
             <p className="text-[11px] text-gray-400">
-              © {new Date().getFullYear()} FVG Capital Pte. Ltd. &nbsp;·&nbsp;{" "}
+              © {new Date().getFullYear()} ShowsUp &nbsp;·&nbsp;{" "}
               <a href="/privacy" className="hover:text-gray-600 transition-colors">Privacy</a>
               &nbsp;·&nbsp;
               <a href="/terms" className="hover:text-gray-600 transition-colors">Terms</a>
