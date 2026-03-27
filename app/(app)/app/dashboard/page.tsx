@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { getBalance } from "@/lib/tokens";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Dashboard — ShowsUp" };
@@ -45,9 +46,10 @@ export default async function DashboardPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  const [{ data: allScans }, { data: platformData }] = await Promise.all([
+  const [{ data: allScans }, { data: platformData }, tokenBalance] = await Promise.all([
     supabase.from("scans").select("*").order("created_at", { ascending: false }),
     supabase.from("scan_results").select("model, score"),
+    user ? getBalance(user.id) : Promise.resolve(0),
   ]);
 
   const scans        = allScans ?? [];
@@ -75,13 +77,60 @@ export default async function DashboardPage() {
 
   return (
     <div className="p-6 md:p-8 max-w-5xl mx-auto space-y-8">
-      {/* Page header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-500 text-sm mt-1">Welcome back, {firstName}.</p>
-      </div>
 
-      {/* ── Stat cards ── */}
+      {/* ── First-time / no-scan onboarding ── */}
+      {totalScans === 0 ? (
+        <div className="rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-white p-8 space-y-6">
+          <div className="space-y-2">
+            <p className="text-sm font-semibold text-emerald-600 uppercase tracking-widest">Welcome to ShowsUp</p>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Hi {firstName}, let&apos;s see if your brand shows up in AI.
+            </h1>
+            <p className="text-gray-500 text-sm max-w-lg">
+              ShowsUp scans ChatGPT, Claude and Gemini to measure how visible your brand is when people ask AI for recommendations. Your first scan takes about 60 seconds.
+            </p>
+          </div>
+
+          {/* Steps */}
+          <ol className="space-y-3">
+            {[
+              { n: "1", text: "Enter your website URL and brand name" },
+              { n: "2", text: "We query the AI platforms and calculate your ShowsUp Score" },
+              { n: "3", text: "Get a research-backed improvement plan with specific fixes" },
+            ].map(({ n, text }) => (
+              <li key={n} className="flex items-start gap-3">
+                <span className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
+                  {n}
+                </span>
+                <span className="text-sm text-gray-600">{text}</span>
+              </li>
+            ))}
+          </ol>
+
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <Link
+              href="/app/report-builder"
+              className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg px-6 py-3 text-sm transition-colors shadow-sm"
+            >
+              Run your first scan →
+            </Link>
+            {tokenBalance !== null && tokenBalance > 0 && (
+              <p className="text-xs text-gray-400">
+                You have <span className="font-semibold text-emerald-600">{tokenBalance.toLocaleString()} tokens</span> ready to use
+              </p>
+            )}
+          </div>
+        </div>
+      ) : (
+        /* Page header — returning users only */
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+          <p className="text-gray-500 text-sm mt-1">Welcome back, {firstName}.</p>
+        </div>
+      )}
+
+      {/* ── Content for users with scans ── */}
+      {totalScans > 0 && (<>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* ShowsUp Score */}
         <div className={cn(
@@ -144,28 +193,7 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      {/* ── Recent Scans / Empty State ── */}
-      {totalScans === 0 ? (
-        <div className="rounded-xl border border-dashed border-gray-200 bg-white flex flex-col items-center justify-center py-16 text-center space-y-4">
-          <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center">
-            <svg className="w-5 h-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-            </svg>
-          </div>
-          <div>
-            <p className="text-gray-900 font-semibold">No scans yet.</p>
-            <p className="text-gray-500 text-sm mt-1 max-w-xs">
-              Run your first scan to see how your brand shows up in AI.
-            </p>
-          </div>
-          <Link
-            href="/app/report-builder"
-            className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg px-5 py-2.5 text-sm transition-colors"
-          >
-            Analyse your brand →
-          </Link>
-        </div>
-      ) : (
+      {/* ── Recent Scans ── */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold text-gray-700">Recent Scans</h2>
@@ -219,7 +247,8 @@ export default async function DashboardPage() {
             })}
           </div>
         </div>
-      )}
+      </>)}
     </div>
   );
 }
+
