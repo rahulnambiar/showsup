@@ -91,17 +91,17 @@ const releases = [
       {
         type: "New",
         items: [
-          "Scores dashboard — a persistent home screen showing all your scanned brands with their latest scores and score trends.",
-          "Multi-scan history — view and compare results from all historical scans for a brand, not just the most recent.",
-          "Token system — scan credits replace the per-request billing model. Buy tokens in bulk for better value.",
-          "API endpoints — programmatic access to scan results, score history, and improvement plans via REST API.",
-          "CSV upload — import keyword rankings and search analytics from Ahrefs, SEMrush, or Google Search Console.",
+          "Scores dashboard: a persistent home screen showing all your scanned brands with their latest scores and score trends.",
+          "Multi-scan history: view and compare results from all historical scans for a brand, not just the most recent.",
+          "Token system: scan credits replace the per-request billing model. Buy tokens in bulk for better value.",
+          "API endpoints: programmatic access to scan results, score history, and improvement plans via REST API.",
+          "CSV upload: import keyword rankings and search analytics from Ahrefs, SEMrush, or Google Search Console.",
         ],
       },
       {
         type: "Improved",
         items: [
-          "Score calculation methodology updated to v1.2 — dimension weights re-calibrated against an expanded citation dataset.",
+          "Score calculation methodology updated to v1.2: dimension weights re-calibrated against an expanded citation dataset.",
           "Report UI redesigned with a cleaner sidebar and tabbed dimension view.",
           "Scan speed improved by ~30% through parallel prompt execution.",
         ],
@@ -123,12 +123,12 @@ const releases = [
       {
         type: "New",
         items: [
-          "Brand scanner — enter a brand name and website URL to kick off a full AI visibility scan.",
-          "Three AI engine coverage — scans run against ChatGPT (GPT-4o), Claude (Sonnet), and Google Gemini Pro.",
-          "10-dimension AEO score — composite brand visibility score across Brand Authority, Content Depth, Query Coverage, Schema Markup, Review Coverage, Social Proof, Visual Presence, Recency, Competitor Gap, and Domain Trust.",
-          "Scan report — detailed breakdown of each dimension with evidence from AI responses.",
+          "Brand scanner: enter a brand name and website URL to kick off a full AI visibility scan.",
+          "Three AI engine coverage: scans run against ChatGPT (GPT-4o), Claude (Sonnet), and Google Gemini Pro.",
+          "10-dimension AEO score: composite brand visibility score across Brand Authority, Content Depth, Query Coverage, Schema Markup, Review Coverage, Social Proof, Visual Presence, Recency, Competitor Gap, and Domain Trust.",
+          "Scan report: detailed breakdown of each dimension with evidence from AI responses.",
           "Email + password authentication with magic link support.",
-          "Free tier — 2 scans per month included with a free account.",
+          "Free tier: 2 scans per month included with a free account.",
         ],
       },
     ],
@@ -161,7 +161,7 @@ export default function ChangelogPage() {
             Changelog
           </h1>
           <p className="text-xl text-[#6B7280] leading-relaxed max-w-3xl">
-            A running log of everything new in ShowsUp — features, improvements,
+            A running log of everything new in ShowsUp: features, improvements,
             and fixes, ordered most recent first.
           </p>
         </div>

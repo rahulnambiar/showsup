@@ -75,11 +75,11 @@ export default function PostAISurfaces() {
               {[
                 {
                   name: "Google AI Overviews",
-                  desc: "Formerly known as Search Generative Experience (SGE), Google AI Overviews now appears at the top of search results for a large proportion of informational and commercial queries. It generates a synthesised answer using Gemini, drawing primarily from pages that Google has already indexed and ranked. The key distinction: Google AI Overviews is deeply integrated with the existing search index, meaning traditional SEO signals — page authority, backlink quality, content depth — carry significant weight here.",
+                  desc: "Formerly known as Search Generative Experience (SGE), Google AI Overviews now appears at the top of search results for a large proportion of informational and commercial queries. It generates a synthesised answer using Gemini, drawing primarily from pages that Google has already indexed and ranked. The key distinction: Google AI Overviews is deeply integrated with the existing search index, meaning traditional SEO signals (page authority, backlink quality, content depth) carry significant weight here.",
                 },
                 {
                   name: "ChatGPT",
-                  desc: "The most widely used AI assistant globally, with over 200 million weekly active users as of early 2026. ChatGPT uses GPT-4o as its base model and can operate in two modes: pure language model (drawing on training data with a knowledge cutoff) and browsing mode (using live web retrieval via Bing). The browsing mode is increasingly the default for commercial queries. ChatGPT users tend to have high commercial intent — they are often looking for specific recommendations, not just information.",
+                  desc: "The most widely used AI assistant globally, with over 200 million weekly active users as of early 2026. ChatGPT uses GPT-4o as its base model and can operate in two modes: pure language model (drawing on training data with a knowledge cutoff) and browsing mode (using live web retrieval via Bing). The browsing mode is increasingly the default for commercial queries. ChatGPT users tend to have high commercial intent, often looking for specific recommendations, not just information.",
                 },
                 {
                   name: "Claude",

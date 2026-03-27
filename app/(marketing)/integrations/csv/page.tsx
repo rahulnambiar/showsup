@@ -80,7 +80,7 @@ export default function CsvPage() {
               {
                 title: "Keyword rankings",
                 formats: ["Google Search Console performance export", "Ahrefs organic keywords CSV", "SEMrush position tracking export", "Moz keyword rankings export"],
-                description: "Upload your tracked keyword rankings. ShowsUp maps each keyword against the prompts it sends to AI engines and shows you which ranking keywords you're also winning in AI — and which you're not.",
+                description: "Upload your tracked keyword rankings. ShowsUp maps each keyword against the prompts it sends to AI engines and shows you which ranking keywords you're also winning in AI and which you're not.",
               },
               {
                 title: "Backlink data",
@@ -90,7 +90,7 @@ export default function CsvPage() {
               {
                 title: "Search analytics",
                 formats: ["GSC query performance CSV", "Adobe Analytics export", "Custom analytics CSV"],
-                description: "Upload query-level impression and click data. ShowsUp uses this to prioritise your AI visibility gaps by actual traffic potential — so you fix the highest-value gaps first.",
+                description: "Upload query-level impression and click data. ShowsUp uses this to prioritise your AI visibility gaps by actual traffic potential, so you fix the highest-value gaps first.",
               },
             ].map((item) => (
               <div
@@ -149,7 +149,7 @@ export default function CsvPage() {
                 step: "3",
                 title: "Map your columns",
                 description:
-                  "For custom CSV files, ShowsUp shows a column mapping interface. Drag and drop your columns to map them to ShowsUp's expected fields — keyword, position, impressions, clicks, etc.",
+                  "For custom CSV files, ShowsUp shows a column mapping interface. Drag and drop your columns to map them to ShowsUp's expected fields: keyword, position, impressions, clicks, etc.",
               },
               {
                 step: "4",
@@ -161,7 +161,7 @@ export default function CsvPage() {
                 step: "5",
                 title: "Data is applied to your scores",
                 description:
-                  "Within a few minutes, the uploaded data is overlaid on your AI visibility dashboard. You'll see new data points in the correlation view showing where your SEO performance and AI visibility align — and diverge.",
+                  "Within a few minutes, the uploaded data is overlaid on your AI visibility dashboard. You'll see new data points in the correlation view showing where your SEO performance and AI visibility align and where they diverge.",
               },
             ].map((item) => (
               <div key={item.step} className="flex gap-5">
@@ -200,7 +200,7 @@ export default function CsvPage() {
             <p>
               Traditional SEO and AI visibility (AEO) are related but not
               identical. A brand can rank first on Google and be completely
-              absent from AI answers — and vice versa. Understanding the
+              absent from AI answers, and vice versa. Understanding the
               relationship between the two is the key to a complete visibility
               strategy.
             </p>
@@ -209,7 +209,7 @@ export default function CsvPage() {
               view: for each keyword or query in your data, it shows the
               corresponding AI visibility signal. Queries where you rank well
               on Google but score poorly in AI are your highest-priority AEO
-              opportunities — you clearly have relevance for the topic, but
+              opportunities: you clearly have relevance for the topic, but
               haven&apos;t yet earned the AI recommendation.
             </p>
             <p>

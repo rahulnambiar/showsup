@@ -116,7 +116,7 @@ export default function PostChatGPTRecommendations() {
                 {
                   num: "02",
                   title: "Sentiment of those mentions",
-                  body: "Frequency alone is not enough. A brand that is frequently mentioned in the context of lawsuits, scandals, or negative reviews will have that negativity baked into the model's representation of it. ChatGPT's recommendations skew toward brands with a net positive sentiment signal across their citation footprint — reviews, editorial coverage, user discussions, and independent commentary.",
+                  body: "Frequency alone is not enough. A brand that is frequently mentioned in the context of lawsuits, scandals, or negative reviews will have that negativity baked into the model's representation of it. ChatGPT's recommendations skew toward brands with a net positive sentiment signal across their citation footprint: reviews, editorial coverage, user discussions, and independent commentary.",
                 },
                 {
                   num: "03",
@@ -166,7 +166,7 @@ export default function PostChatGPTRecommendations() {
               <strong className="text-[#111827]">Buying links does not work.</strong> In traditional SEO, acquiring backlinks from high-authority domains improves your PageRank. In AEO, what matters is not a link pointing to your site but an editorial mention of your brand name in published text. Paid links typically come with rel=&quot;nofollow&quot; attributes and are placed in contexts designed for link-building, not for authentic discussion of your brand. LLMs have, in effect, learned to distinguish these from genuine mentions.
             </p>
             <p className="mb-4">
-              <strong className="text-[#111827]">Keyword stuffing does not work.</strong> There is no keyword density metric for LLMs. The model is not scanning for the phrase &quot;best CRM software&quot; on your page — it is drawing on a holistic representation of your brand built from millions of data points. Stuffing keywords into your content may actually signal low-quality content, which is counter-productive.
+              <strong className="text-[#111827]">Keyword stuffing does not work.</strong> There is no keyword density metric for LLMs. The model is not scanning for the phrase &quot;best CRM software&quot; on your page. It is drawing on a holistic representation of your brand built from millions of data points. Stuffing keywords into your content may actually signal low-quality content, which is counter-productive.
             </p>
             <p>
               <strong className="text-[#111827]">Gaming review sites does not work.</strong> LLMs are pattern-recognition systems trained on vast datasets. A sudden spike of suspiciously similar positive reviews, or a review profile that contradicts editorial coverage, creates an inconsistent signal that the model cannot resolve into a confident recommendation. Authenticity at scale and over time is what builds AI visibility.

@@ -429,7 +429,7 @@ function PublicReportBuilderPage() {
           <p className="text-gray-400 text-sm">Configure your report and see the token cost update in real time.</p>
           {!authChecked ? null : !isLoggedIn && (
             <div className="inline-flex items-center gap-2 bg-[#10B981]/10 border border-[#10B981]/25 rounded-lg px-3 py-1.5 text-xs text-[#10B981]">
-              🎁 Sign up for 1,000 free tokens — enough to generate this report
+              🎁 Sign up for 1,000 free tokens, enough to generate this report
             </div>
           )}
         </div>
@@ -756,7 +756,7 @@ function PublicReportBuilderPage() {
                   className="w-full bg-[#10B981] hover:bg-[#059669] text-[#0A0E17] font-semibold rounded-lg py-2.5 text-sm transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   <Zap className="w-4 h-4" />
-                  Generate Report — {totalCost} 🪙
+                  Generate Report ({totalCost} 🪙)
                 </button>
               )}
 

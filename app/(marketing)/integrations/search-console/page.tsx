@@ -60,7 +60,7 @@ export default function SearchConsolePage() {
             Connect your Google Search Console property to ShowsUp to correlate
             your traditional organic search performance with your AI visibility
             score. Understand which queries you rank for on Google but miss in
-            AI — and vice versa.
+            AI, and vice versa.
           </p>
         </div>
       </section>
@@ -86,7 +86,7 @@ export default function SearchConsolePage() {
               {
                 title: "Validate your improvements",
                 description:
-                  "When you implement ShowsUp's improvement recommendations, see whether the resulting content also improves your Google rankings — a double win.",
+                  "When you implement ShowsUp's improvement recommendations, see whether the resulting content also improves your Google rankings, a double win.",
               },
               {
                 title: "Prioritise by traffic potential",
@@ -144,7 +144,7 @@ export default function SearchConsolePage() {
                 step: "3",
                 title: "Authorise ShowsUp access",
                 description:
-                  "Select the Google account that has access to your Search Console property and grant ShowsUp read-only permission to your Search Console data. ShowsUp only requests read access — it cannot make changes to your property.",
+                  "Select the Google account that has access to your Search Console property and grant ShowsUp read-only permission to your Search Console data. ShowsUp only requests read access and cannot make changes to your property.",
               },
               {
                 step: "4",

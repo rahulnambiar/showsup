@@ -85,18 +85,18 @@ export default function PrivacyPage() {
             <p>We may share your information with:</p>
             <ul className="list-disc pl-5 space-y-1 mt-2">
               <li>
-                <strong>Service providers</strong> — Supabase (database and authentication),
+                <strong>Service providers:</strong> Supabase (database and authentication),
                 Stripe (payment processing), Vercel (hosting), PostHog (product analytics),
                 Resend (transactional email). Each provider processes data only as necessary to
                 deliver their service.
               </li>
               <li>
-                <strong>AI providers</strong> — When you run a brand scan, your brand name and
+                <strong>AI providers:</strong> When you run a brand scan, your brand name and
                 website are submitted as prompts to OpenAI, Anthropic, and Google AI APIs. Please
                 review their respective privacy policies.
               </li>
               <li>
-                <strong>Legal requirements</strong> — We may disclose information where required by
+                <strong>Legal requirements:</strong> We may disclose information where required by
                 law, court order, or to protect the rights, property, or safety of FVG Capital
                 Pte. Ltd., our users, or others.
               </li>

@@ -93,7 +93,7 @@ export default function PostSaaSScan() {
               This was the finding that surprised us most, even though in retrospect it makes sense. We expected category leaders (the brands with the highest ARR, most customers, and biggest marketing budgets) to dominate their AI visibility scores. They did not.
             </p>
             <p className="mb-4">
-              In the CRM category, for example, a mid-sized specialist CRM focused exclusively on real estate agencies outscored two of the three dominant general-purpose CRM platforms on Topical Authority, Citation Quality, and Brand Consistency — despite having a fraction of the brand recognition and web traffic.
+              In the CRM category, for example, a mid-sized specialist CRM focused exclusively on real estate agencies outscored two of the three dominant general-purpose CRM platforms on Topical Authority, Citation Quality, and Brand Consistency, despite having a fraction of the brand recognition and web traffic.
             </p>
             <p className="mb-4">
               The pattern repeated across categories. In project management, a 40-person company that had published a well-regarded annual report on remote team productivity consistently appeared in Claude&apos;s responses for remote-work-related queries, often ahead of tools with significantly larger customer bases.
@@ -143,7 +143,7 @@ export default function PostSaaSScan() {
               We assessed brand consistency by comparing each brand&apos;s self-description across their website, LinkedIn company page, Crunchbase profile, G2 or Capterra listing, and any Wikipedia page (where present). We looked at category label, one-liner description, and the three key differentiators claimed.
             </p>
             <p className="mb-4">
-              The results were stark. Brands whose descriptions were substantively consistent across all five surfaces scored an average of 40% higher on Brand Consistency than brands with significant variation. More importantly, Brand Consistency showed strong positive correlation with Prominence — brands that were consistently described tended to also be more frequently and accurately mentioned in Claude&apos;s responses.
+              The results were stark. Brands whose descriptions were substantively consistent across all five surfaces scored an average of 40% higher on Brand Consistency than brands with significant variation. More importantly, Brand Consistency showed strong positive correlation with Prominence: brands that were consistently described tended to also be more frequently and accurately mentioned in Claude&apos;s responses.
             </p>
             <p className="mb-4">
               The most common failure mode was not deliberate inconsistency but neglect. The LinkedIn page had not been updated since a rebrand. The Crunchbase description still reflected a product direction abandoned two years ago. The G2 profile used a category label the company had moved away from.
