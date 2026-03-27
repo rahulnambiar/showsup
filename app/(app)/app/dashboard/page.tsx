@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { getBalance } from "@/lib/tokens";
 import { cn } from "@/lib/utils";
+
+const SAMPLE_SCAN_ID = "9627517f-3baa-4213-b7d6-be97b8b1e634";
 
 export const metadata: Metadata = { title: "Dashboard — ShowsUp" };
 
@@ -52,6 +54,14 @@ export default async function DashboardPage() {
     user ? getBalance(user.id) : Promise.resolve(0),
   ]);
 
+  // Fetch sample scan for onboarding (service role bypasses RLS)
+  const adminSb = await createServiceClient();
+  const { data: sampleScan } = await adminSb
+    .from("scans")
+    .select("id, brand_name, website, overall_score, category_scores, created_at")
+    .eq("id", SAMPLE_SCAN_ID)
+    .single();
+
   const scans        = allScans ?? [];
   const totalScans   = scans.length;
   const latestScore  = scans[0]?.overall_score ?? null;
@@ -79,7 +89,7 @@ export default async function DashboardPage() {
     <div className="p-6 md:p-8 max-w-5xl mx-auto space-y-8">
 
       {/* ── First-time / no-scan onboarding ── */}
-      {totalScans === 0 ? (
+      {totalScans === 0 ? (<>
         <div className="rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-white p-8 space-y-6">
           <div className="space-y-2">
             <p className="text-sm font-semibold text-emerald-600 uppercase tracking-widest">Welcome to ShowsUp</p>
@@ -121,7 +131,44 @@ export default async function DashboardPage() {
             )}
           </div>
         </div>
-      ) : (
+
+        {/* Sample scan preview */}
+        {sampleScan && (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-gray-500 uppercase tracking-widest">Sample Report</span>
+              <span className="text-xs text-gray-400">See what a full scan looks like</span>
+            </div>
+            <Link
+              href={`/app/report/${SAMPLE_SCAN_ID}`}
+              className="flex items-center gap-4 rounded-xl border border-dashed border-emerald-200 bg-white px-5 py-4 hover:border-emerald-400 hover:bg-emerald-50/30 transition-all group"
+            >
+              <div className="w-9 h-9 rounded-lg bg-emerald-100 flex items-center justify-center flex-shrink-0 text-emerald-700 text-sm font-bold">
+                {sampleScan.brand_name[0]}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold text-gray-900">{sampleScan.brand_name}</p>
+                <p className="text-xs text-gray-400 mt-0.5">{sampleScan.website} · Sample report</p>
+              </div>
+              <div className="flex items-center gap-3 flex-shrink-0">
+                <div className="text-right">
+                  <p className={cn(
+                    "text-lg font-bold tabular-nums font-mono",
+                    (sampleScan.overall_score ?? 0) >= 51 ? "text-emerald-600" :
+                    (sampleScan.overall_score ?? 0) >= 31 ? "text-amber-600" : "text-red-500"
+                  )}>
+                    {sampleScan.overall_score ?? "—"}
+                  </p>
+                  <p className="text-[10px] text-gray-400">ShowsUp Score</p>
+                </div>
+                <svg className="w-4 h-4 text-gray-300 group-hover:text-emerald-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+            </Link>
+          </div>
+        )}
+      </>) : (
         /* Page header — returning users only */
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>

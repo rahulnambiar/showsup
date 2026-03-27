@@ -1596,7 +1596,7 @@ function FloatingAIAssistant({ scan, brand }: {
 
 // ── Main Report Page ───────────────────────────────────────────────────────────
 
-export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: ScanResultRow[] }) {
+export function ReportPage({ scan, scanResults, isSample = false }: { scan: ScanRow; scanResults: ScanResultRow[]; isSample?: boolean }) {
   const [tokenBalance,   setTokenBalance]   = useState<number | null>(null);
   const [activeSection,  setActiveSection]  = useState<string>("score");
   const [scrollProgress, setScrollProgress] = useState(0);
@@ -1718,6 +1718,21 @@ export function ReportPage({ scan, scanResults }: { scan: ScanRow; scanResults: 
 
   return (
     <div className="min-h-screen bg-[#F9FAFB]">
+
+      {/* ── Sample scan banner ── */}
+      {isSample && (
+        <div className="bg-amber-50 border-b border-amber-200 px-6 py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+          <p className="text-sm text-amber-800">
+            <span className="font-semibold">Sample report</span> — This is a live scan of Dyson.com so you can explore what a full AI visibility report looks like.
+          </p>
+          <Link
+            href="/app/report-builder"
+            className="flex-shrink-0 text-xs font-semibold bg-amber-800 hover:bg-amber-900 text-white rounded-lg px-4 py-1.5 transition-colors"
+          >
+            Scan your own brand →
+          </Link>
+        </div>
+      )}
 
       {/* ── Sticky Header ── */}
       <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-xl border-b border-[#E5E7EB]">
