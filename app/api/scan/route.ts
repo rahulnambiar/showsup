@@ -4,7 +4,7 @@ import { createClient as createAdmin } from "@supabase/supabase-js";
 import { getBalance, deductTokens } from "@/lib/tokens";
 import { calculateReportCost as calcDynamicCost } from "@/lib/pricing/cost-calculator";
 import { isSelfHost } from "@/lib/mode";
-import { runScan } from "@/lib/engine/scan";
+import { runScan, RateLimitError } from "@/lib/engine/scan";
 import type { ScanInput, ScanOutput } from "@/lib/engine/types";
 
 // Re-export types that other parts of the app still import from here
@@ -96,6 +96,9 @@ export async function POST(request: Request) {
     try {
       result = await runScan(scanInput);
     } catch (err) {
+      if (err instanceof RateLimitError) {
+        return NextResponse.json({ error: "rate_limited", message: err.message }, { status: 429 });
+      }
       const msg = err instanceof Error ? err.message : "Scan failed";
       return NextResponse.json({ error: msg }, { status: 503 });
     }

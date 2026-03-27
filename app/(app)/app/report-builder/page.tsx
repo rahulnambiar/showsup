@@ -331,6 +331,15 @@ function ReportBuilderPage() {
         return;
       }
 
+      if (res.status === 429) {
+        updateStep("chatgpt", "error");
+        updateStep("claude", "error");
+        if (useGemini) updateStep("gemini", "error");
+        setScanError("We're at capacity right now. Please try again in a few minutes — we're working on expanding our resources.");
+        setScanning(false);
+        return;
+      }
+
       if (!res.ok) {
         updateStep("chatgpt", "error");
         updateStep("claude", "error");

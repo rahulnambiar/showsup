@@ -21,6 +21,15 @@ if (!process.env.OPENAI_API_KEY)    console.log("ShowsUp: No OPENAI_API_KEY — 
 if (!process.env.ANTHROPIC_API_KEY) console.log("ShowsUp: No ANTHROPIC_API_KEY — Claude disabled, analysis uses text fallback");
 if (!process.env.GOOGLE_AI_API_KEY) console.log("ShowsUp: No GOOGLE_AI_API_KEY — Gemini disabled");
 
+// ── Custom errors ─────────────────────────────────────────────────────────────
+
+export class RateLimitError extends Error {
+  constructor(provider: string) {
+    super(`Rate limit reached for ${provider}. Please try again later.`);
+    this.name = "RateLimitError";
+  }
+}
+
 // ── Model callers ─────────────────────────────────────────────────────────────
 
 export async function callOpenAI(prompt: string): Promise<string> {
@@ -30,6 +39,7 @@ export async function callOpenAI(prompt: string): Promise<string> {
     body: JSON.stringify({ model: "gpt-4o-mini", messages: [{ role: "user", content: prompt }], max_tokens: 400 }),
   });
   const data = await res.json() as { error?: { message?: string }; choices?: Array<{ message?: { content?: string } }> };
+  if (res.status === 429) throw new RateLimitError("OpenAI");
   if (!res.ok) throw new Error(data.error?.message ?? "OpenAI error");
   return data.choices?.[0]?.message?.content ?? "";
 }
@@ -51,6 +61,7 @@ export async function callGemini(prompt: string): Promise<string> {
     error?: { message?: string };
     candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
   };
+  if (res.status === 429) throw new RateLimitError("Gemini");
   if (!res.ok) throw new Error(data.error?.message ?? "Gemini error");
   return data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
 }
@@ -62,6 +73,7 @@ async function openAIFallback(prompt: string, maxTokens: number, model: "gpt-4o-
     body: JSON.stringify({ model, messages: [{ role: "user", content: prompt }], max_tokens: maxTokens }),
   });
   const data = await res.json() as { error?: { message?: string }; choices?: Array<{ message?: { content?: string } }> };
+  if (res.status === 429) throw new RateLimitError("OpenAI");
   if (!res.ok) throw new Error(data.error?.message ?? `OpenAI ${model} error`);
   return data.choices?.[0]?.message?.content ?? "";
 }
@@ -79,10 +91,11 @@ export async function callAnthropic(prompt: string, maxTokens = 400): Promise<st
     });
     const data = await res.json() as { error?: { message?: string }; content?: Array<{ text?: string }> };
     if (res.ok) return data.content?.[0]?.text ?? "";
-    // Hard-throw only on auth/permission errors (OpenAI won't help); fall back on everything else
+    // Hard-throw on auth/permission/rate-limit errors (OpenAI fallback won't help for auth; propagate rate limits)
     if (res.status === 401 || res.status === 403) {
       throw new Error(data.error?.message ?? "Anthropic error");
     }
+    if (res.status === 429) throw new RateLimitError("Anthropic");
     console.warn(`[scan] Claude Haiku ${res.status} — falling back to gpt-4o-mini`);
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
@@ -539,7 +552,8 @@ async function runRegionalPass(
             const response = await model.call(q.text);
             const analysis = await analyzeResponse(brand, category, q.text, q.scoreCategory, response);
             allAnalyses.push(analysis);
-          } catch {
+          } catch (err) {
+            if (err instanceof RateLimitError) throw err;
             allAnalyses.push(fallbackAnalysis(brand, ""));
           }
         })
@@ -657,6 +671,7 @@ export async function runScan(input: ScanInput): Promise<ScanOutput> {
               mentioned: analysis.brand_mentioned, count: analysis.mention_position ?? 0, score,
             };
           } catch (err) {
+            if (err instanceof RateLimitError) throw err; // propagate rate limit errors
             const msg      = err instanceof Error ? err.message : "Unknown error";
             const analysis = fallbackAnalysis(brand, "");
             return {
