@@ -41,8 +41,13 @@ const SIGNAL_LABELS = [
 const container = "max-w-[1200px] mx-auto px-6";
 
 export default async function IndexPage() {
-  const [month, insights] = await Promise.all([getLatestMonth(), getPublishedInsights(6)]);
-  const rows = await getIndexData(month);
+  let month = "";
+  let insights: Awaited<ReturnType<typeof getPublishedInsights>> = [];
+  let rows: Awaited<ReturnType<typeof getIndexData>> = [];
+  try {
+    [month, insights] = await Promise.all([getLatestMonth(), getPublishedInsights(6)]);
+    rows = await getIndexData(month);
+  } catch { /* DB unavailable at build time */ }
 
   const categories = Array.from(new Set(BRAND_INDEX.map((b) => b.category))).sort();
   const top10 = rows.slice(0, 10);
@@ -98,7 +103,7 @@ export default async function IndexPage() {
                 <Globe2 className="w-4 h-4 text-[#10B981]" />
                 {rows.length > 0 ? `${rows.length} brands tracked` : "100 brands tracked"}
               </span>
-              <span>Last updated: {formatMonth(month)}</span>
+              {month && <span>Last updated: {formatMonth(month)}</span>}
               {rows.length > 0 && <span>{llmsCount} brands with llms.txt ({Math.round(llmsCount / rows.length * 100)}%)</span>}
             </div>
           </div>

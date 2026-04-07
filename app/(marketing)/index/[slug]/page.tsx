@@ -12,8 +12,7 @@ import {
   formatMonth, categoryToSlug, toComparisonSlug,
 } from "../_lib/utils";
 
-export const revalidate = 3600;
-export const dynamicParams = true;
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const brand = slugToBrand(params.slug);
