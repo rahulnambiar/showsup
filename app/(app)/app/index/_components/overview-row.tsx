@@ -10,8 +10,6 @@ interface Props {
 }
 
 export function OverviewRow({ rows, prevRows }: Props) {
-  const prevMap = new Map(prevRows.map((r) => [r.brand_url, r]));
-
   // Avg composite
   const withScore = rows.filter((r) => r.composite_score !== null);
   const avgComposite = withScore.length > 0

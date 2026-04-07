@@ -2,7 +2,6 @@
 
 import { ResponsiveContainer, ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine } from "recharts";
 import type { IndexRow } from "../_lib/data";
-import { scoreHex } from "../_lib/utils";
 
 interface Props {
   rows: IndexRow[];

@@ -17,8 +17,6 @@ const SIGNALS = [
   { key: "crawler_readiness_score",  label: "Crawler Readiness"  },
 ] as const;
 
-type SignalKey = typeof SIGNALS[number]["key"];
-
 export function SignalHealth({ rows }: Props) {
   const data = SIGNALS.map(({ key, label }) => {
     const values = rows.filter((r) => r[key] !== null).map((r) => r[key] as number);

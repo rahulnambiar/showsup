@@ -2,7 +2,7 @@
 
 import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis,
-  CartesianGrid, Tooltip, ReferenceLine,
+  CartesianGrid, Tooltip,
 } from "recharts";
 
 interface DataPoint {

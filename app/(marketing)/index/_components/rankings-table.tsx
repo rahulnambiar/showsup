@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import Link from "next/link";
 import { ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { toSlug, scoreHex, categoryToSlug } from "../_lib/utils";
+import { toSlug, scoreHex } from "../_lib/utils";
 import type { IndexRow } from "../_lib/data";
 
 interface Props {
@@ -125,7 +125,6 @@ export function RankingsTable({ rows, categories }: Props) {
             {sorted.map((row) => {
               const rank = rankMap.get(row.brand_url) ?? "—";
               const delta = row.score_delta;
-              const hasLlmsTxt = (row.website_snapshot as { llms_txt_exists?: boolean } | null)?.llms_txt_exists;
               return (
                 <tr
                   key={row.brand_url}

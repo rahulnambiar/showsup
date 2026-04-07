@@ -2,11 +2,11 @@
 
 import { useState, useEffect, useCallback } from "react";
 import {
-  ResponsiveContainer, LineChart, Line, AreaChart, Area,
+  ResponsiveContainer, AreaChart, Area,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend,
 } from "recharts";
 import { cn } from "@/lib/utils";
-import { CATEGORY_COLORS, scoreHex } from "./score-utils";
+import { CATEGORY_COLORS } from "./score-utils";
 import type { BrandRow } from "./score-utils";
 
 interface Props {
@@ -24,8 +24,6 @@ const SIGNAL_KEYS = [
   { key: "crawler_readiness_score",  label: "Crawler Readiness",  color: "#34D399" },
 ] as const;
 
-type SignalKey = typeof SIGNAL_KEYS[number]["key"];
-
 type HistoryPoint = Record<string, number | string | null>;
 
 const TOP5_PRESETS = ["Apple", "Google", "Microsoft", "Amazon", "Samsung"];
@@ -41,11 +39,6 @@ export function TrendCharts({ rows }: Props) {
   // Group rows by brand/month for multi-brand chart
   const allBrands = Array.from(new Set(rows.map((r) => r.brand_name))).sort();
   const allCategories = Array.from(new Set(rows.map((r) => r.category))).sort();
-
-  // Multi-brand chart: use current month rows only (since we may not have historical)
-  const multiBrandData = rows
-    .filter((r) => selectedBrands.includes(r.brand_name))
-    .map((r) => ({ brand: r.brand_name, month: r.month, score: r.composite_score }));
 
   // Category averages from current rows
   const categoryData = allCategories.map((cat) => {
@@ -185,7 +178,6 @@ export function TrendCharts({ rows }: Props) {
             <ResponsiveContainer width="100%" height={320}>
               <BarChart_
                 data={categoryData}
-                layout="vertical"
                 margin={{ left: 20, right: 40, top: 0, bottom: 0 }}
               />
             </ResponsiveContainer>
@@ -245,7 +237,7 @@ export function TrendCharts({ rows }: Props) {
 import { BarChart, Bar, Cell } from "recharts";
 import { scoreHex as sh } from "./score-utils";
 
-function BarChart_({ data, layout, margin }: { data: { category: string; avg: number | null }[]; layout: string; margin: object }) {
+function BarChart_({ data, margin }: { data: { category: string; avg: number | null }[]; margin: object }) {
   return (
     <ResponsiveContainer width="100%" height={320}>
       <BarChart data={data} layout="vertical" margin={margin as { left: number; right: number; top: number; bottom: number }}>

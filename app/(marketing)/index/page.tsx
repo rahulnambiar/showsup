@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, Globe2, TrendingUp, TrendingDown, Github } from "lucide-react";
+import { ArrowRight, Globe2, Github } from "lucide-react";
 import { MarketingNav } from "@/components/marketing-nav";
 import { MarketingFooter } from "@/components/marketing-footer";
 import { getIndexData, getLatestMonth, getPublishedInsights } from "./_lib/data";
@@ -37,8 +37,6 @@ const SIGNAL_LABELS = [
   { key: "search_correlation_score", label: "Search Correlation", desc: "Organic search ranking correlation"                  },
   { key: "crawler_readiness_score",  label: "Crawler Readiness",  desc: "AI bot access permissions"                           },
 ] as const;
-
-type SignalKey = typeof SIGNAL_LABELS[number]["key"];
 
 const container = "max-w-[1200px] mx-auto px-6";
 

@@ -3,8 +3,7 @@
 import { useState, useMemo } from "react";
 import {
   ResponsiveContainer, ScatterChart, Scatter, XAxis, YAxis,
-  CartesianGrid, Tooltip, ReferenceLine, ComposedChart, Line,
-  YAxis as YAxisRight,
+  CartesianGrid, Tooltip, ReferenceLine,
 } from "recharts";
 import { cn } from "@/lib/utils";
 import { CATEGORY_COLORS } from "./score-utils";
@@ -26,16 +25,6 @@ function pearsonCorrelation(xs: number[], ys: number[]): number | null {
   return Math.round((num / (dx * dy)) * 1000) / 1000;
 }
 
-function linearRegression(points: { x: number; y: number }[]) {
-  const n = points.length;
-  if (n < 2) return null;
-  const mx = points.reduce((s, p) => s + p.x, 0) / n;
-  const my = points.reduce((s, p) => s + p.y, 0) / n;
-  const slope = points.reduce((s, p) => s + (p.x - mx) * (p.y - my), 0) /
-    points.reduce((s, p) => s + (p.x - mx) ** 2, 0);
-  const intercept = my - slope * mx;
-  return { slope, intercept };
-}
 
 const CustomDot = (props: { cx?: number; cy?: number; payload?: { category: string; brand: string; composite: number; stock: number } }) => {
   const { cx, cy, payload } = props;
@@ -85,18 +74,6 @@ export function StockCorrelation({ rows }: Props) {
     const ys = scatterData.map((d) => d.y);
     return pearsonCorrelation(xs, ys);
   }, [scatterData]);
-
-  const regression = useMemo(() => {
-    return linearRegression(scatterData.map((d) => ({ x: d.x, y: d.y })));
-  }, [scatterData]);
-
-  const regressionPoints = useMemo(() => {
-    if (!regression) return [];
-    return [
-      { x: 0,   y: regression.intercept },
-      { x: 100, y: regression.slope * 100 + regression.intercept },
-    ];
-  }, [regression]);
 
   // Quartile analysis
   const sorted = [...scatterData].sort((a, b) => a.composite - b.composite);

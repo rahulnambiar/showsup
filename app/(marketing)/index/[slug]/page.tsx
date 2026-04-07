@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowRight, ExternalLink, TrendingUp, TrendingDown, Minus, Lock } from "lucide-react";
+import { ArrowRight, ExternalLink, Lock } from "lucide-react";
 import { MarketingNav } from "@/components/marketing-nav";
 import { MarketingFooter } from "@/components/marketing-footer";
 import { BRAND_INDEX } from "@/lib/brand-index/brands";
@@ -9,7 +9,7 @@ import { getBrandHistory, getBrandSnapshot, getUserBrandBySlug } from "../_lib/d
 import { ScoreTrend } from "../_components/score-trend";
 import {
   toSlug, slugToBrand, scoreHex, scoreLabel, scoreLabelColor,
-  formatMonth, categoryToSlug, toComparisonSlug, domainToSlug,
+  formatMonth, categoryToSlug, toComparisonSlug,
 } from "../_lib/utils";
 
 export const revalidate = 3600;
@@ -63,8 +63,6 @@ const SIGNALS = [
   { key: "search_correlation_score", label: "Search Correlation" },
   { key: "crawler_readiness_score",  label: "Crawler Readiness"  },
 ] as const;
-
-type SigKey = typeof SIGNALS[number]["key"];
 
 const container = "max-w-[1200px] mx-auto px-6";
 
@@ -136,10 +134,10 @@ async function UserBrandPage({ slug }: { slug: string }) {
                 <h2 className="text-[16px] font-semibold text-[#111827] mb-4">AI Platform Visibility</h2>
                 <div className="grid grid-cols-3 gap-4">
                   {[
-                    { label: "ChatGPT", score: chatgpt_score, color: "#10A37F" },
-                    { label: "Claude",  score: claude_score,  color: "#CD7C2F" },
-                    { label: "Gemini",  score: gemini_score,  color: "#4285F4" },
-                  ].map(({ label, score: s, color }) => (
+                    { label: "ChatGPT", score: chatgpt_score },
+                    { label: "Claude",  score: claude_score  },
+                    { label: "Gemini",  score: gemini_score  },
+                  ].map(({ label, score: s }) => (
                     <div key={label} className="text-center border border-[#E5E7EB] rounded-xl p-4">
                       <p className="text-[12px] text-[#6B7280] mb-1">{label}</p>
                       <p className="text-[32px] font-black tabular-nums" style={{ color: s !== null ? scoreHex(s) : "#D1D5DB" }}>
@@ -376,10 +374,10 @@ export default async function BrandProfilePage({ params }: { params: { slug: str
                   <h2 className="text-[16px] font-semibold text-[#111827] mb-4">Platform Scores</h2>
                   <div className="grid grid-cols-3 gap-4">
                     {[
-                      { label: "ChatGPT", score: latest.chatgpt_score, color: "#10A37F" },
-                      { label: "Claude",  score: latest.claude_score,  color: "#CD7C2F" },
-                      { label: "Gemini",  score: latest.gemini_score,  color: "#4285F4" },
-                    ].map(({ label, score: s, color }) => (
+                      { label: "ChatGPT", score: latest.chatgpt_score },
+                      { label: "Claude",  score: latest.claude_score  },
+                      { label: "Gemini",  score: latest.gemini_score  },
+                    ].map(({ label, score: s }) => (
                       <div key={label} className="text-center border border-[#E5E7EB] rounded-xl p-4">
                         <p className="text-[12px] text-[#6B7280] mb-1">{label}</p>
                         <p className="text-[32px] font-black tabular-nums" style={{ color: s !== null ? scoreHex(s) : "#D1D5DB" }}>
