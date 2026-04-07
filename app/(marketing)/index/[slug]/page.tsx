@@ -71,7 +71,12 @@ const container = "max-w-[1200px] mx-auto px-6";
 // ─────────────────────────────────────────────────────────────────────────────
 
 async function UserBrandPage({ slug }: { slug: string }) {
-  const data = await getUserBrandBySlug(slug);
+  let data: Awaited<ReturnType<typeof getUserBrandBySlug>> = null;
+  try {
+    data = await getUserBrandBySlug(slug);
+  } catch {
+    // DB unavailable
+  }
   if (!data) notFound();
 
   const { brand_name, website, category, overall_score, chatgpt_score, claude_score, gemini_score, scanned_at } = data;
@@ -211,10 +216,19 @@ export default async function BrandProfilePage({ params }: { params: { slug: str
     return <UserBrandPage slug={params.slug} />;
   }
 
-  const history      = await getBrandHistory(brand.url);
+  let history: Awaited<ReturnType<typeof getBrandHistory>> = [];
+  let snapshot: Awaited<ReturnType<typeof getBrandSnapshot>> = null;
+  try {
+    history = await getBrandHistory(brand.url);
+    const latestMonthForSnapshot = history[history.length - 1]?.month ?? null;
+    if (latestMonthForSnapshot) {
+      snapshot = await getBrandSnapshot(brand.url, latestMonthForSnapshot);
+    }
+  } catch {
+    // DB unavailable at build time — render with empty data
+  }
   const latest       = history[history.length - 1] ?? null;
   const latestMonth  = latest?.month ?? null;
-  const snapshot     = latestMonth ? await getBrandSnapshot(brand.url, latestMonth) : null;
   const score        = latest?.composite_score ?? null;
   const trendData    = history.map((h) => ({ month: h.month, score: h.composite_score }));
 
