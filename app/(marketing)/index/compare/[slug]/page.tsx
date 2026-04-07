@@ -8,16 +8,11 @@ import { getBrandHistory } from "../../_lib/data";
 import { MultiScoreTrend } from "../../_components/score-trend";
 import {
   toSlug, slugToBrand, parseComparisonSlug, scoreHex, scoreLabel,
-  categoryToSlug, getComparisonPairs, formatMonth,
+  categoryToSlug, formatMonth,
 } from "../../_lib/utils";
 
 export const revalidate = 3600;
-
-export async function generateStaticParams() {
-  return getComparisonPairs().map(({ slugA, slugB }) => ({
-    slug: `${slugA}-vs-${slugB}`,
-  }));
-}
+export const dynamicParams = true;
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const parsed = parseComparisonSlug(params.slug);

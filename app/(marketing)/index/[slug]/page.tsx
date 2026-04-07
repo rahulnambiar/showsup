@@ -13,10 +13,7 @@ import {
 } from "../_lib/utils";
 
 export const revalidate = 3600;
-
-export async function generateStaticParams() {
-  return BRAND_INDEX.map((b) => ({ slug: toSlug(b.name) }));
-}
+export const dynamicParams = true;
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const brand = slugToBrand(params.slug);
