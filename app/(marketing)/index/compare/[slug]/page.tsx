@@ -61,10 +61,14 @@ export default async function ComparePage({ params }: { params: { slug: string }
   const brandB = slugToBrand(parsed.slugB);
   if (!brandA || !brandB) notFound();
 
-  const [historyA, historyB] = await Promise.all([
-    getBrandHistory(brandA.url),
-    getBrandHistory(brandB.url),
-  ]);
+  let historyA: Awaited<ReturnType<typeof getBrandHistory>> = [];
+  let historyB: Awaited<ReturnType<typeof getBrandHistory>> = [];
+  try {
+    [historyA, historyB] = await Promise.all([
+      getBrandHistory(brandA.url),
+      getBrandHistory(brandB.url),
+    ]);
+  } catch { /* DB unavailable at build time */ }
 
   const latestA = historyA[historyA.length - 1] ?? null;
   const latestB = historyB[historyB.length - 1] ?? null;

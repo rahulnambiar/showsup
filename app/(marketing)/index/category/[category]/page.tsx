@@ -38,12 +38,18 @@ export default async function CategoryPage({ params }: { params: { category: str
   const category = slugToCategory(params.category);
   if (!category) notFound();
 
-  const [month, catHistory, insights] = await Promise.all([
-    getLatestMonth(),
-    getCategoryHistory(category),
-    getPublishedInsights(10),
-  ]);
-  const allRows = await getIndexData(month);
+  let month = "";
+  let catHistory: Awaited<ReturnType<typeof getCategoryHistory>> = [];
+  let insights: Awaited<ReturnType<typeof getPublishedInsights>> = [];
+  let allRows: Awaited<ReturnType<typeof getIndexData>> = [];
+  try {
+    [month, catHistory, insights] = await Promise.all([
+      getLatestMonth(),
+      getCategoryHistory(category),
+      getPublishedInsights(10),
+    ]);
+    allRows = await getIndexData(month);
+  } catch { /* DB unavailable at build time */ }
 
   const rows = allRows
     .filter((r) => r.category === category)

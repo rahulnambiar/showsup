@@ -21,15 +21,22 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const brand = slugToBrand(params.slug);
   if (brand) {
-    const history = await getBrandHistory(brand.url);
-    const latest  = history[history.length - 1] ?? null;
-    const score   = latest?.composite_score ?? null;
+    let score: number | null = null;
+    let chatgpt: number | null = null;
+    let claude: number | null = null;
+    try {
+      const history = await getBrandHistory(brand.url);
+      const latest  = history[history.length - 1] ?? null;
+      score   = latest?.composite_score ?? null;
+      chatgpt = latest?.chatgpt_score ?? null;
+      claude  = latest?.claude_score ?? null;
+    } catch { /* DB unavailable at build time */ }
     return {
       title: `${brand.name} AI Visibility Score: ${score ?? "—"}/100 — ShowsUp Index`,
       description: `${brand.name} scores ${score ?? "—"}/100 for AI visibility across ChatGPT, Claude, and Gemini. See 6-signal breakdown, trends, and competitor comparison.`,
       openGraph: {
         title:       `${brand.name} AI Visibility: ${score ?? "—"}/100`,
-        description: `${brand.name} AI visibility score. ChatGPT: ${latest?.chatgpt_score ?? "—"}, Claude: ${latest?.claude_score ?? "—"}.`,
+        description: `${brand.name} AI visibility score. ChatGPT: ${chatgpt ?? "—"}, Claude: ${claude ?? "—"}.`,
         url:         `https://showsup.co/index/${params.slug}`,
       },
       twitter: { card: "summary_large_image" },
@@ -38,7 +45,10 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   }
 
   // User-generated brand page
-  const userData = await getUserBrandBySlug(params.slug);
+  let userData: Awaited<ReturnType<typeof getUserBrandBySlug>> = null;
+  try {
+    userData = await getUserBrandBySlug(params.slug);
+  } catch { /* DB unavailable at build time */ }
   if (!userData) return { title: "Brand Not Found" };
 
   const score = userData.overall_score;
