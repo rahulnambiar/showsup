@@ -21,10 +21,11 @@ export function MarketingFooter() {
             <div className="space-y-2.5">
               <p className="text-[11px] font-semibold uppercase tracking-wider text-[#9CA3AF]">Product</p>
               {[
-                { label: "Cloud",       href: "/signup"      },
-                { label: "CLI",         href: "/cli"         },
-                { label: "Chrome",      href: "/chrome-extension" },
-                { label: "Methodology", href: "/methodology" },
+                { label: "Cloud",              href: "/signup"      },
+                { label: "AI Visibility Index", href: "/index"  },
+                { label: "CLI",                href: "/cli"     },
+                { label: "Chrome",             href: "/chrome-extension" },
+                { label: "Methodology",        href: "/methodology" },
               ].map(l => (
                 <Link key={l.href} href={l.href} className="block text-[13px] text-[#4B5563] hover:text-[#111827] transition-colors">
                   {l.label}

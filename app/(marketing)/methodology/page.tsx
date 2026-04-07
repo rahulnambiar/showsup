@@ -3,13 +3,13 @@ import { MarketingNav } from "@/components/marketing-nav";
 import { MarketingFooter } from "@/components/marketing-footer";
 
 export const metadata: Metadata = {
-  title: "AEO Methodology — How ShowsUp Measures AI Brand Visibility",
+  title: "AEO Methodology: 6-Signal Scoring and 10-Dimension Improvement Framework | ShowsUp",
   description:
-    "The research-backed framework for measuring and improving brand visibility across ChatGPT, Claude, and Gemini. 10 dimensions, 680M+ citations analysed.",
-  keywords: ["AEO methodology", "AI visibility framework", "how to improve AI brand visibility", "how LLMs choose brands", "answer engine optimisation"],
+    "How ShowsUp measures AI brand visibility: a 6-signal composite score (LLM probing, structured data, training data, citations, search, crawlers) plus a 10-dimension AEO improvement plan. Based on 680M+ citations.",
+  keywords: ["AEO methodology", "AI visibility scoring", "ShowsUp composite score", "6 signal AI visibility", "AI visibility framework", "how LLMs choose brands", "answer engine optimisation"],
   openGraph: {
-    title: "The ShowsUp AEO Framework — 10 Dimensions of AI Visibility",
-    description: "Based on 680M+ AI citations and peer-reviewed research. The open source methodology for measuring how AI platforms recommend brands.",
+    title: "The ShowsUp AEO Framework: 6-Signal Score + 10 Dimensions",
+    description: "Two complementary analyses: a 6-signal composite score for measuring AI visibility, and a 10-dimension framework for improving it. Based on 680M+ AI citations.",
     url: "https://showsup.co/methodology",
     type: "article",
   },
@@ -29,13 +29,15 @@ export default function MethodologyPage() {
       <div className="lg:hidden sticky top-16 z-40 bg-white border-b border-[#E5E7EB] px-4 py-2 overflow-x-auto">
         <div className="flex gap-2 w-max">
           {[
-            { href: "#overview",      label: "Overview" },
-            { href: "#how-ai-chooses", label: "How AI Chooses" },
-            { href: "#dimensions",    label: "10 Dimensions" },
-            { href: "#scoring",       label: "Scoring" },
-            { href: "#fixes",         label: "Fix Generation" },
-            { href: "#verification",  label: "Verification" },
-            { href: "#research",      label: "Research" },
+            { href: "#overview",         label: "Overview" },
+            { href: "#how-ai-chooses",   label: "How AI Chooses" },
+            { href: "#composite-score",  label: "Composite Score" },
+            { href: "#brand-index",      label: "Brand Index" },
+            { href: "#dimensions",       label: "10 Dimensions" },
+            { href: "#scoring",          label: "Scoring" },
+            { href: "#fixes",            label: "Fix Generation" },
+            { href: "#verification",     label: "Verification" },
+            { href: "#research",         label: "Research" },
           ].map((item) => (
             <a
               key={item.href}
@@ -57,13 +59,15 @@ export default function MethodologyPage() {
               On this page
             </p>
             {[
-              { href: "#overview", label: "Overview" },
-              { href: "#how-ai-chooses", label: "How AI Chooses Brands" },
-              { href: "#dimensions", label: "The 10 Dimensions" },
-              { href: "#scoring", label: "Scoring Methodology" },
-              { href: "#fixes", label: "Fix Generation" },
-              { href: "#verification", label: "Verification" },
-              { href: "#research", label: "Research Sources" },
+              { href: "#overview",        label: "Overview" },
+              { href: "#how-ai-chooses",  label: "How AI Chooses Brands" },
+              { href: "#composite-score", label: "Composite Score" },
+              { href: "#brand-index",     label: "The Brand Index" },
+              { href: "#dimensions",      label: "AEO Improvement Plan" },
+              { href: "#scoring",         label: "Scoring Methodology" },
+              { href: "#fixes",           label: "Fix Generation" },
+              { href: "#verification",    label: "Verification" },
+              { href: "#research",        label: "Research Sources" },
             ].map((item) => (
               <a
                 key={item.href}
@@ -135,12 +139,18 @@ export default function MethodologyPage() {
               entity graphs, each of which rewards different optimization
               strategies.
             </p>
+            <p className="text-gray-600 leading-relaxed mb-4">
+              ShowsUp provides two complementary analyses. The{" "}
+              <strong className="text-gray-900">ShowsUp Composite Score</strong>{" "}
+              combines 6 independent signal layers into a single 0–100 score that
+              measures your current AI visibility. The{" "}
+              <strong className="text-gray-900">AEO Improvement Plan</strong>{" "}
+              analyzes your website across 10 research-backed dimensions and
+              generates specific, verified recommendations for improvement.
+            </p>
             <p className="text-gray-600 leading-relaxed">
-              ShowsUp measures your brand across{" "}
-              <strong className="text-gray-900">10 dimensions</strong> that
-              collectively determine whether AI platforms recognize, trust, and
-              recommend your brand. Each dimension is scored 0–10 based on
-              verifiable signals. Together they form your AEO Readiness Score.
+              The composite score tells you where you stand. The improvement plan
+              tells you how to move.
             </p>
           </section>
 
@@ -221,10 +231,371 @@ export default function MethodologyPage() {
             </div>
           </section>
 
-          {/* Section 3: The 10 Dimensions */}
+          {/* Section 3: Composite Score */}
+          <section id="composite-score" className="mb-16">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6 pb-3 border-b border-gray-200">
+              The ShowsUp Composite Score: 6 Signal Layers
+            </h2>
+            <p className="text-gray-600 leading-relaxed mb-8">
+              Most AI visibility tools rely on a single method: asking AI a question and
+              checking if your brand appears. This is useful but unstable. Ask the same
+              question twice and you may get different answers. ShowsUp combines 6
+              independent signal layers into a composite score that is more stable, more
+              comprehensive, and more actionable than any single measurement.
+            </p>
+
+            {/* Composite score weight chart */}
+            <div className="bg-gray-50 rounded-2xl p-6 mb-10">
+              <p className="text-sm font-semibold text-gray-700 mb-5">
+                Composite Score Calculation
+              </p>
+              <div className="space-y-3">
+                {[
+                  { label: "LLM Probing",        pct: 30, note: "What AI says"          },
+                  { label: "Structured Data",    pct: 20, note: "Can AI read you"        },
+                  { label: "Training Data",      pct: 15, note: "Does AI know you"       },
+                  { label: "Citation Sources",   pct: 15, note: "Where AI finds you"     },
+                  { label: "Search Correlation", pct: 10, note: "Search ranking proxy"   },
+                  { label: "Crawler Readiness",  pct: 10, note: "Can AI access you"      },
+                ].map((row) => (
+                  <div key={row.label} className="flex items-center gap-3">
+                    <span className="text-sm text-gray-600 w-36 flex-shrink-0">{row.label}</span>
+                    <div className="flex-1 bg-gray-200 rounded-full h-3 overflow-hidden">
+                      <div
+                        className="h-3 bg-emerald-500 rounded-full"
+                        style={{ width: `${row.pct * 3}%` }}
+                      />
+                    </div>
+                    <span className="text-sm font-semibold text-gray-700 w-10 text-right flex-shrink-0">
+                      {row.pct}%
+                    </span>
+                    <span className="text-xs text-gray-400 w-36 flex-shrink-0 hidden md:block">
+                      {row.note}
+                    </span>
+                  </div>
+                ))}
+                <div className="border-t border-gray-200 pt-3 flex items-center gap-3">
+                  <span className="text-sm font-semibold text-gray-700 w-36 flex-shrink-0">Composite Score</span>
+                  <span className="text-sm text-gray-500">Weighted average of all 6 signals, expressed as 0–100</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Signal 1 */}
+            <div className="mb-10">
+              <div className="flex items-center gap-3 mb-3">
+                <span className="text-2xl">💬</span>
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900">Signal 1: LLM Probing</h3>
+                  <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 rounded-full px-2.5 py-0.5">30% weight</span>
+                </div>
+              </div>
+              <p className="text-gray-600 leading-relaxed mb-4">
+                The direct test: we ask ChatGPT, Claude, and Gemini category-specific questions
+                and analyze whether your brand appears, where it appears, and how it is described.
+              </p>
+              <div className="mb-4">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">What We Measure</p>
+                <ul className="space-y-1">
+                  {[
+                    "Mention rate (% of queries where brand appears)",
+                    "Average position (1st mentioned, 2nd, 3rd?)",
+                    "Recommendation rate (% where AI actively recommends)",
+                    "Sentiment (positive, neutral, or negative)",
+                  ].map((m) => (
+                    <li key={m} className="text-sm text-gray-600 flex items-start gap-2">
+                      <span className="text-emerald-500 flex-shrink-0 mt-0.5">✓</span>{m}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="bg-blue-50 border-l-4 border-blue-400 pl-4 py-3 rounded-r-lg mb-4">
+                <p className="text-sm text-blue-800">
+                  LLM responses are non-deterministic: the same query can produce different results.
+                  ShowsUp runs multiple queries across 6 categories (awareness, discovery, competitive,
+                  purchase intent, alternatives, reputation) and uses medians for stability.
+                </p>
+              </div>
+              <p className="text-sm text-gray-500 italic">
+                Why 30%: this is what users experience directly. When someone asks AI, does your brand
+                show up? It is the most intuitive signal but also the most volatile, which is why it is
+                complemented by 5 other layers.
+              </p>
+            </div>
+
+            {/* Signal 2 */}
+            <div className="mb-10">
+              <div className="flex items-center gap-3 mb-3">
+                <span className="text-2xl">⚙️</span>
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900">Signal 2: Structured Data Readiness</h3>
+                  <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 rounded-full px-2.5 py-0.5">20% weight</span>
+                </div>
+              </div>
+              <p className="text-gray-600 leading-relaxed mb-4">
+                Can AI crawlers find and parse your content? This measures the technical foundations
+                that make your website AI-readable.
+              </p>
+              <div className="mb-4">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">What We Measure</p>
+                <ul className="space-y-1">
+                  {[
+                    "llms.txt file (exists? quality?)",
+                    "Schema markup (Organization, FAQPage, Product, WebSite, BreadcrumbList)",
+                    "AI crawler access (GPTBot, ClaudeBot, PerplexityBot, Google-Extended — allowed or blocked?)",
+                    "Content structure (meta descriptions, heading hierarchy, word count)",
+                    "Sitemap (exists? fresh lastmod dates?)",
+                    "Page load time",
+                  ].map((m) => (
+                    <li key={m} className="text-sm text-gray-600 flex items-start gap-2">
+                      <span className="text-emerald-500 flex-shrink-0 mt-0.5">✓</span>{m}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="bg-blue-50 border-l-4 border-blue-400 pl-4 py-3 rounded-r-lg mb-4">
+                <p className="text-sm text-blue-800">
+                  📊 Only 12% of the world&apos;s top 100 brands have an llms.txt file. Those that do
+                  score 18 points higher on average in the ShowsUp Brand Index Structured Data signal.
+                </p>
+                <p className="text-xs text-blue-600 mt-1">ShowsUp Brand Index, April 2026</p>
+              </div>
+              <p className="text-sm text-gray-500 italic">
+                Why 20%: this is the foundation. Without proper technical readiness, AI systems
+                cannot access your content regardless of how good it is.
+              </p>
+            </div>
+
+            {/* Signal 3 */}
+            <div className="mb-10">
+              <div className="flex items-center gap-3 mb-3">
+                <span className="text-2xl">📚</span>
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900">Signal 3: Training Data Footprint</h3>
+                  <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 rounded-full px-2.5 py-0.5">15% weight</span>
+                </div>
+              </div>
+              <p className="text-gray-600 leading-relaxed mb-4">
+                Where did AI learn about your brand? LLMs draw from training data: Wikipedia, Reddit,
+                industry publications, and review platforms. Brands with stronger training data presence
+                are remembered more reliably.
+              </p>
+              <div className="mb-4">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">What We Measure</p>
+                <ul className="space-y-1">
+                  {[
+                    "Wikipedia presence and article depth",
+                    "Reddit mention frequency and quality (posts with 3+ upvotes enter OpenAI's Tier 2 training data)",
+                    "Domain age (average cited domain age is 17 years)",
+                  ].map((m) => (
+                    <li key={m} className="text-sm text-gray-600 flex items-start gap-2">
+                      <span className="text-emerald-500 flex-shrink-0 mt-0.5">✓</span>{m}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="bg-blue-50 border-l-4 border-blue-400 pl-4 py-3 rounded-r-lg mb-4">
+                <p className="text-sm text-blue-800">
+                  📊 OpenAI&apos;s training data hierarchy: Tier 1 includes Wikipedia and licensed publisher
+                  partners. Tier 2 includes Reddit content with 3+ upvotes and industry publications.
+                </p>
+                <p className="text-xs text-blue-600 mt-1">Digital Bloom, 2025 AI Visibility Report</p>
+              </div>
+              <p className="text-sm text-gray-500 italic">
+                Why 15%: training data determines what AI knows without searching the web. Brands with
+                strong training data presence are mentioned even when AI does not browse.
+              </p>
+            </div>
+
+            {/* Signal 4 */}
+            <div className="mb-10">
+              <div className="flex items-center gap-3 mb-3">
+                <span className="text-2xl">🔗</span>
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900">Signal 4: Citation Source Ecosystem</h3>
+                  <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 rounded-full px-2.5 py-0.5">15% weight</span>
+                </div>
+              </div>
+              <p className="text-gray-600 leading-relaxed mb-4">
+                When AI cites sources, which platforms does it reference? Each AI platform has different
+                citation preferences. Being present on the platforms AI trusts increases your citation
+                likelihood.
+              </p>
+              <div className="mb-4">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">What We Measure</p>
+                <ul className="space-y-1">
+                  {[
+                    "Citations earned in scan responses (Perplexity and Google AI show source URLs)",
+                    "Review platform presence (G2, Trustpilot)",
+                    "Multi-platform citation count",
+                  ].map((m) => (
+                    <li key={m} className="text-sm text-gray-600 flex items-start gap-2">
+                      <span className="text-emerald-500 flex-shrink-0 mt-0.5">✓</span>{m}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="bg-blue-50 border-l-4 border-blue-400 pl-4 py-3 rounded-r-lg mb-4">
+                <p className="text-sm text-blue-800">
+                  📊 48% of branded query citations come from earned media, 30% from commercial content,
+                  and only 23% from owned content. ChatGPT cites Wikipedia at 7.8%; Perplexity cites
+                  Reddit at 6.6%.
+                </p>
+                <p className="text-xs text-blue-600 mt-1">Omniscient Digital, 23,000+ citation analysis</p>
+              </div>
+              <p className="text-sm text-gray-500 italic">
+                Why 15%: you cannot control what AI says about you, but you can control where AI finds
+                information about you. Being present on trusted platforms increases citation probability.
+              </p>
+            </div>
+
+            {/* Signal 5 */}
+            <div className="mb-10">
+              <div className="flex items-center gap-3 mb-3">
+                <span className="text-2xl">🔍</span>
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900">Signal 5: Search Correlation</h3>
+                  <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 rounded-full px-2.5 py-0.5">10% weight</span>
+                </div>
+              </div>
+              <p className="text-gray-600 leading-relaxed mb-4">
+                Traditional search rankings still matter for AI visibility. 87% of ChatGPT SearchGPT
+                citations match Bing&apos;s top 10 results. Google AI Overviews correlate 76.1% with
+                Google&apos;s top 10.
+              </p>
+              <div className="mb-4">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">What We Measure</p>
+                <ul className="space-y-1">
+                  {[
+                    "Bing ranking position for key category queries",
+                    "Brand presence in top 10 search results",
+                  ].map((m) => (
+                    <li key={m} className="text-sm text-gray-600 flex items-start gap-2">
+                      <span className="text-emerald-500 flex-shrink-0 mt-0.5">✓</span>{m}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="bg-blue-50 border-l-4 border-blue-400 pl-4 py-3 rounded-r-lg mb-4">
+                <p className="text-sm text-blue-800">
+                  📊 87% of ChatGPT SearchGPT citations match Bing&apos;s top 10 organic results, with
+                  only 56% correlation with Google results.
+                </p>
+                <p className="text-xs text-blue-600 mt-1">Seer Interactive, 500+ citation analysis</p>
+              </div>
+              <p className="text-sm text-gray-500 italic">
+                Why 10%: search rankings are a proxy for the authority signals AI systems use. Strong
+                Bing rankings particularly predict ChatGPT visibility.
+              </p>
+            </div>
+
+            {/* Signal 6 */}
+            <div className="mb-10">
+              <div className="flex items-center gap-3 mb-3">
+                <span className="text-2xl">🤖</span>
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900">Signal 6: AI Crawler Accessibility</h3>
+                  <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 rounded-full px-2.5 py-0.5">10% weight</span>
+                </div>
+              </div>
+              <p className="text-gray-600 leading-relaxed mb-4">
+                Are AI crawlers technically able to access your site? This is a pass/fail foundation.
+                If you block GPTBot in robots.txt, ChatGPT cannot see your content.
+              </p>
+              <div className="mb-4">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">What We Measure</p>
+                <ul className="space-y-1">
+                  {[
+                    "robots.txt rules for each AI crawler (GPTBot, ClaudeBot, PerplexityBot, Google-Extended, OAI-SearchBot)",
+                    "Number of crawlers allowed vs blocked",
+                  ].map((m) => (
+                    <li key={m} className="text-sm text-gray-600 flex items-start gap-2">
+                      <span className="text-emerald-500 flex-shrink-0 mt-0.5">✓</span>{m}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="bg-blue-50 border-l-4 border-blue-400 pl-4 py-3 rounded-r-lg mb-4">
+                <p className="text-sm text-blue-800">
+                  📊 Brands that block PerplexityBot lose visibility on the fastest-growing AI search
+                  platform. Yet 23% of Fortune 100 companies block at least one AI crawler.
+                </p>
+                <p className="text-xs text-blue-600 mt-1">ShowsUp Brand Index, April 2026</p>
+              </div>
+              <p className="text-sm text-gray-500 italic">
+                Why 10%: this is binary — either crawlers can access your site or they cannot. Low
+                weight because it is a foundation, not a differentiator, but getting it wrong is
+                catastrophic.
+              </p>
+            </div>
+          </section>
+
+          {/* Section 4: Brand Index */}
+          <section id="brand-index" className="mb-16">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6 pb-3 border-b border-gray-200">
+              The ShowsUp Brand Index
+            </h2>
+            <p className="text-gray-600 leading-relaxed mb-4">
+              ShowsUp tracks the AI visibility of 100 of the world&apos;s most valuable brands
+              (based on the Interbrand Top 100) across 15 categories, every month. This creates
+              the only longitudinal dataset on AI brand visibility, tracking how scores change
+              over time, which website changes correlate with score improvements, and how
+              different categories compare.
+            </p>
+            <p className="text-gray-600 leading-relaxed mb-4">
+              The Brand Index also tracks stock price correlation for publicly traded companies,
+              testing whether AI visibility correlates with market performance.
+            </p>
+            <p className="text-gray-600 leading-relaxed mb-6">
+              All Brand Index data is publicly available at showsup.co/index.
+            </p>
+            <a
+              href="/index"
+              className="inline-flex items-center gap-2 text-emerald-600 font-medium hover:text-emerald-700 transition-colors"
+            >
+              View the AI Visibility Index →
+            </a>
+          </section>
+
+          {/* Section 5: Two Layers */}
+          <section id="two-layers" className="mb-16">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6 pb-3 border-b border-gray-200">
+              Two Layers of Analysis
+            </h2>
+            <p className="text-gray-600 leading-relaxed mb-6">
+              ShowsUp provides two complementary analyses that work together:
+            </p>
+            <div className="grid sm:grid-cols-2 gap-4 mb-6">
+              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-5">
+                <p className="text-xs font-semibold text-emerald-700 uppercase tracking-wider mb-2">Layer 1</p>
+                <h3 className="text-base font-bold text-gray-900 mb-2">ShowsUp Composite Score (6 signals)</h3>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  Measures your current AI visibility using 6 independent data sources. Calculated
+                  automatically for every scan. Expressed as a 0–100 score. This tells you{" "}
+                  <strong className="text-gray-800">where you stand</strong>.
+                </p>
+              </div>
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-5">
+                <p className="text-xs font-semibold text-blue-700 uppercase tracking-wider mb-2">Layer 2</p>
+                <h3 className="text-base font-bold text-gray-900 mb-2">AEO Improvement Plan (10 dimensions)</h3>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  Analyzes your website content against 10 research-backed dimensions and generates
+                  specific, verified recommendations. A deeper analysis that examines your actual
+                  content. This tells you{" "}
+                  <strong className="text-gray-800">how to improve</strong>.
+                </p>
+              </div>
+            </div>
+            <p className="text-gray-500 text-sm">
+              The composite score is calculated for every scan. The improvement plan is a deeper
+              analysis that generates actionable fixes.
+            </p>
+          </section>
+
+          {/* Section 6: The 10 Dimensions */}
           <section id="dimensions" className="mb-16">
             <h2 className="text-2xl font-bold text-gray-900 mb-6 pb-3 border-b border-gray-200">
-              The 10 Dimensions
+              The AEO Improvement Framework: 10 Dimensions
             </h2>
 
             {/* Dimension 1: Entity Strength */}
@@ -962,14 +1333,35 @@ export default function MethodologyPage() {
             </div>
           </section>
 
-          {/* Section 4: Scoring Methodology */}
+          {/* Section 7: Scoring Methodology */}
           <section id="scoring" className="mb-16">
             <h2 className="text-2xl font-bold text-gray-900 mb-6 pb-3 border-b border-gray-200">
               Scoring Methodology
             </h2>
+            <p className="text-gray-600 leading-relaxed mb-6">
+              ShowsUp uses two scoring systems:
+            </p>
+            <div className="grid sm:grid-cols-2 gap-4 mb-8">
+              <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">System 1</p>
+                <p className="font-bold text-gray-900 mb-1">ShowsUp Composite Score (0–100)</p>
+                <p className="text-sm text-gray-600">
+                  The 6-signal weighted average as described above. Used for the Brand Index and
+                  individual brand scans.
+                </p>
+              </div>
+              <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">System 2</p>
+                <p className="font-bold text-gray-900 mb-1">AEO Readiness Score (0–10)</p>
+                <p className="text-sm text-gray-600">
+                  The 10-dimension analysis of improvement potential. Each dimension scored 0–10;
+                  overall is the average. Used in the AI Improvement Plan.
+                </p>
+              </div>
+            </div>
             <p className="text-gray-600 leading-relaxed mb-4">
-              The ShowsUp Score is derived from structured brand queries sent to
-              each enabled AI platform. We run{" "}
+              The ShowsUp Composite Score LLM Probing component is derived from structured brand
+              queries sent to each enabled AI platform. We run{" "}
               <strong className="text-gray-900">6 query categories</strong>{" "}
               mapped to purchase-funnel intent stages:
             </p>
@@ -1036,11 +1428,10 @@ export default function MethodologyPage() {
             <p className="text-gray-600 leading-relaxed">
               The{" "}
               <strong className="text-gray-900">AEO Readiness Score</strong> is
-              computed separately as the average of all 10 dimension scores
-              (each scored 0–10). This gives an overall AEO health number
-              distinct from the query-based visibility score, allowing brands to
-              see both their current AI footprint and the structural readiness
-              that drives long-term visibility.
+              computed as the average of all 10 dimension scores (each scored 0–10).
+              This gives an overall AEO health number distinct from the composite
+              visibility score, allowing brands to see both their current AI footprint
+              and the structural readiness that drives long-term visibility.
             </p>
           </section>
 
@@ -1232,6 +1623,11 @@ export default function MethodologyPage() {
                     "SourceCheckup: Citation Accuracy in Large Language Models",
                   authors: "Wu et al.",
                   year: "Nature Communications, 2025",
+                },
+                {
+                  title: "Brand Index: AI Visibility of the World's Top 100 Brands",
+                  authors: "ShowsUp",
+                  year: "April 2026 — llms.txt adoption (12%), crawler blocking rates (23% of Fortune 100), composite scoring methodology",
                 },
               ].map((s) => (
                 <div

@@ -16,6 +16,7 @@ import {
   Database,
   LineChart,
   ClipboardList,
+  Globe2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -149,6 +150,8 @@ function TokenWidget() {
 
 // ── Sidebar ───────────────────────────────────────────────────────────────────
 
+const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL ?? "rahul@showsup.co";
+
 interface SidebarProps {
   user: User | null;
 }
@@ -156,6 +159,7 @@ interface SidebarProps {
 export function Sidebar({ user }: SidebarProps) {
   const pathname = usePathname();
   const router   = useRouter();
+  const isAdmin  = !!user?.email && user.email === ADMIN_EMAIL;
 
   // Report pages live under /app/report/ — treat as Scores sub-page
   const effectivePath = pathname.startsWith("/app/report/")
@@ -200,6 +204,25 @@ export function Sidebar({ user }: SidebarProps) {
               </Link>
             );
           })}
+          {isAdmin && (
+            <>
+              <div className="pt-2 pb-1 px-3">
+                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">Admin</p>
+              </div>
+              <Link
+                href="/app/index"
+                className={cn(
+                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                  effectivePath === "/app/index" || effectivePath.startsWith("/app/index/")
+                    ? "bg-emerald-50 text-emerald-700"
+                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                )}
+              >
+                <Globe2 className="w-4 h-4 flex-shrink-0" />
+                Brand Index
+              </Link>
+            </>
+          )}
         </nav>
 
         <TokenWidget />

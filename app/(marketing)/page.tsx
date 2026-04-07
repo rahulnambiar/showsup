@@ -13,6 +13,7 @@ import {
   Scale,
 } from "lucide-react";
 import { posthog } from "@/lib/posthog";
+import { BRAND_INDEX } from "@/lib/brand-index/brands";
 
 const GITHUB_URL = "https://github.com/rahulnambiar/showsup";
 
@@ -532,7 +533,7 @@ export default function HomePage() {
         <div className={cn(container, "py-7")}>
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
             {[
-              "7 fix types", "10 regions", "3 AI platforms",
+              "100 brands tracked monthly", "7 fix types", "10 regions", "3 AI platforms",
               "REST API", "AI Analyst Chat",
               "WordPress plugin", "Shopify app", "Chrome extension",
             ].map((stat, i) => (
@@ -548,6 +549,71 @@ export default function HomePage() {
             ))}
           </div>
         </div>
+      </div>
+
+      {/* ── BRAND LOGO TICKER ─────────────────────────────────────────────── */}
+      <div className="py-10 bg-white border-b border-[#F3F4F6]">
+        <style>{`
+          @keyframes ticker-scroll {
+            0%   { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+          }
+          .ticker-track {
+            display: flex;
+            align-items: center;
+            gap: 48px;
+            animation: ticker-scroll 55s linear infinite;
+            width: max-content;
+          }
+          .ticker-wrap:hover .ticker-track {
+            animation-play-state: paused;
+          }
+          @media (max-width: 640px) {
+            .ticker-track { gap: 32px; }
+          }
+        `}</style>
+
+        <p className="text-[11px] font-semibold text-[#9CA3AF] uppercase tracking-widest text-center mb-8 px-6">
+          Tracking AI visibility for the world&apos;s most valuable brands
+        </p>
+
+        <div
+          className="ticker-wrap overflow-hidden"
+          style={{
+            maskImage: "linear-gradient(to right, transparent, black 8%, black 92%, transparent)",
+            WebkitMaskImage: "linear-gradient(to right, transparent, black 8%, black 92%, transparent)",
+          }}
+        >
+          <div className="ticker-track">
+            {[...BRAND_INDEX.slice(0, 40), ...BRAND_INDEX.slice(0, 40)].map((brand, i) => {
+              const domain = brand.url.replace(/^https?:\/\/(www\.)?/, "");
+              return (
+                <img
+                  key={`ticker-${i}`}
+                  src={`https://logo.clearbit.com/${domain}`}
+                  alt={brand.name}
+                  title={brand.name}
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                  onMouseEnter={(e) => { (e.target as HTMLImageElement).style.filter = "grayscale(0%) opacity(1)"; }}
+                  onMouseLeave={(e) => { (e.target as HTMLImageElement).style.filter = "grayscale(100%) opacity(0.45)"; }}
+                  className="flex-shrink-0 w-auto object-contain"
+                  style={{
+                    height: "clamp(28px, 4vw, 40px)",
+                    filter: "grayscale(100%) opacity(0.45)",
+                    transition: "filter 0.25s ease",
+                  }}
+                />
+              );
+            })}
+          </div>
+        </div>
+
+        <p className="text-center mt-7 text-[13px] text-[#9CA3AF] px-6">
+          100 brands tracked monthly across 15 categories{" "}
+          <Link href="/index" className="text-[#10B981] hover:text-[#059669] transition-colors font-medium">
+            View the AI Visibility Index →
+          </Link>
+        </p>
       </div>
 
       {/* ── HOW IT WORKS ──────────────────────────────────────────────────── */}

@@ -122,6 +122,7 @@ export function MarketingNav() {
             Product
           </button>
           {[
+            { label: "Index",       href: "/index"       },
             { label: "Methodology", href: "/methodology" },
             { label: "Blog",        href: "/blog"        },
             { label: "About",       href: "/about"       },
@@ -211,6 +212,7 @@ export function MarketingNav() {
             Product
           </button>
           {[
+            { label: "Index",       href: "/index"       },
             { label: "Methodology", href: "/methodology" },
             { label: "Blog",        href: "/blog"        },
             { label: "About",       href: "/about"       },

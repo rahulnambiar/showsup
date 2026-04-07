@@ -1,15 +1,32 @@
 import type { MetadataRoute } from "next";
 
+const BASE = "https://showsup.co";
+
 export default function robots(): MetadataRoute.Robots {
-  const base = "https://www.showsup.co";
   return {
     rules: [
       {
         userAgent: "*",
-        allow: "/",
-        disallow: ["/app/", "/api/"],
+        allow: [
+          "/",
+          "/index",
+          "/index/",
+          "/methodology",
+          "/learn/",
+          "/blog/",
+          "/about",
+          "/changelog",
+          "/privacy",
+          "/terms",
+        ],
+        disallow: [
+          "/app/",
+          "/api/",
+          "/login",
+          "/signup",
+        ],
       },
     ],
-    sitemap: `${base}/sitemap.xml`,
+    sitemap: `${BASE}/sitemap.xml`,
   };
 }
