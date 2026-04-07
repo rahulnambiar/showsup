@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { BRAND_INDEX } from "@/lib/brand-index/brands";
-import { toSlug, categoryToSlug, getComparisonPairs } from "@/app/(marketing)/index/_lib/utils";
-import { getLatestMonth, getUserBrandsForSitemap } from "@/app/(marketing)/index/_lib/data";
+import { toSlug, categoryToSlug, getComparisonPairs } from "@/app/(marketing)/ai-index/_lib/utils";
+import { getLatestMonth, getUserBrandsForSitemap } from "@/app/(marketing)/ai-index/_lib/data";
 
 export const revalidate = 3600;
 
