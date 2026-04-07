@@ -9,7 +9,7 @@ import { StockScatterPreview } from "./_components/stock-scatter";
 import { toSlug, scoreHex, scoreLabel, formatMonth, categoryToSlug } from "./_lib/utils";
 import { BRAND_INDEX } from "@/lib/brand-index/brands";
 
-export const revalidate = 3600;
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "AI Visibility Index — Top 100 Global Brands Ranked | ShowsUp",

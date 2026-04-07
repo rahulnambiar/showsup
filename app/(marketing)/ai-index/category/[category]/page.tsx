@@ -9,7 +9,7 @@ import { getIndexData, getLatestMonth, getPublishedInsights, getCategoryHistory 
 import { ScoreTrend } from "../../_components/score-trend";
 import { toSlug, slugToCategory, scoreHex, formatMonth, categoryToSlug, toComparisonSlug } from "../../_lib/utils";
 
-export const revalidate = 3600;
+export const dynamic = "force-dynamic";
 
 export async function generateStaticParams() {
   const categories = Array.from(new Set(BRAND_INDEX.map((b) => b.category)));
