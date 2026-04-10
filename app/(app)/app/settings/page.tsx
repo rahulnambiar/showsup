@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createAdmin } from "@supabase/supabase-js";
 import { SignOutButton } from "./sign-out-button";
 import { IntegrationsPanel } from "./integrations-panel";
+import { ApiKeySection } from "./api-key-section";
 
 export const metadata: Metadata = { title: "Settings — ShowsUp" };
 
@@ -15,6 +17,14 @@ function Row({ label, value }: { label: string; value: string }) {
   );
 }
 
+function getAdmin() {
+  return createAdmin(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { persistSession: false, autoRefreshToken: false } },
+  );
+}
+
 export default async function SettingsPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -22,6 +32,14 @@ export default async function SettingsPage() {
   const { count: totalScans } = await supabase
     .from("scans")
     .select("id", { count: "exact", head: true });
+
+  const admin = getAdmin();
+  const { data: profile } = await admin
+    .from("profiles")
+    .select("api_token")
+    .eq("id", user?.id ?? "")
+    .maybeSingle();
+  const apiToken = (profile as { api_token: string | null } | null)?.api_token ?? null;
 
   const memberSince = user?.created_at
     ? new Date(user.created_at).toLocaleDateString("en-US", {
@@ -47,6 +65,12 @@ export default async function SettingsPage() {
             <Row label="Total scans"  value={String(totalScans ?? 0)} />
           </div>
         </div>
+      </section>
+
+      {/* API Key */}
+      <section className="space-y-3">
+        <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">API Key</p>
+        <ApiKeySection initialToken={apiToken} />
       </section>
 
       {/* Integrations */}
