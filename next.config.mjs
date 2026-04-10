@@ -1,9 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  async rewrites() {
+  async redirects() {
     return [
-      { source: "/index",        destination: "/ai-index"        },
-      { source: "/index/:path*", destination: "/ai-index/:path*" },
+      { source: "/index",        destination: "/ai-index",        permanent: false },
+      { source: "/index/:path*", destination: "/ai-index/:path*", permanent: false },
     ];
   },
   webpack: (config) => {
