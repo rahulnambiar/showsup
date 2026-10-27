@@ -9,7 +9,7 @@
  *  - Periodic background re-scans (via alarms)
  */
 
-import { getSettings, getStoredScan, storeScan, getMonitorSession, saveMonitorSession } from "./lib/storage";
+import { getSettings, getStoredScan, storeScan, getStoredScanId, storeScanId, getMonitorSession, saveMonitorSession } from "./lib/storage";
 import { createClient, extractDomain, scoreColor } from "./lib/api";
 import type { Message, MonitorEvent, ScanResult } from "./lib/types";
 
@@ -40,14 +40,15 @@ chrome.runtime.onMessage.addListener((msg: Message, sender, sendResponse) => {
         }
 
         case "TRIGGER_SCAN": {
-          const result = await triggerScan(msg.domain);
-          sendResponse({ ok: true, result });
+          const { scan: result, scanId } = await triggerScan(msg.domain);
+          sendResponse({ ok: true, result, scanId });
           break;
         }
 
         case "GET_SCAN": {
           const cached = await getStoredScan(msg.domain);
-          sendResponse({ ok: true, scan: cached });
+          const cachedId = await getStoredScanId(msg.domain);
+          sendResponse({ ok: true, scan: cached, scanId: cachedId });
           break;
         }
 
@@ -75,13 +76,14 @@ chrome.runtime.onMessage.addListener((msg: Message, sender, sendResponse) => {
 
 // ── Scan ───────────────────────────────────────────────────────────────────────
 
-async function triggerScan(domain: string): Promise<ScanResult> {
+async function triggerScan(domain: string): Promise<{ scan: ScanResult; scanId: string | null }> {
   // Deduplicate concurrent scans for same domain
   if (SCAN_CACHE.has(domain)) {
-    return SCAN_CACHE.get(domain)!;
+    const scan = await SCAN_CACHE.get(domain)!;
+    return { scan, scanId: null };
   }
 
-  const promise = (async () => {
+  const promise = (async (): Promise<ScanResult> => {
     const settings = await getSettings();
     if (!settings.apiToken) throw new Error("No API token. Add one in ShowsUp Settings.");
 
@@ -89,7 +91,7 @@ async function triggerScan(domain: string): Promise<ScanResult> {
     const url    = `https://${domain}`;
 
     const raw = await client.scan({
-      brand:    settings.brandDomain === domain ? settings.brandName : domain,
+      brand:    domain,
       url,
       category: "Other",
       regions:  ["global"],
@@ -99,11 +101,11 @@ async function triggerScan(domain: string): Promise<ScanResult> {
     const scan: ScanResult = {
       domain,
       overall_score:    raw.overall_score,
-      chatgpt_score:    raw.chatgpt_score,
-      claude_score:     raw.claude_score,
-      gemini_score:     raw.gemini_score,
+      chatgpt_score:    raw.platforms?.chatgpt ?? raw.chatgpt_score,
+      claude_score:     raw.platforms?.claude  ?? raw.claude_score,
+      gemini_score:     raw.platforms?.gemini  ?? raw.gemini_score,
       perplexity_score: raw.perplexity_score,
-      share_of_voice:   raw.share_of_voice,
+      share_of_voice:   raw.competitors_data?.share_of_voice,
       queries_won:      raw.queries_won,
       queries_missed:   raw.queries_missed,
       query_count:      raw.query_count,
@@ -113,6 +115,7 @@ async function triggerScan(domain: string): Promise<ScanResult> {
     };
 
     await storeScan(domain, scan);
+    if (raw.scan_id) await storeScanId(domain, raw.scan_id);
     await updateBadge(domain, scan.overall_score);
 
     return scan;
@@ -121,7 +124,9 @@ async function triggerScan(domain: string): Promise<ScanResult> {
   SCAN_CACHE.set(domain, promise);
   promise.finally(() => SCAN_CACHE.delete(domain));
 
-  return promise;
+  const scan = await promise;
+  const scanId = await getStoredScanId(domain);
+  return { scan, scanId };
 }
 
 // ── Badge ──────────────────────────────────────────────────────────────────────

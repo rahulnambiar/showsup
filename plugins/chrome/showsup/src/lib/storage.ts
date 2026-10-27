@@ -48,6 +48,18 @@ export async function getAllScans(): Promise<StoredScan> {
   return result.scans || {};
 }
 
+export async function getStoredScanId(domain: string): Promise<string | null> {
+  const result = await chrome.storage.local.get("scanIds");
+  return (result.scanIds || {})[domain] || null;
+}
+
+export async function storeScanId(domain: string, scanId: string): Promise<void> {
+  const result = await chrome.storage.local.get("scanIds");
+  const ids = result.scanIds || {};
+  ids[domain] = scanId;
+  await chrome.storage.local.set({ scanIds: ids });
+}
+
 // ── Monitor session ───────────────────────────────────────────────────────────
 
 export async function getMonitorSession(): Promise<MonitorSession | null> {
